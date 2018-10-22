@@ -1,39 +1,44 @@
 package com.matejvasko.player;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
-import android.media.AudioManager;
+import android.os.Bundle;
 import android.os.RemoteException;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.BottomNavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.matejvasko.player.fragments.FriendsFragment;
-import com.matejvasko.player.fragments.library.LibraryFragment;
 import com.matejvasko.player.fragments.MapFragment;
+import com.matejvasko.player.fragments.library.LibraryFragment;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    @BindView(R.id.bottom_nav) BottomNavigationView bottomNav;
-    @BindView(R.id.fragment_container)
+    BottomNavigationView bottomNav;
     RelativeLayout fragmentContainer;
+
+    ImageView albumArtImageView;
+    TextView songTitleTextView;
+    ImageView playPauseImageView;
+    Button playPauseButton;
 
     private LibraryFragment libraryFragment;
     private FriendsFragment friendsFragment;
@@ -43,11 +48,21 @@ public class MainActivity extends AppCompatActivity {
     private MediaControllerCompat mediaController;
     private MediaControllerCallback mediaControllerCallback;
 
+    private boolean isPlaying;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
+
+        bottomNav = findViewById(R.id.bottom_nav);
+        fragmentContainer = findViewById(R.id.fragment_container);
+
+        albumArtImageView = findViewById(R.id.album_art_image_view);
+        songTitleTextView = findViewById(R.id.song_title_text_view);
+        playPauseImageView = findViewById(R.id.play_pause_image_view);
+        playPauseButton = findViewById(R.id.play_pause_button);
+        playPauseButton.setOnClickListener(new ClickListener());
 
         mediaControllerCallback = new MediaControllerCallback();
 
@@ -77,6 +92,20 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private class ClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            switch (view.getId()) {
+                case R.id.play_pause_button:
+                    if (isPlaying) {
+                        mediaController.getTransportControls().pause();
+                    } else {
+                        mediaController.getTransportControls().play();
+                    }
+            }
+        }
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -86,8 +115,8 @@ public class MainActivity extends AppCompatActivity {
                             new ComponentName(this, MediaPlaybackService.class),
                             new MediaBrowserConnectionCallback(),
                             null);
-            mediaBrowser.connect();
         }
+        mediaBrowser.connect();
         Log.d(TAG, "onStart: Creating MediaBrowser, and connecting");
     }
 
@@ -115,19 +144,6 @@ public class MainActivity extends AppCompatActivity {
                 // enables handling of media buttons
                 MediaControllerCompat.setMediaController(MainActivity.this, mediaController);
 
-                ImageView playPause = findViewById(R.id.play_pause_button);
-                playPause.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int pbState = mediaController.getPlaybackState().getState();
-                        if (pbState == PlaybackStateCompat.STATE_PLAYING) {
-                            mediaController.getTransportControls().pause();
-                        } else {
-                            mediaController.getTransportControls().play();
-                        }
-                    }
-                });
-
                 // Display the initial state
                 MediaMetadataCompat metadata = mediaController.getMetadata();
                 PlaybackStateCompat plabackState = mediaController.getPlaybackState();
@@ -145,11 +161,25 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onMetadataChanged(final MediaMetadataCompat metadata) {
-            Log.d(TAG, "onMetadataChanged: MediaControllerCallback");
+            if (metadata == null) {
+                return;
+            }
+            albumArtImageView.setImageBitmap(metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART));
+            songTitleTextView.setText(
+                    String.format("%s   %s   %s",
+                    metadata.getText(MediaMetadataCompat.METADATA_KEY_TITLE),
+                    String.valueOf(Html.fromHtml("&#8226;")),
+                    metadata.getText(MediaMetadataCompat.METADATA_KEY_ARTIST)
+            ));
+
+            Log.d(TAG, "onMetadataChanged: MediaControllerCallback + " + metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID));
         }
 
         @Override
         public void onPlaybackStateChanged(@Nullable final PlaybackStateCompat state) {
+            isPlaying = state != null && state.getState() == PlaybackStateCompat.STATE_PLAYING;
+            playPauseImageView.setPressed(isPlaying);
+
             Log.d(TAG, "onPlaybackStateChanged: MediaControllerCallback + " + state);
         }
 
@@ -157,8 +187,11 @@ public class MainActivity extends AppCompatActivity {
         // foreground and onStart() has been called (but not onStop()).
         @Override
         public void onSessionDestroyed() {
+            super.onSessionDestroyed();
+
             Log.d(TAG, "onSessionDestroyed: MediaControllerCallback");
         }
+
     }
 
     private void setFragment(Fragment fragment) {
