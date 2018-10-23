@@ -22,12 +22,14 @@ public class NowPlaying {
         public Bitmap albumArt;
         public String songTitle;
         public String artistTitle;
+        public long songDuration;
 
-        public Song(String songUri, Bitmap albumArt, String songTitle, String artistTitle) {
+        public Song(String songUri, Bitmap albumArt, String songTitle, String artistTitle, long songDuration) {
             this.songUri = songUri;
             this.albumArt = albumArt;
             this.songTitle = songTitle;
             this.artistTitle = artistTitle;
+            this.songDuration = songDuration;
         }
     }
 

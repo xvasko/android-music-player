@@ -26,7 +26,7 @@
             android:layout_height="match_parent"
             android:background="@color/colorPrimaryDark"
             app:behavior_hideable="true"
-            app:behavior_peekHeight="56dp"
+            app:behavior_peekHeight="112dp"
             app:layout_behavior="@string/bottom_sheet_behavior">
 
             <ImageView
@@ -71,6 +71,17 @@
                 android:background="@android:color/transparent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
+
+            <com.matejvasko.player.MediaSeekBar
+                android:id="@+id/media_seek_bar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:paddingBottom="16dp"
+                android:paddingTop="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/song_title_text_view" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

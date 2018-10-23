@@ -29,6 +29,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
     private static final String TAG = MediaPlaybackService.class.getSimpleName();
 
+    private int state;
+
     private MediaSessionCompat mediaSession;
     private PlaybackStateCompat.Builder stateBuilder;
     private MediaMetadataCompat.Builder metadataBuilder;
@@ -62,7 +64,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, song.songUri)
                         .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.songTitle)
                         .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, song.artistTitle)
-                        .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, song.albumArt);
+                        .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, song.albumArt)
+                        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.songDuration);
                 mediaSession.setMetadata(metadataBuilder.build());
                 mediaSessionCallback.onPlay();
             }
@@ -95,10 +98,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     public class MediaSessionCallback extends MediaSessionCompat.Callback {
         @Override
         public void onPlay() {
-            Log.d(TAG, "onPlay: MediaSessionCallback");
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             int result = audioManager.requestAudioFocus(onAudioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
+            // TODO init mediaPlayer once
             if (mediaPlayer != null && mediaPlayer.isPlaying()) {
                 mediaPlayer.release();
                 mediaPlayer = null;
@@ -108,32 +111,66 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 startService(new Intent(MediaPlaybackService.this, MediaPlaybackService.class));
                 mediaSession.setActive(true);  // we want to be active media button receiver (accepting i.e: headphones media buttons)
                 mediaPlayer = MediaPlayer.create(MediaPlaybackService.this, Uri.parse(NowPlaying.getNowPlaying().getValue().songUri));
+                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mediaPlayer) {
+                        // Set the state to "paused" because it most closely matches the state
+                        // in MediaPlayer with regards to available state transitions compared
+                        // to "stop".
+                        // Paused allows: seekTo(), start(), pause(), stop()
+                        // Stop allows: stop()
+                        setNewState(PlaybackStateCompat.STATE_PAUSED);
+                    }
+                });
                 mediaPlayer.start();
 
-                stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, 0l, 1f);
-                mediaSession.setPlaybackState(stateBuilder.build());
+                setNewState(PlaybackStateCompat.STATE_PLAYING);
             }
+
+            Log.d(TAG, "onPlay: MediaSessionCallback");
         }
 
         @Override
         public void onPause() {
             mediaPlayer.pause();
-            stateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, 0l, 1f);
-            mediaSession.setPlaybackState(stateBuilder.build());
+            setNewState(PlaybackStateCompat.STATE_PAUSED);
+
             Log.d(TAG, "onPause: MediaSessionCallback");
         }
 
         @Override
         public void onStop() {
             // abandon audio focus here
-            Log.d(TAG, "onStop: MediaSessionCallback");
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             audioManager.abandonAudioFocus(onAudioFocusChangeListener);
             mediaSession.setActive(false);
             mediaPlayer.stop();
             mediaPlayer.release();
             mediaPlayer = null;
+            setNewState(PlaybackStateCompat.STATE_STOPPED);
+
+            Log.d(TAG, "onStop: MediaSessionCallback");
         }
+
+        @Override
+        public void onSeekTo(long pos) {
+            if (mediaPlayer != null) {
+                mediaPlayer.seekTo((int) pos);
+            }
+
+            setNewState(state);
+        }
+
+    }
+
+    private void setNewState(@PlaybackStateCompat.State int newState) {
+        state = newState;
+        final long reportPosition;
+
+        reportPosition = mediaPlayer != null ? mediaPlayer.getCurrentPosition() : 0;
+
+        stateBuilder.setState(newState, reportPosition,1.0f);
+        mediaSession.setPlaybackState(stateBuilder.build());
     }
 
     @Nullable

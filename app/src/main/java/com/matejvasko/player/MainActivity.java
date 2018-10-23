@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     TextView songTitleTextView;
     ImageView playPauseImageView;
     Button playPauseButton;
+    MediaSeekBar mediaSeekBar;
 
     private LibraryFragment libraryFragment;
     private FriendsFragment friendsFragment;
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         playPauseImageView = findViewById(R.id.play_pause_image_view);
         playPauseButton = findViewById(R.id.play_pause_button);
         playPauseButton.setOnClickListener(new ClickListener());
+        mediaSeekBar = findViewById(R.id.media_seek_bar);
 
         mediaControllerCallback = new MediaControllerCallback();
 
@@ -123,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStop() {
         super.onStop();
+        mediaSeekBar.disconnectMediaController();
         if (mediaController != null) {
             mediaController.unregisterCallback(mediaControllerCallback);
         }
@@ -139,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
         public void onConnected() {
             try {
                 mediaController = new MediaControllerCompat(MainActivity.this, mediaBrowser.getSessionToken());
+                mediaSeekBar.setMediaController(mediaController);
                 mediaController.registerCallback(mediaControllerCallback);
 
                 // enables handling of media buttons

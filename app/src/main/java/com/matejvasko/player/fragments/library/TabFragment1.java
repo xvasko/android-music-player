@@ -100,7 +100,8 @@ public class TabFragment1 extends Fragment implements LoaderManager.LoaderCallba
                 MediaStore.Audio.Media.TITLE,
                 MediaStore.Audio.Media.ARTIST,
                 MediaStore.Audio.Media.ALBUM_ID,
-                MediaStore.Audio.Media.DATA
+                MediaStore.Audio.Media.DATA,
+                MediaStore.Audio.Media.DURATION
 //                MediaStore.Audio.Albums._ID,
 //                MediaStore.Audio.Albums.ALBUM,
 //                MediaStore.Audio.Albums.ALBUM_ART

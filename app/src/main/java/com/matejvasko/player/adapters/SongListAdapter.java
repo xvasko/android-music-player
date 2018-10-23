@@ -55,6 +55,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongVi
         holder.songUri = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
         holder.songTitle = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
         holder.artistTitle = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+        holder.songDuration = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
 
         Bitmap bitmap = getBitmapFromMediaStore(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)));
         if (bitmap != null) {
@@ -80,6 +81,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongVi
         String songTitle;
         String artistTitle;
         Bitmap artistArt;
+        long songDuration;
 
         SongViewHolder(View itemView, SongListAdapter adapter) {
             super(itemView);
@@ -94,7 +96,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongVi
 
         @Override
         public void onClick(View v) {
-            NowPlaying.getNowPlaying().setValue(new NowPlaying.Song(songUri, artistArt,songTitle, artistTitle));
+            NowPlaying.getNowPlaying().setValue(new NowPlaying.Song(songUri, artistArt,songTitle, artistTitle, songDuration));
         }
     }
 
