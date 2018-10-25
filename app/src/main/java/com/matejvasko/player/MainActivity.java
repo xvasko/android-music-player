@@ -21,6 +21,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.matejvasko.player.fragments.FriendsFragment;
 import com.matejvasko.player.fragments.MapFragment;
 import com.matejvasko.player.fragments.library.LibraryFragment;
+import com.matejvasko.player.fragments.library.MyInterface;
+
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -73,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
         mapFragment = new MapFragment();
 
         setFragment(libraryFragment);
+
+
 
         bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -134,6 +139,13 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onStop:");
     }
 
+
+    private MyInterface listener;
+
+    public void setListener(MyInterface listener) {
+        this.listener = listener;
+    }
+
     // Receives callbacks from the MediaBrowser when it has successfully connected to the
     // MediaBrowserService (MusicPlaybackService).
     private class MediaBrowserConnectionCallback extends MediaBrowserCompat.ConnectionCallback {
@@ -141,6 +153,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onConnected() {
             try {
+                listener.loadSongs(mediaBrowser);
                 mediaController = new MediaControllerCompat(MainActivity.this, mediaBrowser.getSessionToken());
                 mediaSeekBar.setMediaController(mediaController);
                 mediaController.registerCallback(mediaControllerCallback);

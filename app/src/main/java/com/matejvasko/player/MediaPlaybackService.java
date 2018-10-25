@@ -15,6 +15,7 @@ import android.support.v4.media.MediaBrowserCompat;
 import androidx.lifecycle.Observer;
 import androidx.media.MediaBrowserServiceCompat;
 
+import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -23,6 +24,7 @@ import android.util.Log;
 
 import com.matejvasko.player.viewmodels.NowPlaying;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MediaPlaybackService extends MediaBrowserServiceCompat {
@@ -183,9 +185,53 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
        return null;
     }
 
+    private CursorBasedMediaProvider mediaProvider;
+
     @Override
     public void onLoadChildren(@NonNull String parentId, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result) {
-        result.sendResult(null);
+        Log.d(TAG,"onLoadChildren");
+    }
+
+    @Override
+    public void onLoadChildren(@NonNull String parentId, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result, @NonNull Bundle options) {
+        result.detach();
+
+        if (!(options.containsKey(MediaBrowserCompat.EXTRA_PAGE) && options.containsKey(MediaBrowserCompat.EXTRA_PAGE_SIZE)))
+            return;
+
+        // TODO create just once
+        mediaProvider = new CursorBasedMediaProvider(this);
+
+        int page     = options.getInt(MediaBrowserCompat.EXTRA_PAGE);
+        int pageSize = options.getInt(MediaBrowserCompat.EXTRA_PAGE_SIZE);
+        List<Song> songs = getSongsPage(page, pageSize);
+
+        List<MediaBrowserCompat.MediaItem> mediaItems = mapToMediaItems(songs);
+        result.sendResult(mediaItems);
+
+        Log.d(TAG, "onLoadChildren: " + result);
+    }
+
+    private List<Song> getSongsPage(int page, int pageSize) {
+        int startPosition = page * pageSize;
+        if (startPosition + pageSize <= mediaProvider.getMediaSize())
+            return mediaProvider.getSongsAtRange(startPosition, startPosition + pageSize);
+        else
+            return mediaProvider.getSongsAtRange(startPosition, mediaProvider.getMediaSize());
+    }
+
+    private List<MediaBrowserCompat.MediaItem> mapToMediaItems(List<Song> songs) {
+        List<MediaBrowserCompat.MediaItem> mediaItems = new ArrayList<>();
+        for (Song song : songs) {
+            MediaDescriptionCompat mediaDescription = new MediaDescriptionCompat.Builder()
+                    .setTitle(song.title)
+                    .setMediaId(song.filePath)
+                    .build();
+            MediaBrowserCompat.MediaItem mediaItem = new MediaBrowserCompat.MediaItem(mediaDescription, 0);
+            mediaItems.add(mediaItem);
+        }
+
+        return mediaItems;
     }
 
 }

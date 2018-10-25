@@ -1,34 +1,34 @@
 package com.matejvasko.player.adapters;
 
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
-
 import com.matejvasko.player.fragments.library.TabFragment1;
 import com.matejvasko.player.fragments.library.TabFragment2;
 import com.matejvasko.player.fragments.library.TabFragment3;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+
 public class PagerAdapter extends FragmentPagerAdapter {
 
-    private int numOfTabs;
+    List<Fragment> fragmentList = new ArrayList<>();
 
-    public PagerAdapter(FragmentManager fm, int numOfTabs) {
+    public PagerAdapter(FragmentManager fm) {
         super(fm);
-        this.numOfTabs = numOfTabs;
+        fragmentList.add(new TabFragment1());
+        fragmentList.add(new TabFragment2());
+        fragmentList.add(new TabFragment3());
     }
 
     @Override
     public Fragment getItem(int position) {
-        switch (position) {
-            case 0: return new TabFragment1();
-            case 1: return new TabFragment2();
-            case 2: return new TabFragment3();
-            default: return null;
-        }
+        return fragmentList.get(position);
     }
 
     @Override
     public int getCount() {
-        return numOfTabs;
+        return fragmentList.size();
     }
 }

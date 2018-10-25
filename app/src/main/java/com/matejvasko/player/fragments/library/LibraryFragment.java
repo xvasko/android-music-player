@@ -1,6 +1,8 @@
 package com.matejvasko.player.fragments.library;
 
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 import com.google.android.material.tabs.TabLayout;
 import androidx.fragment.app.Fragment;
@@ -9,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.matejvasko.player.MainActivity;
 import com.matejvasko.player.R;
 import com.matejvasko.player.adapters.PagerAdapter;
 
@@ -34,7 +37,7 @@ public class LibraryFragment extends Fragment {
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         final ViewPager viewPager = view.findViewById(R.id.library_pager);
-        final PagerAdapter pagerAdapter = new PagerAdapter(getChildFragmentManager(), tabLayout.getTabCount());
+        final PagerAdapter pagerAdapter = new PagerAdapter(getChildFragmentManager());
         viewPager.setAdapter(pagerAdapter);
 
         // Setting a listener for clicks.
