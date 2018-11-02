@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.support.v4.media.MediaBrowserCompat;
 import android.util.Log;
 
-import com.matejvasko.player.fragments.library.TabFragment1;
+import com.matejvasko.player.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -26,7 +26,6 @@ public class SongsDataSource extends PositionalDataSource<Song> {
         this.mediaBrowser = mediaBrowser;
     }
 
-
     @Override
     public void loadInitial(@NonNull final LoadInitialParams params, @NonNull final LoadInitialCallback<Song> callback) {
         Log.d(TAG, "loadInitial");
@@ -37,13 +36,8 @@ public class SongsDataSource extends PositionalDataSource<Song> {
             public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowserCompat.MediaItem> children, @NonNull Bundle options) {
                 Log.d(TAG, "loadInitial: onChildrenLoaded");
                 super.onChildrenLoaded(parentId, children);
-                System.out.println("XXX" + children.size());
                 loadedPages.add(0);
-                List<Song> songs = mapToSongs(children);
-                for (Song song : songs) {
-                    System.out.println("XXX " + song.title);
-                    System.out.println("XXX " + song.filePath);
-                }
+                List<Song> songs = Utils.mapToSongs(children);
                 callback.onResult(songs, params.requestedStartPosition);
             }
         });
@@ -65,7 +59,7 @@ public class SongsDataSource extends PositionalDataSource<Song> {
             public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowserCompat.MediaItem> children, @NonNull Bundle options) {
                 Log.d(TAG, "loadRange: onChildrenLoaded");
                 loadedPages.add(pageIndex);
-                List<Song> songs = mapToSongs(children);
+                List<Song> songs = Utils.mapToSongs(children);
                 callback.onResult(songs);
             }
         });
@@ -96,15 +90,4 @@ public class SongsDataSource extends PositionalDataSource<Song> {
         return rootId + requestedStartPosition;
     }
 
-
-
-    private List<Song> mapToSongs(List<MediaBrowserCompat.MediaItem> children) {
-        List<Song> songs = new ArrayList<>();
-        for (MediaBrowserCompat.MediaItem mediaItem : children) {
-            Song song = new Song(mediaItem.getMediaId(), mediaItem.getDescription().getTitle().toString());
-            songs.add(song);
-        }
-
-        return songs;
-    }
 }

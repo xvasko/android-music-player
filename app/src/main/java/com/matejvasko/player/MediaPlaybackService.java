@@ -2,30 +2,28 @@ package com.matejvasko.player;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.session.MediaController;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
-
-import androidx.lifecycle.Observer;
-import androidx.media.MediaBrowserServiceCompat;
-
-import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.matejvasko.player.utils.Utils;
 import com.matejvasko.player.viewmodels.NowPlaying;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.lifecycle.Observer;
+import androidx.media.MediaBrowserServiceCompat;
 
 public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
@@ -59,15 +57,20 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         setSessionToken(mediaSession.getSessionToken());
 
-        final Observer<NowPlaying.Song> nowPlayingObserver = new Observer<NowPlaying.Song>() {
+        final Observer<Song> nowPlayingObserver = new Observer<Song>() {
             @Override
-            public void onChanged(NowPlaying.Song song) {
+            public void onChanged(Song song) {
                 metadataBuilder
-                        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, song.songUri)
-                        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.songTitle)
-                        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, song.artistTitle)
-                        .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, song.albumArt)
-                        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.songDuration);
+                        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, song.data)
+                        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.title)
+                        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, song.artist)
+                        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.duration);
+                try {
+                    metadataBuilder
+                            .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, MediaStore.Images.Media.getBitmap(getContentResolver(), song.iconUri));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 mediaSession.setMetadata(metadataBuilder.build());
                 mediaSessionCallback.onPlay();
             }
@@ -99,6 +102,19 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
     public class MediaSessionCallback extends MediaSessionCompat.Callback {
         @Override
+        public void onPlayFromMediaId(String mediaId, Bundle extras) {
+            super.onPlayFromMediaId(mediaId, extras);
+            // TODO init mediaPlayer once
+            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                mediaPlayer.release();
+                mediaPlayer = null;
+            }
+            mediaPlayer = MediaPlayer.create(MediaPlaybackService.this, Uri.parse(mediaId));
+            mediaPlayer.start();
+
+        }
+
+        @Override
         public void onPlay() {
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             int result = audioManager.requestAudioFocus(onAudioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
@@ -112,7 +128,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 startService(new Intent(MediaPlaybackService.this, MediaPlaybackService.class));
                 mediaSession.setActive(true);  // we want to be active media button receiver (accepting i.e: headphones media buttons)
-                mediaPlayer = MediaPlayer.create(MediaPlaybackService.this, Uri.parse(NowPlaying.getNowPlaying().getValue().songUri));
+                mediaPlayer = MediaPlayer.create(MediaPlaybackService.this, Uri.parse(NowPlaying.getNowPlaying().getValue().data));
                 mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
                     public void onCompletion(MediaPlayer mediaPlayer) {
@@ -206,7 +222,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         int pageSize = options.getInt(MediaBrowserCompat.EXTRA_PAGE_SIZE);
         List<Song> songs = getSongsPage(page, pageSize);
 
-        List<MediaBrowserCompat.MediaItem> mediaItems = mapToMediaItems(songs);
+        List<MediaBrowserCompat.MediaItem> mediaItems = Utils.mapToMediaItems(songs);
         result.sendResult(mediaItems);
 
         Log.d(TAG, "onLoadChildren: " + result);
@@ -220,18 +236,5 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             return mediaProvider.getSongsAtRange(startPosition, mediaProvider.getMediaSize());
     }
 
-    private List<MediaBrowserCompat.MediaItem> mapToMediaItems(List<Song> songs) {
-        List<MediaBrowserCompat.MediaItem> mediaItems = new ArrayList<>();
-        for (Song song : songs) {
-            MediaDescriptionCompat mediaDescription = new MediaDescriptionCompat.Builder()
-                    .setTitle(song.title)
-                    .setMediaId(song.filePath)
-                    .build();
-            MediaBrowserCompat.MediaItem mediaItem = new MediaBrowserCompat.MediaItem(mediaDescription, 0);
-            mediaItems.add(mediaItem);
-        }
-
-        return mediaItems;
-    }
 
 }

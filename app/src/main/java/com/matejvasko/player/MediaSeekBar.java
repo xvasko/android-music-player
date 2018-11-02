@@ -124,7 +124,7 @@ public class MediaSeekBar extends AppCompatSeekBar {
             setProgress(0);
             setMax(max);
 
-            Log.d(TAG, "onMetadataChanged");
+            Log.d(TAG, "onMetadataChanged" + max);
         }
 
         @Override

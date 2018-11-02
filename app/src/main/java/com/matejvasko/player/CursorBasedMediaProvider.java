@@ -1,5 +1,6 @@
 package com.matejvasko.player;
 
+import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -11,7 +12,7 @@ import java.util.List;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContentResolverCompat;
 
-public class CursorBasedMediaProvider {
+class CursorBasedMediaProvider {
 
     private final Cursor cursor;
 
@@ -27,19 +28,11 @@ public class CursorBasedMediaProvider {
         );
     }
 
-    public int getMediaSize() {
+    int getMediaSize() {
         return cursor.getCount();
     }
 
-    public Song getSongAtPosition(int position) {
-        if (!cursor.moveToPosition(position))
-            return null;
-
-        return createSong(cursor);
-    }
-
-
-    public List<Song> getSongsAtRange(int startPosition, int endPosition) {
+    List<Song> getSongsAtRange(int startPosition, int endPosition) {
         List<Song> songs = new ArrayList<>();
         for (int position = startPosition; position < endPosition; ++position) {
             Song song = getSongAtPosition(position);
@@ -50,10 +43,29 @@ public class CursorBasedMediaProvider {
         return songs;
     }
 
+    private Song getSongAtPosition(int position) {
+        if (!cursor.moveToPosition(position))
+            return null;
+
+        return createSong(cursor);
+    }
+
     private Song createSong(Cursor cursor) {
-        Song song = new Song(
-                cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)),
-                cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
+        System.out.println("AAAA");
+        System.out.println("_ID:      " + cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID)));
+        System.out.println("TITLE:    " + cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
+        System.out.println("ARTIST:   " + cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
+        System.out.println("ICONURI: " + ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"), cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))));
+        System.out.println("DATA:     " + cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)));
+
+        Song song = new Song.Builder(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID)))
+                .setData(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)))
+                .setTitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)))
+                .setArtist(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)))
+                .setIconUri(ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"), cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))))
+                .setDuration(cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)))
+                .build();
+
         return song;
     }
 
@@ -65,10 +77,11 @@ public class CursorBasedMediaProvider {
     private String[] getProjection() {
         return new String[]{
                 MediaStore.Audio.Media._ID,
-                MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media.YEAR,
+                MediaStore.Audio.Media.DATA,
                 MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.DATA
+                MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media.ALBUM_ID,
+                MediaStore.Audio.Media.DURATION
         };
     }
 

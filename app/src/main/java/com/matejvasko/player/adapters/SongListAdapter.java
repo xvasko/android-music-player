@@ -1,8 +1,6 @@
 package com.matejvasko.player.adapters;
 
-import android.content.ContentUris;
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -26,12 +24,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.SongViewHolder>  {
 
-    private LayoutInflater inflater;
-
-    private Cursor cursor;
     private final Context context;
 
-    private Map<String, Bitmap> map = new HashMap<>();
+    private Map<Uri, Bitmap> map = new HashMap<>();
 
     public SongListAdapter(Context context) {
         super(Song.DIFF_CALLBACK);
@@ -49,20 +44,14 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
 
     @Override
     public void onBindViewHolder(@NonNull SongListAdapter.SongViewHolder holder, int position) {
-        Song song =  getItem(position);
+        Song song = getItem(position);
         if (song != null) {
-            holder.songItemView.setText(song.title);
+            holder.bindTo(song);
         } else {
-            // placeholder
+            holder.songItemView.setText("LOADING");
+            // TODO placeholder
         }
 
-//        Bitmap bitmap = getBitmapFromMediaStore(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)));
-//        if (bitmap != null) {
-//            holder.imageView.setImageBitmap(bitmap);
-//            holder.artistArt = bitmap;
-//        } else {
-//            holder.imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_launcher_background));
-//        }
     }
 
 
@@ -72,11 +61,8 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
         final TextView songItemView;
         final TextView artistItemView;
         final SongListAdapter adapter;
-        String songUri;
-        String songTitle;
-        String artistTitle;
-        Bitmap artistArt;
-        long songDuration;
+
+        private Song song;
 
         SongViewHolder(View itemView, SongListAdapter adapter) {
             super(itemView);
@@ -89,44 +75,39 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
             this.adapter = adapter;
         }
 
+         void bindTo(Song song) {
+            this.song = song;
+
+            songItemView.setText(song.title);
+            artistItemView.setText(song.artist);
+            Bitmap iconBitmap = getBitmapFromMediaStore(song.iconUri);
+            if (iconBitmap == null) {
+                imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_launcher_background));
+            } else {
+                imageView.setImageBitmap(iconBitmap);
+            }
+        }
+
         @Override
         public void onClick(View v) {
-//            NowPlaying.getNowPlaying().setValue(new NowPlaying.Song(songUri, artistArt,songTitle, artistTitle, songDuration));
+            NowPlaying.getNowPlaying().setValue(song);
         }
     }
 
-//    private Cursor swapCursor(Cursor cursor) {
-//        if (this.cursor == cursor) {
-//            return null;
-//        }
-//        Cursor oldCursor = this.cursor;
-//        this.cursor = cursor;
-//        if (cursor != null) {
-//            this.notifyDataSetChanged();
-//        }
-//        return oldCursor;
-//    }
-//
-//    public void changeCursor(Cursor cursor)  {
-//        Cursor oldCursor = swapCursor(cursor);
-//        if (oldCursor != null) {
-//            oldCursor.close();
-//        }
-//    }
-//
-//    private Bitmap getBitmapFromMediaStore(String albumId) {
-//        if (map.containsKey(albumId)) {
-//            return map.get(albumId);
-//        } else {
-//            Uri uri = ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"), Long.parseLong(albumId));
-//            try {
-//                Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
-//                return map.put(albumId, bitmap);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//                return map.put(albumId, null);
-//            }
-//        }
-//    }
+    private Bitmap getBitmapFromMediaStore(Uri iconUri) {
+        if (map.containsKey(iconUri)) {
+            return map.get(iconUri);
+        } else {
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), iconUri);
+                map.put(iconUri, bitmap);
+                return bitmap;
+            } catch (IOException e) {
+                e.printStackTrace();
+                map.put(iconUri, null);
+                return null;
+            }
+        }
+    }
 }
 

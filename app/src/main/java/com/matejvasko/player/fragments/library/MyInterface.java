@@ -4,5 +4,7 @@ import android.support.v4.media.MediaBrowserCompat;
 
 public interface MyInterface {
 
-    void loadSongs(MediaBrowserCompat mediaBrowser);
+    void setMediaBrowser(MediaBrowserCompat mediaBrowser);
+
+    void loadSongs();
 }

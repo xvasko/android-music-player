@@ -17,7 +17,7 @@ public class SongsViewModel extends ViewModel {
         PagedList.Config config = new PagedList.Config.Builder()
                 .setEnablePlaceholders(false)
                 .setInitialLoadSizeHint(10)
-                .setPageSize(10)
+                .setPageSize(20)
                 .build();
         return new LivePagedListBuilder<>(new SongsDataSourceFactory(mediaBrowser), config).build();
     }

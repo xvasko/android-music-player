@@ -1,6 +1,5 @@
 package com.matejvasko.player;
 
-import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -22,8 +21,6 @@ import com.matejvasko.player.fragments.FriendsFragment;
 import com.matejvasko.player.fragments.MapFragment;
 import com.matejvasko.player.fragments.library.LibraryFragment;
 import com.matejvasko.player.fragments.library.MyInterface;
-
-import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -51,6 +48,10 @@ public class MainActivity extends AppCompatActivity {
     private MediaBrowserCompat mediaBrowser;
     private MediaControllerCompat mediaController;
     private MediaControllerCallback mediaControllerCallback;
+
+    public MediaBrowserCompat getMediaBrowser() {
+        return mediaBrowser;
+    }
 
     private boolean isPlaying;
 
@@ -153,7 +154,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onConnected() {
             try {
-                listener.loadSongs(mediaBrowser);
+                listener.setMediaBrowser(mediaBrowser);
+                listener.loadSongs();
                 mediaController = new MediaControllerCompat(MainActivity.this, mediaBrowser.getSessionToken());
                 mediaSeekBar.setMediaController(mediaController);
                 mediaController.registerCallback(mediaControllerCallback);

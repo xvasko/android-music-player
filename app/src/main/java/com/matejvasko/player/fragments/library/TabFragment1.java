@@ -2,6 +2,7 @@ package com.matejvasko.player.fragments.library;
 
 
 import android.content.Context;
+import android.media.browse.MediaBrowser;
 import android.os.Bundle;
 import android.support.v4.media.MediaBrowserCompat;
 import android.util.Log;
@@ -15,6 +16,7 @@ import com.matejvasko.player.Song;
 import com.matejvasko.player.adapters.SongListAdapter;
 import com.matejvasko.player.viewmodels.SongsViewModel;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -28,108 +30,117 @@ import androidx.recyclerview.widget.RecyclerView;
  */
 public class TabFragment1 extends Fragment implements MyInterface {
     private static final String TAG = "TabFragment1";
-    private static final int READ_EXTERNAL_STORAGE_PERMISSION = 0;
-    private final static int MEDIASTORE_LOADER_ID = 0;
 
     private RecyclerView recyclerView;
+    SongListAdapter songListAdapter;
     private SongsViewModel songsViewModel;
+
+    private MediaBrowserCompat mediaBrowser;
 
     public TabFragment1() {
         // Required empty public constructor
+    }
+
+    public void setMediaBrowser(MediaBrowserCompat mediaBrowser) {
+        if (this.mediaBrowser == null) {
+            this.mediaBrowser = mediaBrowser;
+        }
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         ((MainActivity)context).setListener(this);
-        Log.d(TAG, "onAttach: TabFragment1");
+        Log.d(TAG, "onAttach");
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView");
+
         View view =  inflater.inflate(R.layout.fragment_tab_1, container, false);
 
-        recyclerView = view.findViewById(R.id.recycler_view);;
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         songsViewModel = ViewModelProviders.of(this).get(SongsViewModel.class);
+        songListAdapter = new SongListAdapter(getActivity());
+        recyclerView = view.findViewById(R.id.recycler_view);
+        recyclerView.setAdapter(songListAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        if (mediaBrowser != null) {
+            loadSongs();
+        } else {
+            MediaBrowserCompat mediaBrowser = ((MainActivity)getActivity()).getMediaBrowser();
+            if(mediaBrowser != null && mediaBrowser.isConnected()) {
+                setMediaBrowser(mediaBrowser);
+                loadSongs();
+            }
+        }
 
         return view;
     }
 
-    public void loadSongs(MediaBrowserCompat mediaBrowser) {
-        System.out.println("load songs");
-        final SongListAdapter songListAdapter = new SongListAdapter(getActivity());
-        recyclerView.setAdapter(songListAdapter);
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        Log.d(TAG, "onActivityCreated");
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart");
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop");
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.d(TAG, "onDestroyView");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy");
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        Log.d(TAG, "onDetach");
+    }
+
+    // as a result of MainActivity.MediaControllerCallback.onConnected()
+    public void loadSongs() {
         songsViewModel.getSongs(mediaBrowser).observe(this, new Observer<PagedList<Song>>() {
             @Override
             public void onChanged(PagedList<Song> songs) {
-                System.out.println("su to oni?" + songs);
                 songListAdapter.submitList(songs);
             }
         });
     }
 
-//    private void checkReadExternalStoragePermission() {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-//                getLoaderManager().initLoader(MEDIASTORE_LOADER_ID, null, this);
-//            } else {
-//                if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-//                    Toast.makeText(getActivity(), "App needs to view thumbnails", Toast.LENGTH_SHORT).show();
-//                }
-//                requestPermissions(new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, READ_EXTERNAL_STORAGE_PERMISSION);
-//            }
-//        } else {
-//            getLoaderManager().initLoader(MEDIASTORE_LOADER_ID, null, this);
-//        }
-//    }
-//
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-//        switch (requestCode) {
-//            case READ_EXTERNAL_STORAGE_PERMISSION:
-//                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    Toast.makeText(getActivity(), "Now have access to views thumbnails", Toast.LENGTH_SHORT).show();
-//                    getLoaderManager().initLoader(MEDIASTORE_LOADER_ID, null, this);
-//                }
-//                break;
-//            default:
-//                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        }
-//    }
-//
-//    @NonNull
-//    @Override
-//    public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
-//        Log.d(TAG, "onCreateLoader:");
-//        String[] projection = {
-//                MediaStore.Audio.Media.TITLE,
-//                MediaStore.Audio.Media.ARTIST,
-//                MediaStore.Audio.Media.ALBUM_ID,
-//                MediaStore.Audio.Media.DATA,
-//                MediaStore.Audio.Media.DURATION
-//        };
-//
-//        return new CursorLoader(
-//                getActivity(),
-//                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-//                projection,
-//                null,
-//                null,
-//                null
-//        );
-//
-//    }
-//
-//    @Override
-//    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-//        Log.d(TAG, "onLoadFinish:");
-//        adapter.changeCursor(data);
-//    }
-//
-//    @Override
-//    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
-//        Log.d(TAG, "onLoaderReset:");
-//        adapter.changeCursor(null);
-//    }
 }
