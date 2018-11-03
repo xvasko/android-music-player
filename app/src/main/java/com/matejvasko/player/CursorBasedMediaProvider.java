@@ -51,24 +51,14 @@ class CursorBasedMediaProvider {
     }
 
     private Song createSong(Cursor cursor) {
-        System.out.println("AAAA");
-        System.out.println("_ID:      " + cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID)));
-        System.out.println("TITLE:    " + cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)));
-        System.out.println("ARTIST:   " + cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)));
-        System.out.println("ICONURI: " + ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"), cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))));
-        System.out.println("DATA:     " + cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)));
-
-        Song song = new Song.Builder(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID)))
+        return new Song.Builder(cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID)))
                 .setData(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)))
                 .setTitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)))
                 .setArtist(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)))
                 .setIconUri(ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"), cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))))
                 .setDuration(cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)))
                 .build();
-
-        return song;
     }
-
 
     private Uri getUri() {
         return MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;

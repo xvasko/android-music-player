@@ -48,8 +48,7 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
         if (song != null) {
             holder.bindTo(song);
         } else {
-            holder.songItemView.setText("LOADING");
-            // TODO placeholder
+            holder.clear();
         }
 
     }
@@ -86,6 +85,12 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
             } else {
                 imageView.setImageBitmap(iconBitmap);
             }
+        }
+
+        void clear() {
+            songItemView.setText("Loading...");
+            artistItemView.setText("Loading...");
+            imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_launcher_background));
         }
 
         @Override

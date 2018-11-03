@@ -17,6 +17,7 @@ import androidx.paging.PositionalDataSource;
 public class SongsDataSource extends PositionalDataSource<Song> {
 
     private static final String TAG = "SongsDataSource";
+    private static int pageSize;
 
     private final MediaBrowserCompat mediaBrowser;
     private String rootId;
@@ -31,14 +32,16 @@ public class SongsDataSource extends PositionalDataSource<Song> {
         Log.d(TAG, "loadInitial");
         String parentId = getParentId(params.requestedStartPosition);
         Bundle extra = getInitialPageBundle(params);
+        pageSize = params.pageSize;
         mediaBrowser.subscribe(parentId, extra, new MediaBrowserCompat.SubscriptionCallback() {
             @Override
             public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowserCompat.MediaItem> children, @NonNull Bundle options) {
-                Log.d(TAG, "loadInitial: onChildrenLoaded");
+                Log.d(TAG, "loadInitial: onChildrenLoaded" + options.toString());
                 super.onChildrenLoaded(parentId, children);
                 loadedPages.add(0);
                 List<Song> songs = Utils.mapToSongs(children);
-                callback.onResult(songs, params.requestedStartPosition);
+                callback.onResult(songs, params.requestedStartPosition, options.getInt("songs_count"));
+//                callback.onResult(songs, params.requestedStartPosition);
             }
         });
     }
@@ -76,12 +79,12 @@ public class SongsDataSource extends PositionalDataSource<Song> {
     private Bundle getRangeBundle(LoadRangeParams params) {
         Bundle extra = new Bundle();
         extra.putInt(MediaBrowserCompat.EXTRA_PAGE, getPageIndex(params));
-        extra.putInt(MediaBrowserCompat.EXTRA_PAGE_SIZE, params.loadSize);
+        extra.putInt(MediaBrowserCompat.EXTRA_PAGE_SIZE, pageSize);
         return extra;
     }
 
     private int getPageIndex(LoadRangeParams params) {
-        return params.startPosition / params.loadSize;
+        return params.startPosition / pageSize;
     }
 
     private String getParentId(int requestedStartPosition) {

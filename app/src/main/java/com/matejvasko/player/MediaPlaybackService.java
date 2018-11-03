@@ -220,12 +220,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         int page     = options.getInt(MediaBrowserCompat.EXTRA_PAGE);
         int pageSize = options.getInt(MediaBrowserCompat.EXTRA_PAGE_SIZE);
+        options.putInt("songs_count", mediaProvider.getMediaSize());
+
         List<Song> songs = getSongsPage(page, pageSize);
 
         List<MediaBrowserCompat.MediaItem> mediaItems = Utils.mapToMediaItems(songs);
         result.sendResult(mediaItems);
 
-        Log.d(TAG, "onLoadChildren: " + result);
+        Log.d(TAG, "onLoadChildren: ");
     }
 
     private List<Song> getSongsPage(int page, int pageSize) {
