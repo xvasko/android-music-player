@@ -2,7 +2,6 @@ package com.matejvasko.player.fragments.library;
 
 
 import android.content.Context;
-import android.media.browse.MediaBrowser;
 import android.os.Bundle;
 import android.support.v4.media.MediaBrowserCompat;
 import android.util.Log;
@@ -14,7 +13,7 @@ import com.matejvasko.player.MainActivity;
 import com.matejvasko.player.R;
 import com.matejvasko.player.Song;
 import com.matejvasko.player.adapters.SongListAdapter;
-import com.matejvasko.player.viewmodels.SongsViewModel;
+import com.matejvasko.player.viewmodels.MainActivityViewModel;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -28,12 +27,12 @@ import androidx.recyclerview.widget.RecyclerView;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class TabFragment1 extends Fragment implements MyInterface {
+public class TabFragment1 extends Fragment implements TabFragment1I {
     private static final String TAG = "TabFragment1";
 
     private RecyclerView recyclerView;
     SongListAdapter songListAdapter;
-    private SongsViewModel songsViewModel;
+    private MainActivityViewModel mainActivityViewModel;
 
     private MediaBrowserCompat mediaBrowser;
 
@@ -66,9 +65,9 @@ public class TabFragment1 extends Fragment implements MyInterface {
 
         View view =  inflater.inflate(R.layout.fragment_tab_1, container, false);
 
-        songsViewModel = ViewModelProviders.of(this).get(SongsViewModel.class);
+        mainActivityViewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
         songListAdapter = new SongListAdapter(getActivity());
-        recyclerView = view.findViewById(R.id.recycler_view);
+        recyclerView = view.findViewById(R.id.songs_recycler_view);
         recyclerView.setAdapter(songListAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
@@ -135,7 +134,7 @@ public class TabFragment1 extends Fragment implements MyInterface {
 
     // as a result of MainActivity.MediaControllerCallback.onConnected()
     public void loadSongs() {
-        songsViewModel.getSongs(mediaBrowser).observe(this, new Observer<PagedList<Song>>() {
+        mainActivityViewModel.getSongs(mediaBrowser).observe(this, new Observer<PagedList<Song>>() {
             @Override
             public void onChanged(PagedList<Song> songs) {
                 songListAdapter.submitList(songs);

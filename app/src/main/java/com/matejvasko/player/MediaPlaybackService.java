@@ -4,10 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.browse.MediaBrowser;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -18,6 +20,7 @@ import com.matejvasko.player.utils.Utils;
 import com.matejvasko.player.viewmodels.NowPlaying;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -31,6 +34,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
     private int state;
 
+    private SongProvider mediaProvider;
+    private AlbumProvider albumProvider;
     private MediaSessionCompat mediaSession;
     private PlaybackStateCompat.Builder stateBuilder;
     private MediaMetadataCompat.Builder metadataBuilder;
@@ -41,6 +46,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "onCreate: MediaPlaybackService");
+
+        mediaProvider = new SongProvider(this);
+        albumProvider = new AlbumProvider(this);
 
         mediaSession = new MediaSessionCompat(this, TAG);
         mediaSessionCallback = new MediaSessionCallback();
@@ -201,11 +209,15 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
        return null;
     }
 
-    private CursorBasedMediaProvider mediaProvider;
-
     @Override
     public void onLoadChildren(@NonNull String parentId, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result) {
-        Log.d(TAG,"onLoadChildren");
+        result.detach();
+        Log.d(TAG,"onLoadChildren: 2 params");
+
+        List<MediaBrowserCompat.MediaItem> mediaItems = new ArrayList<>();
+        mediaItems.add(new MediaBrowserCompat.MediaItem(new MediaDescriptionCompat.Builder().setMediaId("12").setTitle("ALBUM TITLE").build(), 0));
+        result.sendResult(mediaItems);
+
     }
 
     @Override
@@ -214,9 +226,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         if (!(options.containsKey(MediaBrowserCompat.EXTRA_PAGE) && options.containsKey(MediaBrowserCompat.EXTRA_PAGE_SIZE)))
             return;
-
-        // TODO create just once
-        mediaProvider = new CursorBasedMediaProvider(this);
 
         int page     = options.getInt(MediaBrowserCompat.EXTRA_PAGE);
         int pageSize = options.getInt(MediaBrowserCompat.EXTRA_PAGE_SIZE);
@@ -237,6 +246,5 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         else
             return mediaProvider.getSongsAtRange(startPosition, mediaProvider.getMediaSize());
     }
-
 
 }

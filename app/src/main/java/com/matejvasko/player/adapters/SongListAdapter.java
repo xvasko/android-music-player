@@ -33,7 +33,6 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
         this.context = context;
     }
 
-
     @NonNull
     @Override
     public SongListAdapter.SongViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {

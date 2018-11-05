@@ -12,11 +12,11 @@ import java.util.List;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContentResolverCompat;
 
-class CursorBasedMediaProvider {
+class SongProvider {
 
     private final Cursor cursor;
 
-    CursorBasedMediaProvider(Context context) {
+    SongProvider(Context context) {
         cursor = ContentResolverCompat.query(
                 context.getContentResolver(),
                 getUri(),

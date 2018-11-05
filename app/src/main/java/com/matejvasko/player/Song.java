@@ -1,11 +1,13 @@
 package com.matejvasko.player;
 
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 
-public class Song {
+public class Song implements Parcelable {
 
     public int id;
     public String data;
@@ -13,6 +15,42 @@ public class Song {
     public String artist;
     public Uri iconUri;
     public long duration;
+
+    protected Song(Parcel in) {
+        id = in.readInt();
+        data = in.readString();
+        title = in.readString();
+        artist = in.readString();
+        iconUri = in.readParcelable(Uri.class.getClassLoader());
+        duration = in.readLong();
+    }
+
+    public static final Creator<Song> CREATOR = new Creator<Song>() {
+        @Override
+        public Song createFromParcel(Parcel in) {
+            return new Song(in);
+        }
+
+        @Override
+        public Song[] newArray(int size) {
+            return new Song[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(id);
+        parcel.writeString(data);
+        parcel.writeString(title);
+        parcel.writeString(artist);
+        parcel.writeParcelable(iconUri, i);
+        parcel.writeLong(duration);
+    }
 
     public static class Builder {
         private int id;

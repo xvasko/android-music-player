@@ -20,7 +20,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.matejvasko.player.fragments.FriendsFragment;
 import com.matejvasko.player.fragments.MapFragment;
 import com.matejvasko.player.fragments.library.LibraryFragment;
-import com.matejvasko.player.fragments.library.MyInterface;
+import com.matejvasko.player.fragments.library.TabFragment1I;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -141,9 +141,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private MyInterface listener;
+    private TabFragment1I listener;
 
-    public void setListener(MyInterface listener) {
+    public void setListener(TabFragment1I listener) {
         this.listener = listener;
     }
 
