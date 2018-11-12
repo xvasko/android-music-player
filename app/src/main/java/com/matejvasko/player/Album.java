@@ -6,13 +6,22 @@ import java.util.List;
 
 public class Album extends ExpandableGroup<Song> {
 
-    public int id;
+    public long id;
     public String title;
 
-    public Album(int id, String title, List<Song> items) {
+    public void setSongs(List<Song> songs) {
+        this.songs = songs;
+    }
+
+    public List<Song> songs;
+
+    public Album(long id, String title, List<Song> items) {
         super(title, items);
         this.id = id;
         this.title = title;
+        this.songs = items;
     }
+
+
 
 }

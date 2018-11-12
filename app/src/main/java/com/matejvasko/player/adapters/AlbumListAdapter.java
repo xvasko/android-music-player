@@ -1,14 +1,21 @@
 package com.matejvasko.player.adapters;
 
+import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.matejvasko.player.Album;
+import com.matejvasko.player.AlbumProvider;
 import com.matejvasko.player.R;
 import com.matejvasko.player.Song;
+import com.matejvasko.player.viewmodels.NowPlaying;
+import com.thoughtbot.expandablerecyclerview.ExpandableListUtils;
 import com.thoughtbot.expandablerecyclerview.ExpandableRecyclerViewAdapter;
 import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup;
 import com.thoughtbot.expandablerecyclerview.viewholders.ChildViewHolder;
@@ -20,9 +27,13 @@ import static android.view.animation.Animation.RELATIVE_TO_SELF;
 
 public class AlbumListAdapter extends ExpandableRecyclerViewAdapter<AlbumListAdapter.AlbumViewHolder, AlbumListAdapter.SongViewHolder> {
 
+    Context context;
+    AlbumProvider albumProvider;
 
-    public AlbumListAdapter(List<? extends ExpandableGroup> groups) {
+    public AlbumListAdapter(Context context, List<? extends ExpandableGroup> groups, AlbumProvider albumProvider) {
         super(groups);
+        this.context = context;
+        this.albumProvider = albumProvider;
     }
 
     @Override
@@ -47,47 +58,90 @@ public class AlbumListAdapter extends ExpandableRecyclerViewAdapter<AlbumListAda
 
     @Override
     public void onBindGroupViewHolder(AlbumViewHolder holder, int flatPosition, ExpandableGroup group) {
-        holder.setAlbumTitle(group);
+        holder.bindTo(((Album)group));
+    }
+
+    private ExpandableGroup expanded;
+    private int numOfSongs = 0;
+    private int expandedIndex = -1;
+
+    @Override
+    public boolean onGroupClick(int flatPos) {
+
+        // nothing is open
+        if (expanded == null) {
+            querySongs(flatPos);
+            expanded = getGroups().get(flatPos);
+            numOfSongs = expanded.getItems().size();
+            toggleGroup(expanded);
+            expandedIndex = flatPos;
+            return false;
+        } else {
+
+            if (expandedIndex < flatPos) {
+                flatPos -= numOfSongs;
+            }
+
+            // close open group
+            if (expanded == getGroups().get(flatPos)) {
+                toggleGroup(expanded);
+                expanded = null;
+                numOfSongs = 0;
+                expandedIndex = -1;
+                return true;
+            // switch open group
+            } else {
+                toggleGroup(expanded);
+                querySongs(flatPos);
+                expanded = getGroups().get(flatPos);
+                numOfSongs = expanded.getItems().size();
+                toggleGroup(expanded);
+                expandedIndex = flatPos;
+                return true;
+            }
+        }
+    }
+
+    private void querySongs(int albumPos) {
+        List<Album> albums = ((List<Album>) getGroups());
+        Album album = albums.get(albumPos);
+        List<Song> songs = albumProvider.getAlbumSongs(String.valueOf(album.id));
+        Album album1 = new Album(album.id, album.title, songs);
+        albums.set(albumPos, album1);
+        refreshDataSet();
     }
 
     class AlbumViewHolder extends GroupViewHolder {
 
+        Album album;
+
+        final ImageView albumCover;
         final TextView albumTitle;
         final ImageView arrow;
 
-        public AlbumViewHolder(View itemView) {
+        AlbumViewHolder(final View itemView) {
             super(itemView);
-
+            albumCover = itemView.findViewById(R.id.album_cover_item);
             albumTitle = itemView.findViewById(R.id.album_title_item);
             arrow = itemView.findViewById(R.id.arrow);
-
         }
 
-        void setAlbumTitle(ExpandableGroup group) {
-            albumTitle.setText(group.getTitle());
+        void bindTo(final Album album) {
+            this.album = album;
+            albumTitle.setText(album.title);
         }
 
         @Override
         public void expand() {
-            animateExpand();
-        }
-
-        @Override
-        public void collapse() {
-            animateCollapse();
-        }
-
-        private void animateExpand() {
-            RotateAnimation rotate =
-                    new RotateAnimation(360, 180, RELATIVE_TO_SELF, 0.5f, RELATIVE_TO_SELF, 0.5f);
+            RotateAnimation rotate = new RotateAnimation(360, 180, RELATIVE_TO_SELF, 0.5f, RELATIVE_TO_SELF, 0.5f);
             rotate.setDuration(300);
             rotate.setFillAfter(true);
             arrow.setAnimation(rotate);
         }
 
-        private void animateCollapse() {
-            RotateAnimation rotate =
-                    new RotateAnimation(180, 360, RELATIVE_TO_SELF, 0.5f, RELATIVE_TO_SELF, 0.5f);
+        @Override
+        public void collapse() {
+            RotateAnimation rotate = new RotateAnimation(180, 360, RELATIVE_TO_SELF, 0.5f, RELATIVE_TO_SELF, 0.5f);
             rotate.setDuration(300);
             rotate.setFillAfter(true);
             arrow.setAnimation(rotate);
@@ -95,18 +149,31 @@ public class AlbumListAdapter extends ExpandableRecyclerViewAdapter<AlbumListAda
 
     }
 
-    public class SongViewHolder extends ChildViewHolder {
+     class SongViewHolder extends ChildViewHolder {
 
         private TextView songTitle;
 
-        public SongViewHolder(View itemView) {
+        SongViewHolder(View itemView) {
             super(itemView);
             songTitle = itemView.findViewById(R.id.album_song_item_title);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(context, "LALA", Toast.LENGTH_SHORT).show();
+                    NowPlaying.getNowPlaying().setValue(new Song.Builder(1).setIconUri(Uri.parse("")).setTitle("new song").setData("/storage/emulated/0/Music/Moja Rec - Offilne/02 Všetko ok feat. Majk Spirit.mp3").build());
+                }
+            });
         }
 
-        public void setSongTitle(Song song) {
+        void setSongTitle(Song song) {
             songTitle.setText(song.title);
         }
+
+    }
+
+    void refreshDataSet() {
+        ExpandableListUtils.notifyGroupDataChanged(this);
+        notifyDataSetChanged();
     }
 
 }

@@ -35,7 +35,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private int state;
 
     private SongProvider mediaProvider;
-    private AlbumProvider albumProvider;
     private MediaSessionCompat mediaSession;
     private PlaybackStateCompat.Builder stateBuilder;
     private MediaMetadataCompat.Builder metadataBuilder;
@@ -48,7 +47,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         Log.d(TAG, "onCreate: MediaPlaybackService");
 
         mediaProvider = new SongProvider(this);
-        albumProvider = new AlbumProvider(this);
+
 
         mediaSession = new MediaSessionCompat(this, TAG);
         mediaSessionCallback = new MediaSessionCallback();

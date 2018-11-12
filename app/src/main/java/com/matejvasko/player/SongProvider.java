@@ -87,7 +87,7 @@ class SongProvider {
 
     @Nullable
     private String getSortOrder() {
-        return MediaStore.Audio.Media.ARTIST + " COLLATE LOCALIZED ASC";
+        return MediaStore.Audio.Media.TITLE + " ASC";
     }
 
 }
