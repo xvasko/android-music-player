@@ -50,4 +50,16 @@ public class Utils {
         return songs;
     }
 
+    public static String millisecondsToString(long mills) {
+        int seconds = (int) (mills / 1000) % 60 ;
+        int minutes = (int) ((mills / (1000*60)) % 60);
+//        int hours   = (int) ((mills / (1000*60*60)) % 24);
+
+        if (seconds < 10) {
+            return minutes + ":0" + seconds;
+        }
+
+        return minutes + ":" + seconds;
+    }
+
 }

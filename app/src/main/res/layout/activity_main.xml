@@ -10,6 +10,7 @@
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="56dp"
         android:layout_above="@id/bottom_nav"/>
 
 
@@ -23,18 +24,16 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/bottom_sheet"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="112dp"
             android:background="@color/colorPrimaryDark"
             app:behavior_hideable="true"
-            app:behavior_peekHeight="112dp"
+            app:behavior_peekHeight="56dp"
             app:layout_behavior="@string/bottom_sheet_behavior">
 
             <ImageView
                 android:id="@+id/album_art_image_view"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
                 android:contentDescription="@string/app_name"
                 android:src="@drawable/ic_launcher_background"
                 app:layout_constraintStart_toStartOf="parent"
@@ -45,7 +44,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
                 android:text="Bad Kingdom - Moderat"

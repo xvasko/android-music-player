@@ -51,7 +51,8 @@ public class AlbumProvider {
             albums.add(new Album(
                     cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Albums._ID)),
                     cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM)),
-                    null));
+                    null,
+                    cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ARTIST))));
         }
 
         return albums;

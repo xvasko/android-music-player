@@ -106,7 +106,8 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), iconUri);
                 map.put(iconUri, bitmap);
                 return bitmap;
-            } catch (IOException e) {
+            // catch general exception, files are sometimes corrupted
+            } catch (Exception e) {
                 e.printStackTrace();
                 map.put(iconUri, null);
                 return null;
@@ -114,4 +115,5 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
         }
     }
 }
-
+//1542096403699
+//1542096489366:

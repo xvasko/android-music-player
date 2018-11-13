@@ -8,18 +8,16 @@ public class Album extends ExpandableGroup<Song> {
 
     public long id;
     public String title;
-
-    public void setSongs(List<Song> songs) {
-        this.songs = songs;
-    }
+    public String artist;
 
     public List<Song> songs;
 
-    public Album(long id, String title, List<Song> items) {
+    public Album(long id, String title, List<Song> items, String artist) {
         super(title, items);
         this.id = id;
         this.title = title;
         this.songs = items;
+        this.artist = artist;
     }
 
 

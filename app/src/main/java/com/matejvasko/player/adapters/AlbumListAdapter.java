@@ -1,7 +1,11 @@
 package com.matejvasko.player.adapters;
 
+import android.content.ContentUris;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.provider.MediaStore;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +18,7 @@ import com.matejvasko.player.Album;
 import com.matejvasko.player.AlbumProvider;
 import com.matejvasko.player.R;
 import com.matejvasko.player.Song;
+import com.matejvasko.player.utils.Utils;
 import com.matejvasko.player.viewmodels.NowPlaying;
 import com.thoughtbot.expandablerecyclerview.ExpandableListUtils;
 import com.thoughtbot.expandablerecyclerview.ExpandableRecyclerViewAdapter;
@@ -21,7 +26,10 @@ import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup;
 import com.thoughtbot.expandablerecyclerview.viewholders.ChildViewHolder;
 import com.thoughtbot.expandablerecyclerview.viewholders.GroupViewHolder;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static android.view.animation.Animation.RELATIVE_TO_SELF;
 
@@ -53,7 +61,7 @@ public class AlbumListAdapter extends ExpandableRecyclerViewAdapter<AlbumListAda
     @Override
     public void onBindChildViewHolder(SongViewHolder holder, int flatPosition, ExpandableGroup group, int childIndex) {
         final Song song = (Song) group.getItems().get(childIndex);
-        holder.setSongTitle(song);
+        holder.bindTo(song, childIndex);
     }
 
     @Override
@@ -106,7 +114,7 @@ public class AlbumListAdapter extends ExpandableRecyclerViewAdapter<AlbumListAda
         List<Album> albums = ((List<Album>) getGroups());
         Album album = albums.get(albumPos);
         List<Song> songs = albumProvider.getAlbumSongs(String.valueOf(album.id));
-        Album album1 = new Album(album.id, album.title, songs);
+        Album album1 = new Album(album.id, album.title, songs, album.artist);
         albums.set(albumPos, album1);
         refreshDataSet();
     }
@@ -117,18 +125,27 @@ public class AlbumListAdapter extends ExpandableRecyclerViewAdapter<AlbumListAda
 
         final ImageView albumCover;
         final TextView albumTitle;
+        final TextView albumArtist;
         final ImageView arrow;
 
         AlbumViewHolder(final View itemView) {
             super(itemView);
-            albumCover = itemView.findViewById(R.id.album_cover_item);
-            albumTitle = itemView.findViewById(R.id.album_title_item);
+            albumCover  = itemView.findViewById(R.id.album_cover_item);
+            albumTitle  = itemView.findViewById(R.id.album_title_item);
+            albumArtist = itemView.findViewById(R.id.album_artist_item);
             arrow = itemView.findViewById(R.id.arrow);
         }
 
         void bindTo(final Album album) {
             this.album = album;
             albumTitle.setText(album.title);
+            albumArtist.setText(album.artist);
+            Bitmap iconBitmap = getBitmapFromMediaStore(ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"), album.id));
+            if (iconBitmap == null) {
+                albumCover.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_launcher_background));
+            } else {
+                albumCover.setImageBitmap(iconBitmap);
+            }
         }
 
         @Override
@@ -151,22 +168,36 @@ public class AlbumListAdapter extends ExpandableRecyclerViewAdapter<AlbumListAda
 
      class SongViewHolder extends ChildViewHolder {
 
+        Song song;
+
+        private TextView index;
         private TextView songTitle;
+        private TextView duration;
 
         SongViewHolder(View itemView) {
             super(itemView);
+            index = itemView.findViewById(R.id.album_song_item_index);
             songTitle = itemView.findViewById(R.id.album_song_item_title);
+            duration = itemView.findViewById(R.id.album_song_item_duration);
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Toast.makeText(context, "LALA", Toast.LENGTH_SHORT).show();
-                    NowPlaying.getNowPlaying().setValue(new Song.Builder(1).setIconUri(Uri.parse("")).setTitle("new song").setData("/storage/emulated/0/Music/Moja Rec - Offilne/02 Všetko ok feat. Majk Spirit.mp3").build());
+                    NowPlaying.getNowPlaying().setValue(song);
                 }
             });
         }
 
-        void setSongTitle(Song song) {
+        void bindTo(Song song, int index) {
+            this.song = song;
+            String indexString;
+            if (index < 9) {
+                indexString = index + 1 + "&#160;&#160;";
+            } else {
+                indexString = index + 1 + "";
+            }
+            this.index.setText(Html.fromHtml(indexString));
             songTitle.setText(song.title);
+            duration.setText(Utils.millisecondsToString(song.duration));
         }
 
     }
@@ -174,6 +205,24 @@ public class AlbumListAdapter extends ExpandableRecyclerViewAdapter<AlbumListAda
     void refreshDataSet() {
         ExpandableListUtils.notifyGroupDataChanged(this);
         notifyDataSetChanged();
+    }
+
+    private Map<Uri, Bitmap> map = new HashMap<>();
+
+    private Bitmap getBitmapFromMediaStore(Uri iconUri) {
+        if (map.containsKey(iconUri)) {
+            return map.get(iconUri);
+        } else {
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), iconUri);
+                map.put(iconUri, bitmap);
+                return bitmap;
+            } catch (Exception e) {
+                e.printStackTrace();
+                map.put(iconUri, null);
+                return null;
+            }
+        }
     }
 
 }
