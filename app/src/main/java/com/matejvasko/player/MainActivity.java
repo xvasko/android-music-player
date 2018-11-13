@@ -2,6 +2,7 @@ package com.matejvasko.player;
 
 import android.content.ComponentName;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
@@ -17,14 +18,17 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.matejvasko.player.fragments.FriendsFragment;
 import com.matejvasko.player.fragments.MapFragment;
 import com.matejvasko.player.fragments.library.LibraryFragment;
 import com.matejvasko.player.fragments.library.TabFragment1I;
+import com.matejvasko.player.utils.Utils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -32,9 +36,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
+    private BottomSheetBehavior bottomSheetBehavior;
+
     BottomNavigationView bottomNav;
     RelativeLayout fragmentContainer;
 
+    View bottomSheetOnClickView;
+    RelativeLayout bottomSheet;
     ImageView albumArtImageView;
     TextView songTitleTextView;
     ImageView playPauseImageView;
@@ -60,15 +68,28 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        ClickListener clickListener = new ClickListener();
+
         bottomNav = findViewById(R.id.bottom_nav);
         fragmentContainer = findViewById(R.id.fragment_container);
+
+        bottomSheetOnClickView = findViewById(R.id.bottom_sheet_on_click);
+        bottomSheetOnClickView.setOnClickListener(clickListener);
+        bottomSheet = findViewById(R.id.bottom_sheet);
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
 
         albumArtImageView = findViewById(R.id.album_art_image_view);
         songTitleTextView = findViewById(R.id.song_title_text_view);
         playPauseImageView = findViewById(R.id.play_pause_image_view);
         playPauseButton = findViewById(R.id.play_pause_button);
-        playPauseButton.setOnClickListener(new ClickListener());
+        playPauseButton.setOnClickListener(clickListener);
         mediaSeekBar = findViewById(R.id.media_seek_bar);
+        mediaSeekBar.setPadding(0, 16, 0, 16);
+        mediaSeekBar.setTextViews(
+                (TextView) findViewById(R.id.duration_current),
+                (TextView)findViewById(R.id.duration_total)
+        );
+
 
         mediaControllerCallback = new MediaControllerCallback();
 
@@ -110,9 +131,14 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         mediaController.getTransportControls().play();
                     }
+                    break;
+                case R.id.bottom_sheet_on_click:
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                    break;
             }
         }
     }
+
 
     @Override
     protected void onStart() {

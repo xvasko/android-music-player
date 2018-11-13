@@ -9,13 +9,21 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.animation.LinearInterpolator;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.matejvasko.player.utils.Utils;
+
+import org.w3c.dom.Text;
 
 import androidx.appcompat.widget.AppCompatSeekBar;
 
 public class MediaSeekBar extends AppCompatSeekBar {
 
     private static final String TAG = "MediaSeekBar";
+
+    TextView durationTotal;
+    TextView durationCurrent;
 
     private MediaControllerCompat mediaController;
     private MediaControllerCallback mediaControllerCallback;
@@ -27,7 +35,9 @@ public class MediaSeekBar extends AppCompatSeekBar {
 
         @Override
         public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-
+            // TODO this method is called every time progress is made - overkill?
+            System.out.println("PROGRESS");
+            durationCurrent.setText(Utils.millisecondsToString(i));
         }
 
         @Override
@@ -55,6 +65,11 @@ public class MediaSeekBar extends AppCompatSeekBar {
     public MediaSeekBar(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         super.setOnSeekBarChangeListener(onSeekBarChangeListener);
+    }
+
+    public void setTextViews(TextView durationCurrent, TextView durationTotal) {
+        this.durationCurrent = durationCurrent;
+        this.durationTotal = durationTotal;
     }
 
     @Override
@@ -119,6 +134,8 @@ public class MediaSeekBar extends AppCompatSeekBar {
         @Override
         public void onMetadataChanged(MediaMetadataCompat metadata) {
             super.onMetadataChanged(metadata);
+
+            durationTotal.setText(Utils.millisecondsToString(metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)));
 
             final int max = metadata != null ? (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION) : 0;
             setProgress(0);
