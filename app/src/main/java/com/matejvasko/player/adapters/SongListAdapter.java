@@ -74,6 +74,7 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
         }
 
          void bindTo(Song song) {
+            song.setFromView(true);
             this.song = song;
 
             songItemView.setText(song.title);
@@ -87,8 +88,8 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
         }
 
         void clear() {
-            songItemView.setText("Loading...");
-            artistItemView.setText("Loading...");
+            songItemView.setText("...");
+            artistItemView.setText("...");
             imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_launcher_background));
         }
 

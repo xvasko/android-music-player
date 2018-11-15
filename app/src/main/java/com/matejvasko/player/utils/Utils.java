@@ -13,12 +13,14 @@ import java.util.List;
 public class Utils {
 
     private static final String SONG_DURATION = "song_duration";
+    private static final String CURSOR_POSITION = "cursor_position";
 
     public static List<MediaBrowserCompat.MediaItem> mapToMediaItems(List<Song> songs) {
         List<MediaBrowserCompat.MediaItem> mediaItems = new ArrayList<>();
         for (Song song : songs) {
             Bundle extras = new Bundle();
             extras.putLong(SONG_DURATION, song.duration);
+            extras.putInt(CURSOR_POSITION, song.cursorPosition);
             MediaDescriptionCompat mediaDescription = new MediaDescriptionCompat.Builder()
                     .setMediaId(song.id + "")
                     .setMediaUri(Uri.parse(song.data))
@@ -43,6 +45,7 @@ public class Utils {
                     .setArtist(mediaItem.getDescription().getSubtitle().toString())
                     .setIconUri(mediaItem.getDescription().getIconUri())
                     .setDuration(mediaItem.getDescription().getExtras().getLong(SONG_DURATION))
+                    .setcursorPosition(mediaItem.getDescription().getExtras().getInt(CURSOR_POSITION))
                     .build();
             songs.add(song);
         }

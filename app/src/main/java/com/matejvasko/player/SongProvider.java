@@ -43,10 +43,11 @@ class SongProvider {
         return songs;
     }
 
-    private Song getSongAtPosition(int position) {
-        if (!cursor.moveToPosition(position))
+    public Song getSongAtPosition(int position) {
+        if (!cursor.moveToPosition(position)) {
+            System.out.println("THERE IS NOTHING AT POSITION: " + position);
             return null;
-
+        }
         return createSong(cursor);
     }
 
@@ -57,6 +58,7 @@ class SongProvider {
                 .setArtist(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)))
                 .setIconUri(ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"), cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))))
                 .setDuration(cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)))
+                .setcursorPosition(cursor.getPosition())
                 .build();
     }
 

@@ -15,6 +15,19 @@ public class Song implements Parcelable {
     public String artist;
     public Uri iconUri;
     public long duration;
+    public int cursorPosition;
+
+    public boolean isFromView() {
+        return isFromView;
+    }
+
+    public void setFromView(boolean fromView) {
+        isFromView = fromView;
+    }
+
+    private boolean isFromView;
+
+
 
     protected Song(Parcel in) {
         id = in.readInt();
@@ -23,6 +36,7 @@ public class Song implements Parcelable {
         artist = in.readString();
         iconUri = in.readParcelable(Uri.class.getClassLoader());
         duration = in.readLong();
+        cursorPosition = in.readInt();
     }
 
     public static final Creator<Song> CREATOR = new Creator<Song>() {
@@ -50,6 +64,7 @@ public class Song implements Parcelable {
         parcel.writeString(artist);
         parcel.writeParcelable(iconUri, i);
         parcel.writeLong(duration);
+        parcel.writeInt(cursorPosition);
     }
 
     public static class Builder {
@@ -59,6 +74,7 @@ public class Song implements Parcelable {
         private String artist;
         private Uri iconUri;
         private long duration;
+        private int cursorPosition;
 
         public Builder(int id) {
             this.id = id;
@@ -89,6 +105,11 @@ public class Song implements Parcelable {
             return this;
         }
 
+        public Builder setcursorPosition(int cursorPosition) {
+            this.cursorPosition = cursorPosition;
+            return this;
+        }
+
         public Song build() {
             Song song = new Song();
             song.id = this.id;
@@ -97,6 +118,7 @@ public class Song implements Parcelable {
             song.artist = this.artist;
             song.iconUri = this.iconUri;
             song.duration = this.duration;
+            song.cursorPosition = this.cursorPosition;
 
             return song;
         }

@@ -2,7 +2,6 @@ package com.matejvasko.player;
 
 import android.content.ComponentName;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.RemoteException;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
@@ -12,6 +11,7 @@ import android.text.Html;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -23,12 +23,10 @@ import com.matejvasko.player.fragments.FriendsFragment;
 import com.matejvasko.player.fragments.MapFragment;
 import com.matejvasko.player.fragments.library.LibraryFragment;
 import com.matejvasko.player.fragments.library.TabFragment1I;
-import com.matejvasko.player.utils.Utils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -46,7 +44,11 @@ public class MainActivity extends AppCompatActivity {
     ImageView albumArtImageView;
     TextView songTitleTextView;
     ImageView playPauseImageView;
+    ImageView playPauseBigImageView;
     Button playPauseButton;
+    Button playPauseButtonBig;
+    Button skipNextButton;
+    Button skipPreviousButton;
     MediaSeekBar mediaSeekBar;
 
     private LibraryFragment libraryFragment;
@@ -81,8 +83,15 @@ public class MainActivity extends AppCompatActivity {
         albumArtImageView = findViewById(R.id.album_art_image_view);
         songTitleTextView = findViewById(R.id.song_title_text_view);
         playPauseImageView = findViewById(R.id.play_pause_image_view);
+        playPauseBigImageView = findViewById(R.id.play_pause_image_view_big);
         playPauseButton = findViewById(R.id.play_pause_button);
         playPauseButton.setOnClickListener(clickListener);
+        playPauseButtonBig = findViewById(R.id.play_pause_button_big);
+        playPauseButtonBig.setOnClickListener(clickListener);
+        skipNextButton = findViewById(R.id.skip_next_button);
+        skipNextButton.setOnClickListener(clickListener);
+        skipPreviousButton = findViewById(R.id.skip_previous_button);
+        skipPreviousButton.setOnClickListener(clickListener);
         mediaSeekBar = findViewById(R.id.media_seek_bar);
         mediaSeekBar.setPadding(0, 16, 0, 16);
         mediaSeekBar.setTextViews(
@@ -98,8 +107,6 @@ public class MainActivity extends AppCompatActivity {
         mapFragment = new MapFragment();
 
         setFragment(libraryFragment);
-
-
 
         bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -119,6 +126,38 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View view, int i) {
+                switch (i) {
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                        System.out.println("BottomSheetBehavior.STATE_COLLAPSED");
+                        playPauseImageView.setVisibility(View.VISIBLE);
+                        playPauseButton.setEnabled(true);
+                        break;
+                    case BottomSheetBehavior.STATE_EXPANDED:
+                        System.out.println("BottomSheetBehavior.STATE_EXPANDED");
+                        playPauseImageView.setVisibility(View.INVISIBLE);
+                        playPauseButton.setEnabled(false);
+                        break;
+                    case BottomSheetBehavior.STATE_DRAGGING:
+                        System.out.println("BottomSheetBehavior.STATE_DRAGGING");
+                        break;
+                    case BottomSheetBehavior.STATE_SETTLING:
+                        System.out.println("BottomSheetBehavior.STATE_SETTLING");
+                        break;
+                    case BottomSheetBehavior.STATE_HIDDEN:
+                        System.out.println("BottomSheetBehavior.STATE_HIDDEN");
+                        break;
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View view, float v) {
+
+            }
+        });
     }
 
     private class ClickListener implements View.OnClickListener {
@@ -131,6 +170,19 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         mediaController.getTransportControls().play();
                     }
+                    break;
+                case R.id.skip_previous_button:
+                    mediaController.getTransportControls().skipToPrevious();
+                    break;
+                case R.id.play_pause_button_big:
+                    if (isPlaying) {
+                        mediaController.getTransportControls().pause();
+                    } else {
+                        mediaController.getTransportControls().play();
+                    }
+                    break;
+                case R.id.skip_next_button:
+                    mediaController.getTransportControls().skipToNext();
                     break;
                 case R.id.bottom_sheet_on_click:
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
@@ -149,8 +201,9 @@ public class MainActivity extends AppCompatActivity {
                             new ComponentName(this, MediaPlaybackService.class),
                             new MediaBrowserConnectionCallback(),
                             null);
+            mediaBrowser.connect();
         }
-        mediaBrowser.connect();
+
         Log.d(TAG, "onStart: Creating MediaBrowser, and connecting");
     }
 
@@ -160,8 +213,12 @@ public class MainActivity extends AppCompatActivity {
         mediaSeekBar.disconnectMediaController();
         if (mediaController != null) {
             mediaController.unregisterCallback(mediaControllerCallback);
+            mediaController = null;
         }
-        mediaBrowser.disconnect();
+        if (mediaBrowser != null && mediaBrowser.isConnected()) {
+            mediaBrowser.disconnect();
+            mediaBrowser = null;
+        }
 
         Log.d(TAG, "onStop:");
     }
@@ -224,6 +281,7 @@ public class MainActivity extends AppCompatActivity {
         public void onPlaybackStateChanged(@Nullable final PlaybackStateCompat state) {
             isPlaying = state != null && state.getState() == PlaybackStateCompat.STATE_PLAYING;
             playPauseImageView.setPressed(isPlaying);
+            playPauseBigImageView.setPressed(isPlaying);
 
             Log.d(TAG, "onPlaybackStateChanged: MediaControllerCallback + " + state);
         }

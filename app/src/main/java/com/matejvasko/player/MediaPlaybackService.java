@@ -7,6 +7,7 @@ import android.media.MediaPlayer;
 import android.media.browse.MediaBrowser;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
@@ -22,6 +23,7 @@ import com.matejvasko.player.viewmodels.NowPlaying;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,6 +35,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private static final String TAG = MediaPlaybackService.class.getSimpleName();
 
     private int state;
+
+    private String fileName;
 
     private SongProvider mediaProvider;
     private MediaSessionCompat mediaSession;
@@ -75,7 +79,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 try {
                     metadataBuilder
                             .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, MediaStore.Images.Media.getBitmap(getContentResolver(), song.iconUri));
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 mediaSession.setMetadata(metadataBuilder.build());
@@ -107,6 +111,31 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         }
     };
 
+    private void initializeMediaPlayer() {
+        if (mediaPlayer == null) {
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    // Set the state to "paused" because it most closely matches the state
+                    // in MediaPlayer with regards to available state transitions compared
+                    // to "stop".
+                    // Paused allows: seekTo(), start(), pause(), stop()
+                    // Stop allows: stop()
+                    setNewState(PlaybackStateCompat.STATE_PAUSED);
+                    System.out.println("ON COMPLETION");
+                }
+            });
+        }
+    }
+
+    private void releaseMediaPlayer() {
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
+
     public class MediaSessionCallback extends MediaSessionCompat.Callback {
         @Override
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
@@ -121,36 +150,56 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         }
 
+        List<Integer> positions = new ArrayList<>();
+
+        int pointer = -1;
+
         @Override
         public void onPlay() {
-            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            int result = audioManager.requestAudioFocus(onAudioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+            System.out.println("onPlay:");
+            System.out.println("positions size: " + positions.size());
+            System.out.println("pointer: " + pointer);
+            System.out.println(positions.toString());
 
-            // TODO init mediaPlayer once
-            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-                mediaPlayer.release();
-                mediaPlayer = null;
-            }
+            String newFileName = NowPlaying.getNowPlaying().getValue().data;
 
-            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                startService(new Intent(MediaPlaybackService.this, MediaPlaybackService.class));
-                mediaSession.setActive(true);  // we want to be active media button receiver (accepting i.e: headphones media buttons)
-                mediaPlayer = MediaPlayer.create(MediaPlaybackService.this, Uri.parse(NowPlaying.getNowPlaying().getValue().data));
-                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mediaPlayer) {
-                        // Set the state to "paused" because it most closely matches the state
-                        // in MediaPlayer with regards to available state transitions compared
-                        // to "stop".
-                        // Paused allows: seekTo(), start(), pause(), stop()
-                        // Stop allows: stop()
-                        setNewState(PlaybackStateCompat.STATE_PAUSED);
-                    }
-                });
+            boolean mediaChanged = (fileName == null || !fileName.equals(newFileName));
+
+            // media did not change, continue playback
+            if (!mediaChanged) {
                 mediaPlayer.start();
-
                 setNewState(PlaybackStateCompat.STATE_PLAYING);
+                System.out.println("Media did not change!");
+                return;
             }
+
+            if (NowPlaying.getNowPlaying().getValue().isFromView()) {
+                positions = new ArrayList<>();
+                pointer = 0;
+                positions.add(NowPlaying.getNowPlaying().getValue().cursorPosition);
+            } else {
+                if (pointer + 1 == positions.size()) {
+                    pointer++;
+                    positions.add(NowPlaying.getNowPlaying().getValue().cursorPosition);
+                } else if (pointer + 1 > positions.size()){
+                    positions.add(NowPlaying.getNowPlaying().getValue().cursorPosition);
+                }
+            }
+
+            releaseMediaPlayer();
+            initializeMediaPlayer();
+
+            fileName = newFileName;
+
+            try {
+                mediaPlayer.setDataSource(fileName);
+                mediaPlayer.prepare();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            mediaPlayer.start();
+            setNewState(PlaybackStateCompat.STATE_PLAYING);
 
             Log.d(TAG, "onPlay: MediaSessionCallback");
         }
@@ -165,13 +214,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         @Override
         public void onStop() {
-            // abandon audio focus here
-            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            audioManager.abandonAudioFocus(onAudioFocusChangeListener);
+
+            releaseMediaPlayer();
+
             mediaSession.setActive(false);
-            mediaPlayer.stop();
-            mediaPlayer.release();
-            mediaPlayer = null;
             setNewState(PlaybackStateCompat.STATE_STOPPED);
 
             Log.d(TAG, "onStop: MediaSessionCallback");
@@ -184,6 +230,40 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             }
 
             setNewState(state);
+        }
+
+        Random rand = new Random();
+
+        @Override
+        public void onSkipToNext() {
+
+            pointer++;
+
+            if (pointer < positions.size()) {
+                NowPlaying.getNowPlaying().setValue(mediaProvider.getSongAtPosition(positions.get(pointer)));
+            } else {
+                NowPlaying.getNowPlaying().setValue(mediaProvider.getSongAtPosition(getRandomSongPosition()));
+            }
+
+            Log.d(TAG, "onSkipToNext: " + pointer);
+        }
+
+        @Override
+        public void onSkipToPrevious() {
+
+            if (pointer > 0) {
+                pointer--;
+            } else {
+                return;
+            }
+
+            NowPlaying.getNowPlaying().setValue(mediaProvider.getSongAtPosition(positions.get(pointer)));
+
+            Log.d(TAG, "onSkipToPrevious: " + pointer);
+        }
+
+        private int getRandomSongPosition() {
+            return rand.nextInt(mediaProvider.getMediaSize());
         }
 
     }

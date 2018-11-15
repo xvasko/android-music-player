@@ -36,7 +36,6 @@ public class MediaSeekBar extends AppCompatSeekBar {
         @Override
         public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
             // TODO this method is called every time progress is made - overkill?
-            System.out.println("PROGRESS");
             durationCurrent.setText(Utils.millisecondsToString(i));
         }
 
@@ -146,8 +145,6 @@ public class MediaSeekBar extends AppCompatSeekBar {
 
         @Override
         public void onAnimationUpdate(ValueAnimator valueAnimator) {
-
-            Log.d(TAG, "onAnimationUpdate");
 
             if (isTracking) {
                 valueAnimator.cancel();
