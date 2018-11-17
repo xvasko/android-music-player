@@ -2,8 +2,6 @@ package com.matejvasko.player.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,11 +10,8 @@ import android.widget.TextView;
 
 import com.matejvasko.player.R;
 import com.matejvasko.player.Song;
+import com.matejvasko.player.utils.Utils;
 import com.matejvasko.player.viewmodels.NowPlaying;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.paging.PagedListAdapter;
@@ -26,7 +21,7 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
 
     private final Context context;
 
-    private Map<Uri, Bitmap> map = new HashMap<>();
+    //private Map<Uri, Bitmap> map = new HashMap<>();
 
     public SongListAdapter(Context context) {
         super(Song.DIFF_CALLBACK);
@@ -74,14 +69,14 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
         }
 
          void bindTo(Song song) {
-            song.setFromView(true);
+            song.setFromSongTab(true);
             this.song = song;
 
             songItemView.setText(song.title);
             artistItemView.setText(song.artist);
-            Bitmap iconBitmap = getBitmapFromMediaStore(song.iconUri);
+            Bitmap iconBitmap = Utils.getBitmapFromMediaStore(song.iconUri);
             if (iconBitmap == null) {
-                imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_launcher_background));
+                imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_audiotrack_black_24dp));
             } else {
                 imageView.setImageBitmap(iconBitmap);
             }
@@ -90,7 +85,7 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
         void clear() {
             songItemView.setText("...");
             artistItemView.setText("...");
-            imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_launcher_background));
+            imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_audiotrack_black_24dp));
         }
 
         @Override
@@ -99,22 +94,4 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
         }
     }
 
-    private Bitmap getBitmapFromMediaStore(Uri iconUri) {
-        if (map.containsKey(iconUri)) {
-            return map.get(iconUri);
-        } else {
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), iconUri);
-                map.put(iconUri, bitmap);
-                return bitmap;
-            // catch general exception, files are sometimes corrupted
-            } catch (Exception e) {
-                e.printStackTrace();
-                map.put(iconUri, null);
-                return null;
-            }
-        }
-    }
 }
-//1542096403699
-//1542096489366:

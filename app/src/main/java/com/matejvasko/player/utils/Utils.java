@@ -1,14 +1,19 @@
 package com.matejvasko.player.utils;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 
+import com.matejvasko.player.App;
 import com.matejvasko.player.Song;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Utils {
 
@@ -45,7 +50,7 @@ public class Utils {
                     .setArtist(mediaItem.getDescription().getSubtitle().toString())
                     .setIconUri(mediaItem.getDescription().getIconUri())
                     .setDuration(mediaItem.getDescription().getExtras().getLong(SONG_DURATION))
-                    .setcursorPosition(mediaItem.getDescription().getExtras().getInt(CURSOR_POSITION))
+                    .setCursorPosition(mediaItem.getDescription().getExtras().getInt(CURSOR_POSITION))
                     .build();
             songs.add(song);
         }
@@ -63,6 +68,24 @@ public class Utils {
         }
 
         return minutes + ":" + seconds;
+    }
+
+    private static Map<Uri, Bitmap> map = new HashMap<>();
+
+    public static Bitmap getBitmapFromMediaStore(Uri iconUri) {
+        if (map.containsKey(iconUri)) {
+            return map.get(iconUri);
+        } else {
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(App.getAppContext().getContentResolver(), iconUri);
+                map.put(iconUri, bitmap);
+                return bitmap;
+            } catch (Exception e) {
+                e.printStackTrace();
+                map.put(iconUri, null);
+                return null;
+            }
+        }
     }
 
 }

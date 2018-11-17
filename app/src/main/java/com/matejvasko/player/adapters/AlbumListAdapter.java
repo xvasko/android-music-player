@@ -1,10 +1,8 @@
 package com.matejvasko.player.adapters;
 
-import android.content.ContentUris;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,10 +10,9 @@ import android.view.ViewGroup;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.matejvasko.player.Album;
-import com.matejvasko.player.AlbumProvider;
+import com.matejvasko.player.MediaProvider;
 import com.matejvasko.player.R;
 import com.matejvasko.player.Song;
 import com.matejvasko.player.utils.Utils;
@@ -26,22 +23,19 @@ import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup;
 import com.thoughtbot.expandablerecyclerview.viewholders.ChildViewHolder;
 import com.thoughtbot.expandablerecyclerview.viewholders.GroupViewHolder;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static android.view.animation.Animation.RELATIVE_TO_SELF;
 
 public class AlbumListAdapter extends ExpandableRecyclerViewAdapter<AlbumListAdapter.AlbumViewHolder, AlbumListAdapter.SongViewHolder> {
 
-    Context context;
-    AlbumProvider albumProvider;
+    private Context context;
+    private MediaProvider mediaProvider;
 
-    public AlbumListAdapter(Context context, List<? extends ExpandableGroup> groups, AlbumProvider albumProvider) {
-        super(groups);
+    public AlbumListAdapter(Context context) {
+        super(MediaProvider.getInstance().getAlbums());
         this.context = context;
-        this.albumProvider = albumProvider;
+        this.mediaProvider = MediaProvider.getInstance();
     }
 
     @Override
@@ -59,14 +53,15 @@ public class AlbumListAdapter extends ExpandableRecyclerViewAdapter<AlbumListAda
     }
 
     @Override
-    public void onBindChildViewHolder(SongViewHolder holder, int flatPosition, ExpandableGroup group, int childIndex) {
-        final Song song = (Song) group.getItems().get(childIndex);
-        holder.bindTo(song, childIndex);
+    public void onBindGroupViewHolder(AlbumViewHolder holder, int flatPosition, ExpandableGroup group) {
+        holder.bindTo(((Album)group));
     }
 
     @Override
-    public void onBindGroupViewHolder(AlbumViewHolder holder, int flatPosition, ExpandableGroup group) {
-        holder.bindTo(((Album)group));
+    public void onBindChildViewHolder(SongViewHolder holder, int flatPosition, ExpandableGroup group, int childIndex) {
+        Song song = (Song) group.getItems().get(childIndex);
+        song.setFromAlbumTab(true);
+        holder.bindTo(song, childIndex);
     }
 
     private ExpandableGroup expanded;
@@ -112,10 +107,10 @@ public class AlbumListAdapter extends ExpandableRecyclerViewAdapter<AlbumListAda
 
     private void querySongs(int albumPos) {
         List<Album> albums = ((List<Album>) getGroups());
-        Album album = albums.get(albumPos);
-        List<Song> songs = albumProvider.getAlbumSongs(String.valueOf(album.id));
-        Album album1 = new Album(album.id, album.title, songs, album.artist);
-        albums.set(albumPos, album1);
+        Album clickedAlbum = albums.get(albumPos);
+        List<Song> songs = mediaProvider.getAlbumSongs(String.valueOf(clickedAlbum.id));
+        Album albumWithSongs = new Album(clickedAlbum.id, clickedAlbum.title, songs, clickedAlbum.artist);
+        albums.set(albumPos, albumWithSongs);
         refreshDataSet();
     }
 
@@ -133,16 +128,16 @@ public class AlbumListAdapter extends ExpandableRecyclerViewAdapter<AlbumListAda
             albumCover  = itemView.findViewById(R.id.album_cover_item);
             albumTitle  = itemView.findViewById(R.id.album_title_item);
             albumArtist = itemView.findViewById(R.id.album_artist_item);
-            arrow = itemView.findViewById(R.id.arrow);
+            arrow       = itemView.findViewById(R.id.arrow);
         }
 
         void bindTo(final Album album) {
             this.album = album;
             albumTitle.setText(album.title);
             albumArtist.setText(album.artist);
-            Bitmap iconBitmap = getBitmapFromMediaStore(ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"), album.id));
+            Bitmap iconBitmap = Utils.getBitmapFromMediaStore((Uri.parse("content://media/external/audio/albumart/" + album.id)));
             if (iconBitmap == null) {
-                albumCover.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_launcher_background));
+                albumCover.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_audiotrack_black_24dp));
             } else {
                 albumCover.setImageBitmap(iconBitmap);
             }
@@ -205,24 +200,6 @@ public class AlbumListAdapter extends ExpandableRecyclerViewAdapter<AlbumListAda
     void refreshDataSet() {
         ExpandableListUtils.notifyGroupDataChanged(this);
         notifyDataSetChanged();
-    }
-
-    private Map<Uri, Bitmap> map = new HashMap<>();
-
-    private Bitmap getBitmapFromMediaStore(Uri iconUri) {
-        if (map.containsKey(iconUri)) {
-            return map.get(iconUri);
-        } else {
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), iconUri);
-                map.put(iconUri, bitmap);
-                return bitmap;
-            } catch (Exception e) {
-                e.printStackTrace();
-                map.put(iconUri, null);
-                return null;
-            }
-        }
     }
 
 }

@@ -16,17 +16,26 @@ public class Song implements Parcelable {
     public Uri iconUri;
     public long duration;
     public int cursorPosition;
+    public long albumId;
 
-    public boolean isFromView() {
-        return isFromView;
+    private boolean isFromSongTab;
+    private boolean isFromAlbumTab;
+
+    public boolean isFromSongTab() {
+        return isFromSongTab;
     }
 
-    public void setFromView(boolean fromView) {
-        isFromView = fromView;
+    public void setFromSongTab(boolean isFromSongTab) {
+        this.isFromSongTab = isFromSongTab;
     }
 
-    private boolean isFromView;
+    public boolean isFromAlbumTab() {
+        return isFromAlbumTab;
+    }
 
+    public void setFromAlbumTab(boolean isFromAlbumTab) {
+        this.isFromAlbumTab = isFromAlbumTab;
+    }
 
 
     protected Song(Parcel in) {
@@ -37,6 +46,7 @@ public class Song implements Parcelable {
         iconUri = in.readParcelable(Uri.class.getClassLoader());
         duration = in.readLong();
         cursorPosition = in.readInt();
+        albumId = in.readLong();
     }
 
     public static final Creator<Song> CREATOR = new Creator<Song>() {
@@ -65,6 +75,7 @@ public class Song implements Parcelable {
         parcel.writeParcelable(iconUri, i);
         parcel.writeLong(duration);
         parcel.writeInt(cursorPosition);
+        parcel.writeLong(albumId);
     }
 
     public static class Builder {
@@ -75,6 +86,7 @@ public class Song implements Parcelable {
         private Uri iconUri;
         private long duration;
         private int cursorPosition;
+        private long albumId;
 
         public Builder(int id) {
             this.id = id;
@@ -105,8 +117,13 @@ public class Song implements Parcelable {
             return this;
         }
 
-        public Builder setcursorPosition(int cursorPosition) {
+        public Builder setCursorPosition(int cursorPosition) {
             this.cursorPosition = cursorPosition;
+            return this;
+        }
+
+        public Builder setAlbumId(long albumId) {
+            this.albumId = albumId;
             return this;
         }
 
@@ -119,6 +136,7 @@ public class Song implements Parcelable {
             song.iconUri = this.iconUri;
             song.duration = this.duration;
             song.cursorPosition = this.cursorPosition;
+            song.albumId = this.albumId;
 
             return song;
         }

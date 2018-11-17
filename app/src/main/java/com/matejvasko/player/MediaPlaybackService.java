@@ -1,14 +1,8 @@
 package com.matejvasko.player;
 
-import android.content.Context;
-import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.browse.MediaBrowser;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
@@ -35,23 +29,24 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private static final String TAG = MediaPlaybackService.class.getSimpleName();
 
     private int state;
+    int shuffleMode = PlaybackStateCompat.SHUFFLE_MODE_NONE;
 
     private String fileName;
 
-    private SongProvider mediaProvider;
+    private MediaProvider mediaProvider;
     private MediaSessionCompat mediaSession;
     private PlaybackStateCompat.Builder stateBuilder;
     private MediaMetadataCompat.Builder metadataBuilder;
     private MediaPlayer mediaPlayer;
     private MediaSessionCallback mediaSessionCallback;
 
+
     @Override
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "onCreate: MediaPlaybackService");
 
-        mediaProvider = new SongProvider(this);
-
+        mediaProvider = MediaProvider.getInstance();
 
         mediaSession = new MediaSessionCompat(this, TAG);
         mediaSessionCallback = new MediaSessionCallback();
@@ -76,12 +71,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.title)
                         .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, song.artist)
                         .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.duration);
-                try {
-                    metadataBuilder
-                            .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, MediaStore.Images.Media.getBitmap(getContentResolver(), song.iconUri));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+
+                    metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, Utils.getBitmapFromMediaStore(song.iconUri));
+
                 mediaSession.setMetadata(metadataBuilder.build());
                 mediaSessionCallback.onPlay();
             }
@@ -123,7 +115,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     // Paused allows: seekTo(), start(), pause(), stop()
                     // Stop allows: stop()
                     setNewState(PlaybackStateCompat.STATE_PAUSED);
-                    System.out.println("ON COMPLETION");
+                    mediaSessionCallback.onSkipToNext();
                 }
             });
         }
@@ -137,29 +129,29 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     }
 
     public class MediaSessionCallback extends MediaSessionCompat.Callback {
-        @Override
-        public void onPlayFromMediaId(String mediaId, Bundle extras) {
-            super.onPlayFromMediaId(mediaId, extras);
-            // TODO init mediaPlayer once
-            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-                mediaPlayer.release();
-                mediaPlayer = null;
-            }
-            mediaPlayer = MediaPlayer.create(MediaPlaybackService.this, Uri.parse(mediaId));
-            mediaPlayer.start();
+//        @Override
+//        public void onPlayFromMediaId(String mediaId, Bundle extras) {
+//            super.onPlayFromMediaId(mediaId, extras);
+//            // TODO init mediaPlayer once
+//            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+//                mediaPlayer.release();
+//                mediaPlayer = null;
+//            }
+//            mediaPlayer = MediaPlayer.create(MediaPlaybackService.this, Uri.parse(mediaId));
+//            mediaPlayer.start();
+//
+//        }
 
-        }
-
-        List<Integer> positions = new ArrayList<>();
+        List<Integer> queue = new ArrayList<>();
 
         int pointer = -1;
 
         @Override
         public void onPlay() {
             System.out.println("onPlay:");
-            System.out.println("positions size: " + positions.size());
+            System.out.println("queue size: " + queue.size());
             System.out.println("pointer: " + pointer);
-            System.out.println(positions.toString());
+            System.out.println(queue.toString());
 
             String newFileName = NowPlaying.getNowPlaying().getValue().data;
 
@@ -173,16 +165,20 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 return;
             }
 
-            if (NowPlaying.getNowPlaying().getValue().isFromView()) {
-                positions = new ArrayList<>();
+            if (NowPlaying.getNowPlaying().getValue().isFromSongTab()) {
+                System.out.println("From Song Tab");
+                queue = new ArrayList<>();
                 pointer = 0;
-                positions.add(NowPlaying.getNowPlaying().getValue().cursorPosition);
+                queue.add(NowPlaying.getNowPlaying().getValue().cursorPosition);
+            } else if (NowPlaying.getNowPlaying().getValue().isFromAlbumTab()) {
+                System.out.println("From Album Tab");
+
             } else {
-                if (pointer + 1 == positions.size()) {
+                if (pointer + 1 == queue.size()) {
                     pointer++;
-                    positions.add(NowPlaying.getNowPlaying().getValue().cursorPosition);
-                } else if (pointer + 1 > positions.size()){
-                    positions.add(NowPlaying.getNowPlaying().getValue().cursorPosition);
+                    queue.add(NowPlaying.getNowPlaying().getValue().cursorPosition);
+                } else if (pointer + 1 > queue.size()){
+                    queue.add(NowPlaying.getNowPlaying().getValue().cursorPosition);
                 }
             }
 
@@ -239,10 +235,15 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             pointer++;
 
-            if (pointer < positions.size()) {
-                NowPlaying.getNowPlaying().setValue(mediaProvider.getSongAtPosition(positions.get(pointer)));
+            if (pointer < queue.size()) {
+                NowPlaying.getNowPlaying().setValue(mediaProvider.getSongAtPosition(queue.get(pointer)));
             } else {
-                NowPlaying.getNowPlaying().setValue(mediaProvider.getSongAtPosition(getRandomSongPosition()));
+                if (MediaPlaybackService.this.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
+                    NowPlaying.getNowPlaying().setValue(mediaProvider.getSongAtPosition(getRandomSongPosition()));
+                } else {
+                    NowPlaying.getNowPlaying().setValue(mediaProvider.getSongAtPosition((queue.get(pointer - 1) + 1) % mediaProvider.getSongCursorSize()));
+                }
+
             }
 
             Log.d(TAG, "onSkipToNext: " + pointer);
@@ -257,13 +258,21 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 return;
             }
 
-            NowPlaying.getNowPlaying().setValue(mediaProvider.getSongAtPosition(positions.get(pointer)));
+            NowPlaying.getNowPlaying().setValue(mediaProvider.getSongAtPosition(queue.get(pointer)));
 
             Log.d(TAG, "onSkipToPrevious: " + pointer);
         }
 
+        @Override
+        public void onSetShuffleMode(int shuffleMode) {
+            super.onSetShuffleMode(shuffleMode);
+
+            MediaPlaybackService.this.shuffleMode = shuffleMode;
+            Log.d(TAG, "onSetShuffleMode: ");
+        }
+
         private int getRandomSongPosition() {
-            return rand.nextInt(mediaProvider.getMediaSize());
+            return rand.nextInt(mediaProvider.getSongCursorSize());
         }
 
     }
@@ -308,7 +317,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         int page     = options.getInt(MediaBrowserCompat.EXTRA_PAGE);
         int pageSize = options.getInt(MediaBrowserCompat.EXTRA_PAGE_SIZE);
-        options.putInt("songs_count", mediaProvider.getMediaSize());
+        options.putInt("songs_count", mediaProvider.getSongCursorSize());
 
         List<Song> songs = getSongsPage(page, pageSize);
 
@@ -320,10 +329,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
     private List<Song> getSongsPage(int page, int pageSize) {
         int startPosition = page * pageSize;
-        if (startPosition + pageSize <= mediaProvider.getMediaSize())
+        if (startPosition + pageSize <= mediaProvider.getSongCursorSize())
             return mediaProvider.getSongsAtRange(startPosition, startPosition + pageSize);
         else
-            return mediaProvider.getSongsAtRange(startPosition, mediaProvider.getMediaSize());
+            return mediaProvider.getSongsAtRange(startPosition, mediaProvider.getSongCursorSize());
     }
 
 }

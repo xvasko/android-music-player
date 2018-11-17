@@ -6,10 +6,6 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
-import androidx.paging.PagedList;
-import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,16 +16,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.matejvasko.player.Album;
-import com.matejvasko.player.AlbumProvider;
-import com.matejvasko.player.MainActivity;
 import com.matejvasko.player.R;
-import com.matejvasko.player.Song;
 import com.matejvasko.player.adapters.AlbumListAdapter;
-import com.matejvasko.player.viewmodels.MainActivityViewModel;
-import com.thoughtbot.expandablerecyclerview.listeners.GroupExpandCollapseListener;
 import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -41,9 +31,6 @@ public class TabFragment2 extends Fragment {
     private static final String TAG = "TabFragment2";
 
     private RecyclerView recyclerView;
-    AlbumListAdapter albumListAdapter;
-
-    private MediaBrowserCompat mediaBrowser;
 
     public TabFragment2() {
         // Required empty public constructor
@@ -62,47 +49,16 @@ public class TabFragment2 extends Fragment {
         Log.d(TAG, "onCreate");
     }
 
-    private ExpandableGroup expandedGroup;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
 
-        AlbumProvider albumProvider = new AlbumProvider(getActivity());
-
         View view =  inflater.inflate(R.layout.fragment_tab_2, container, false);
         recyclerView = view.findViewById(R.id.albums_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        List<Album> albums = albumProvider.getAlbums();
 
-//        ArrayList<Song> moderatAlbum = new ArrayList<>();
-//        moderatAlbum.add(new Song.Builder(1).setTitle("Song 1").build());
-//        moderatAlbum.add(new Song.Builder(2).setTitle("Song 2").build());
-//        moderatAlbum.add(new Song.Builder(3).setTitle("Song 3").build());
-//        moderatAlbum.add(new Song.Builder(4).setTitle("Song 4").build());
-//        moderatAlbum.add(new Song.Builder(5).setTitle("Song 5").build());
-//        moderatAlbum.add(new Song.Builder(6).setTitle("Song 6").build());
-//
-//        Album moderat = new Album(1, "MODERAT", moderatAlbum);
-//        albums.add(moderat);
-//
-//        ArrayList<Song> neutralAlbum = new ArrayList<>();
-//        neutralAlbum.add(new Song.Builder(4).setTitle("Song 1").build());
-//        neutralAlbum.add(new Song.Builder(5).setTitle("Song 2").build());
-//        neutralAlbum.add(new Song.Builder(6).setTitle("Song 3").build());
-//
-//        Album neutral = new Album(2, "NEUTRAL", neutralAlbum);
-//        albums.add(neutral);
-//
-//        ArrayList<Song> glebAlbum = new ArrayList<>();
-//        glebAlbum.add(new Song.Builder(4).setTitle("Song 1").build());
-//        glebAlbum.add(new Song.Builder(5).setTitle("Song 2").build());
-//        glebAlbum.add(new Song.Builder(6).setTitle("Song 3").build());
-//
-//        Album gleb = new Album(3, "GLEB", glebAlbum);
-//        albums.add(gleb);
-
-        AlbumListAdapter adapter = new AlbumListAdapter(getActivity(), albums, albumProvider);
+        AlbumListAdapter adapter = new AlbumListAdapter(getActivity());
         recyclerView.setAdapter(adapter);
 
         return view;

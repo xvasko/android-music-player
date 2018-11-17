@@ -45,10 +45,12 @@ public class MainActivity extends AppCompatActivity {
     TextView songTitleTextView;
     ImageView playPauseImageView;
     ImageView playPauseBigImageView;
+    ImageView shuffleImageView;
     Button playPauseButton;
     Button playPauseButtonBig;
     Button skipNextButton;
     Button skipPreviousButton;
+    Button shuffleButton;
     MediaSeekBar mediaSeekBar;
 
     private LibraryFragment libraryFragment;
@@ -64,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isPlaying;
+    private boolean isShuffle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +95,9 @@ public class MainActivity extends AppCompatActivity {
         skipNextButton.setOnClickListener(clickListener);
         skipPreviousButton = findViewById(R.id.skip_previous_button);
         skipPreviousButton.setOnClickListener(clickListener);
+        shuffleButton = findViewById(R.id.shuffle_button);
+        shuffleButton.setOnClickListener(clickListener);
+        shuffleImageView = findViewById(R.id.shuffle_image_view);
         mediaSeekBar = findViewById(R.id.media_seek_bar);
         mediaSeekBar.setPadding(0, 16, 0, 16);
         mediaSeekBar.setTextViews(
@@ -184,6 +190,16 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.skip_next_button:
                     mediaController.getTransportControls().skipToNext();
                     break;
+                case R.id.shuffle_button:
+                    if (isShuffle) {
+                        mediaController.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_NONE);
+                        isShuffle = false;
+                    } else {
+                        mediaController.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL);
+                        isShuffle = true;
+                    }
+                    shuffleImageView.setPressed(isShuffle);
+                    break;
                 case R.id.bottom_sheet_on_click:
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                     break;
@@ -266,7 +282,12 @@ public class MainActivity extends AppCompatActivity {
             if (metadata == null) {
                 return;
             }
-            albumArtImageView.setImageBitmap(metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART));
+            if (metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART) == null) {
+                albumArtImageView.setImageDrawable(App.getAppContext().getResources().getDrawable(R.drawable.ic_audiotrack_black_24dp));
+            } else {
+                albumArtImageView.setImageBitmap(metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART));
+            }
+
             songTitleTextView.setText(
                     String.format("%s   %s   %s",
                     metadata.getText(MediaMetadataCompat.METADATA_KEY_TITLE),

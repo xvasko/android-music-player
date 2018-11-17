@@ -10,16 +10,11 @@ public class Album extends ExpandableGroup<Song> {
     public String title;
     public String artist;
 
-    public List<Song> songs;
-
-    public Album(long id, String title, List<Song> items, String artist) {
-        super(title, items);
+    public Album(long id, String title, List<Song> songs, String artist) {
+        super(title, songs);
         this.id = id;
         this.title = title;
-        this.songs = items;
         this.artist = artist;
     }
-
-
 
 }
