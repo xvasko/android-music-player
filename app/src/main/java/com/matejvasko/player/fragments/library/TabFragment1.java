@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.matejvasko.player.MainActivity;
+import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.R;
 import com.matejvasko.player.Song;
 import com.matejvasko.player.adapters.SongListAdapter;
@@ -41,9 +42,9 @@ public class TabFragment1 extends Fragment implements TabFragment1I {
     }
 
     public void setMediaBrowser(MediaBrowserCompat mediaBrowser) {
-        if (this.mediaBrowser == null) {
+
             this.mediaBrowser = mediaBrowser;
-        }
+
     }
 
     @Override
@@ -66,9 +67,10 @@ public class TabFragment1 extends Fragment implements TabFragment1I {
         View view =  inflater.inflate(R.layout.fragment_tab_1, container, false);
 
         mainActivityViewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
-        songListAdapter = new SongListAdapter(getActivity());
+        songListAdapter = new SongListAdapter(getActivity(), ((MainActivity)getActivity()));
         recyclerView = view.findViewById(R.id.songs_recycler_view);
         recyclerView.setAdapter(songListAdapter);
+        recyclerView.setItemAnimator(null);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         if (mediaBrowser != null) {
@@ -134,9 +136,9 @@ public class TabFragment1 extends Fragment implements TabFragment1I {
 
     // as a result of MainActivity.MediaControllerCallback.onConnected()
     public void loadSongs() {
-        mainActivityViewModel.getSongs(mediaBrowser).observe(this, new Observer<PagedList<Song>>() {
+        mainActivityViewModel.getSongs(mediaBrowser).observe(this, new Observer<PagedList<MediaItemData>>() {
             @Override
-            public void onChanged(PagedList<Song> songs) {
+            public void onChanged(PagedList<MediaItemData> songs) {
                 songListAdapter.submitList(songs);
             }
         });

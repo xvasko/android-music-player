@@ -16,7 +16,7 @@ import com.matejvasko.player.MediaProvider;
 import com.matejvasko.player.R;
 import com.matejvasko.player.Song;
 import com.matejvasko.player.utils.Utils;
-import com.matejvasko.player.viewmodels.NowPlaying;
+import com.matejvasko.player.viewmodels.MainActivityViewModel;
 import com.thoughtbot.expandablerecyclerview.ExpandableListUtils;
 import com.thoughtbot.expandablerecyclerview.ExpandableRecyclerViewAdapter;
 import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup;
@@ -177,7 +177,7 @@ public class AlbumListAdapter extends ExpandableRecyclerViewAdapter<AlbumListAda
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    NowPlaying.getNowPlaying().setValue(song);
+                    //MainActivityViewModel.getNowPlaying().setValue(song);
                 }
             });
         }

@@ -4,14 +4,15 @@ import android.content.ComponentName;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.Html;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -23,18 +24,25 @@ import com.matejvasko.player.fragments.FriendsFragment;
 import com.matejvasko.player.fragments.MapFragment;
 import com.matejvasko.player.fragments.library.LibraryFragment;
 import com.matejvasko.player.fragments.library.TabFragment1I;
+import com.matejvasko.player.viewmodels.MainActivityViewModel;
+
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private BottomSheetBehavior bottomSheetBehavior;
+
+    public MainActivityViewModel viewModel;
 
     BottomNavigationView bottomNav;
     RelativeLayout fragmentContainer;
@@ -105,7 +113,14 @@ public class MainActivity extends AppCompatActivity {
                 (TextView)findViewById(R.id.duration_total)
         );
 
-
+        viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
+        final Observer<Song> songObserver = new Observer<Song>() {
+            @Override
+            public void onChanged(Song song) {
+                System.out.println("SONG HAS CHANGED - lifecycle aware");
+            }
+        };
+        viewModel.getNowPlaying().observe(this, songObserver);
         mediaControllerCallback = new MediaControllerCallback();
 
         libraryFragment = new LibraryFragment();
@@ -164,6 +179,10 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    public void playFromMediaId(MediaItemData mediaItemData) {
+        mediaController.getTransportControls().playFromMediaId(mediaItemData.mediaId, null);
     }
 
     private class ClickListener implements View.OnClickListener {
@@ -269,6 +288,20 @@ public class MainActivity extends AppCompatActivity {
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
+
+            mediaBrowser.subscribe(mediaBrowser.getRoot(), new MediaBrowserCompat.SubscriptionCallback() {
+                @Override
+                public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowserCompat.MediaItem> children) {
+                    super.onChildrenLoaded(parentId, children);
+
+                    System.out.println("onChildrenLoaded callback ");
+                    System.out.println("parentId: " + parentId);
+                    for (MediaBrowserCompat.MediaItem child : children) {
+                        System.out.println(child.getDescription().toString());
+                    }
+                }
+            });
+
             Log.d(TAG, "onConnected: MediaBrowserConnectionCallback");
         }
     }
@@ -305,6 +338,11 @@ public class MainActivity extends AppCompatActivity {
             playPauseBigImageView.setPressed(isPlaying);
 
             Log.d(TAG, "onPlaybackStateChanged: MediaControllerCallback + " + state);
+        }
+
+        @Override
+        public void onQueueChanged(List<MediaSessionCompat.QueueItem> queue) {
+            super.onQueueChanged(queue);
         }
 
         // This might happen if the MusicService is killed while the Activity is in the

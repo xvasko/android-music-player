@@ -8,24 +8,25 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.matejvasko.player.MainActivity;
+import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.R;
 import com.matejvasko.player.Song;
 import com.matejvasko.player.utils.Utils;
-import com.matejvasko.player.viewmodels.NowPlaying;
 
 import androidx.annotation.NonNull;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.SongViewHolder>  {
+public class SongListAdapter extends PagedListAdapter<MediaItemData, SongListAdapter.SongViewHolder>  {
 
     private final Context context;
+    private final MainActivity activity;
 
-    //private Map<Uri, Bitmap> map = new HashMap<>();
-
-    public SongListAdapter(Context context) {
-        super(Song.DIFF_CALLBACK);
+    public SongListAdapter(Context context, MainActivity activity) {
+        super(MediaItemData.DIFF_CALLBACK);
         this.context = context;
+        this.activity = activity;
     }
 
     @NonNull
@@ -33,31 +34,29 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
     public SongListAdapter.SongViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         View itemView = layoutInflater.inflate(R.layout.song_item, parent, false);
-        return new SongViewHolder(itemView, this);
+        return new SongViewHolder(itemView, activity);
     }
 
     @Override
     public void onBindViewHolder(@NonNull SongListAdapter.SongViewHolder holder, int position) {
-        Song song = getItem(position);
-        if (song != null) {
-            holder.bindTo(song);
+        MediaItemData mediaItemData = getItem(position);
+        if (mediaItemData != null) {
+            holder.bindTo(mediaItemData);
         } else {
             holder.clear();
         }
-
     }
-
 
     class SongViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         final ImageView imageView;
         final TextView songItemView;
         final TextView artistItemView;
-        final SongListAdapter adapter;
+        final MainActivity activity;
 
-        private Song song;
+        private MediaItemData mediaItemData;
 
-        SongViewHolder(View itemView, SongListAdapter adapter) {
+        SongViewHolder(View itemView, MainActivity activity) {
             super(itemView);
             itemView.setOnClickListener(this);
 
@@ -65,16 +64,16 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
             songItemView = itemView.findViewById(R.id.song_item);
             artistItemView = itemView.findViewById(R.id.artist_item);
 
-            this.adapter = adapter;
+            this.activity = activity;
         }
 
-         void bindTo(Song song) {
-            song.setFromSongTab(true);
-            this.song = song;
+        void bindTo(MediaItemData mediaItemData) {
+            //song.setFromSongTab(true);
+            this.mediaItemData = mediaItemData;
 
-            songItemView.setText(song.title);
-            artistItemView.setText(song.artist);
-            Bitmap iconBitmap = Utils.getBitmapFromMediaStore(song.iconUri);
+            songItemView.setText(mediaItemData.title);
+            artistItemView.setText(mediaItemData.subtitle);
+            Bitmap iconBitmap = Utils.getBitmapFromMediaStore(mediaItemData.albumArtUri);
             if (iconBitmap == null) {
                 imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_audiotrack_black_24dp));
             } else {
@@ -90,7 +89,7 @@ public class SongListAdapter extends PagedListAdapter<Song, SongListAdapter.Song
 
         @Override
         public void onClick(View v) {
-            NowPlaying.getNowPlaying().setValue(song);
+            activity.playFromMediaId(mediaItemData);
         }
     }
 

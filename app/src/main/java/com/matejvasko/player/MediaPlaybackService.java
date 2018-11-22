@@ -2,7 +2,9 @@ package com.matejvasko.player;
 
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.ResultReceiver;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
@@ -12,7 +14,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.matejvasko.player.utils.Utils;
-import com.matejvasko.player.viewmodels.NowPlaying;
+import com.matejvasko.player.viewmodels.MainActivityViewModel;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,7 +33,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private int state;
     int shuffleMode = PlaybackStateCompat.SHUFFLE_MODE_NONE;
 
-    private String fileName;
+    List<MediaSessionCompat.QueueItem> queue = new ArrayList<>();;
 
     private MediaProvider mediaProvider;
     private MediaSessionCompat mediaSession;
@@ -39,7 +41,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private MediaMetadataCompat.Builder metadataBuilder;
     private MediaPlayer mediaPlayer;
     private MediaSessionCallback mediaSessionCallback;
-
 
     @Override
     public void onCreate() {
@@ -53,8 +54,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         mediaSession.setCallback(mediaSessionCallback);
         mediaSession.setFlags(
                 MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
-                MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
-
+                MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS |
+                MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS);
+        mediaSession.setQueue(queue);
+        mediaSession.setQueueTitle("this is a queue title");
         stateBuilder = new PlaybackStateCompat.Builder().setActions(
                 PlaybackStateCompat.ACTION_PLAY |
                 PlaybackStateCompat.ACTION_PLAY_PAUSE);
@@ -62,46 +65,28 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         mediaSession.setPlaybackState(stateBuilder.build());
 
         setSessionToken(mediaSession.getSessionToken());
-
-        final Observer<Song> nowPlayingObserver = new Observer<Song>() {
-            @Override
-            public void onChanged(Song song) {
-                metadataBuilder
-                        .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, song.data)
-                        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.title)
-                        .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, song.artist)
-                        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.duration);
-
-                    metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, Utils.getBitmapFromMediaStore(song.iconUri));
-
-                mediaSession.setMetadata(metadataBuilder.build());
-                mediaSessionCallback.onPlay();
-            }
-        };
-
-        NowPlaying.getNowPlaying().observeForever(nowPlayingObserver);
     }
 
-    AudioManager.OnAudioFocusChangeListener onAudioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
-        @Override
-        public void onAudioFocusChange(int focusChange) {
-            Log.d(TAG, "onAudioFocusChange:");
-            switch (focusChange) {
-                case AudioManager.AUDIOFOCUS_GAIN:
-                    Log.d(TAG, "onAudioFocusChange: AUDIOFOCUS_GAIN"); // this is what you get when returning from transient losses
-                    break;
-                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                    Log.d(TAG, "onAudioFocusChange: AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK"); // lower the volume temporarily (i.e.: notification)
-                    break;
-                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                    Log.d(TAG, "onAudioFocusChange: AUDIOFOCUS_LOSS_TRANSIENT"); // other app is asking you to pause temporarily
-                    break;
-                case AudioManager.AUDIOFOCUS_LOSS:
-                    Log.d(TAG, "onAudioFocusChange: AUDIOFOCUS_LOSS"); // stop playback
-                    break;
-            }
-        }
-    };
+//    AudioManager.OnAudioFocusChangeListener onAudioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
+//        @Override
+//        public void onAudioFocusChange(int focusChange) {
+//            Log.d(TAG, "onAudioFocusChange:");
+//            switch (focusChange) {
+//                case AudioManager.AUDIOFOCUS_GAIN:
+//                    Log.d(TAG, "onAudioFocusChange: AUDIOFOCUS_GAIN"); // this is what you get when returning from transient losses
+//                    break;
+//                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+//                    Log.d(TAG, "onAudioFocusChange: AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK"); // lower the volume temporarily (i.e.: notification)
+//                    break;
+//                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+//                    Log.d(TAG, "onAudioFocusChange: AUDIOFOCUS_LOSS_TRANSIENT"); // other app is asking you to pause temporarily
+//                    break;
+//                case AudioManager.AUDIOFOCUS_LOSS:
+//                    Log.d(TAG, "onAudioFocusChange: AUDIOFOCUS_LOSS"); // stop playback
+//                    break;
+//            }
+//        }
+//    };
 
     private void initializeMediaPlayer() {
         if (mediaPlayer == null) {
@@ -109,11 +94,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mediaPlayer) {
-                    // Set the state to "paused" because it most closely matches the state
-                    // in MediaPlayer with regards to available state transitions compared
-                    // to "stop".
-                    // Paused allows: seekTo(), start(), pause(), stop()
-                    // Stop allows: stop()
                     setNewState(PlaybackStateCompat.STATE_PAUSED);
                     mediaSessionCallback.onSkipToNext();
                 }
@@ -128,32 +108,36 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         }
     }
 
-    public class MediaSessionCallback extends MediaSessionCompat.Callback {
-//        @Override
-//        public void onPlayFromMediaId(String mediaId, Bundle extras) {
-//            super.onPlayFromMediaId(mediaId, extras);
-//            // TODO init mediaPlayer once
-//            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-//                mediaPlayer.release();
-//                mediaPlayer = null;
-//            }
-//            mediaPlayer = MediaPlayer.create(MediaPlaybackService.this, Uri.parse(mediaId));
-//            mediaPlayer.start();
-//
-//        }
+    MediaMetadataCompat mediaMetadata;
+    String fileName;
+    String newFileName;
 
-        List<Integer> queue = new ArrayList<>();
+    public class MediaSessionCallback extends MediaSessionCompat.Callback {
+        @Override
+        public void onPlayFromMediaId(String mediaId, Bundle extras) {
+            super.onPlayFromMediaId(mediaId, extras);
+
+            mediaMetadata = mediaProvider.getMediaMetadata(mediaId);
+            newFileName = mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI);
+            System.out.println("newfilename: " + newFileName);
+            onPlay();
+
+            System.out.println("MediaSessionCallback: onPlayFromMediaId");
+        }
+
+        List<Song> albumSongs = new ArrayList<>();
+        //List<Integer> queue = new ArrayList<>();
 
         int pointer = -1;
+        boolean playingAlbum;
+
 
         @Override
         public void onPlay() {
-            System.out.println("onPlay:");
-            System.out.println("queue size: " + queue.size());
-            System.out.println("pointer: " + pointer);
-            System.out.println(queue.toString());
-
-            String newFileName = NowPlaying.getNowPlaying().getValue().data;
+//            System.out.println("onPlay:");
+//            System.out.println("queue size: " + queue.size());
+//            System.out.println("pointer: " + pointer);
+//            System.out.println(queue.toString());
 
             boolean mediaChanged = (fileName == null || !fileName.equals(newFileName));
 
@@ -165,22 +149,20 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 return;
             }
 
-            if (NowPlaying.getNowPlaying().getValue().isFromSongTab()) {
-                System.out.println("From Song Tab");
-                queue = new ArrayList<>();
-                pointer = 0;
-                queue.add(NowPlaying.getNowPlaying().getValue().cursorPosition);
-            } else if (NowPlaying.getNowPlaying().getValue().isFromAlbumTab()) {
-                System.out.println("From Album Tab");
-
-            } else {
-                if (pointer + 1 == queue.size()) {
-                    pointer++;
-                    queue.add(NowPlaying.getNowPlaying().getValue().cursorPosition);
-                } else if (pointer + 1 > queue.size()){
-                    queue.add(NowPlaying.getNowPlaying().getValue().cursorPosition);
-                }
-            }
+//            if (MainActivityViewModel.getNowPlaying().getValue().isFromSongTab()) {
+//                System.out.println("From Song Tab");
+//                playingAlbum = false;
+//                resetQueue();
+//            } else if (MainActivityViewModel.getNowPlaying().getValue().isFromAlbumTab()) {
+//                System.out.println("From Album Tab");
+//                playingAlbum = true;
+//                resetQueue();
+//                albumSongs = mediaProvider.getAlbumSongs(String.valueOf(MainActivityViewModel.getNowPlaying().getValue().albumId));
+//            } else {
+//                if (pointer + 1 > queue.size()){
+//                    queue.add(MainActivityViewModel.getNowPlaying().getValue().cursorPosition);
+//                }
+//            }
 
             releaseMediaPlayer();
             initializeMediaPlayer();
@@ -196,6 +178,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             mediaPlayer.start();
             setNewState(PlaybackStateCompat.STATE_PLAYING);
+            setNewMetadata(mediaMetadata);
 
             Log.d(TAG, "onPlay: MediaSessionCallback");
         }
@@ -228,6 +211,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             setNewState(state);
         }
 
+        @Override
+        public void onAddQueueItem(MediaDescriptionCompat description) {
+            super.onAddQueueItem(description);
+            queue.add(new MediaSessionCompat.QueueItem(description, Long.valueOf(description.getMediaId())));
+            mediaSession.setQueue(queue);
+            System.out.println("Media Id: " + description.getMediaId());
+        }
+
         Random rand = new Random();
 
         @Override
@@ -235,16 +226,28 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             pointer++;
 
-            if (pointer < queue.size()) {
-                NowPlaying.getNowPlaying().setValue(mediaProvider.getSongAtPosition(queue.get(pointer)));
-            } else {
-                if (MediaPlaybackService.this.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
-                    NowPlaying.getNowPlaying().setValue(mediaProvider.getSongAtPosition(getRandomSongPosition()));
-                } else {
-                    NowPlaying.getNowPlaying().setValue(mediaProvider.getSongAtPosition((queue.get(pointer - 1) + 1) % mediaProvider.getSongCursorSize()));
-                }
-
-            }
+//            if (pointer < queue.size()) {
+//                if (playingAlbum) {
+//                    MainActivityViewModel.getNowPlaying().setValue(albumSongs.get(queue.get(pointer)));
+//                } else {
+//                    MainActivityViewModel.getNowPlaying().setValue(mediaProvider.getSongAtPosition(queue.get(pointer)));
+//                }
+//            } else {
+//                if (MediaPlaybackService.this.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
+//                    if (playingAlbum) {
+//                        MainActivityViewModel.getNowPlaying().setValue(albumSongs.get(getRandomSongPosition()));
+//                    } else {
+//                        MainActivityViewModel.getNowPlaying().setValue(mediaProvider.getSongAtPosition(getRandomSongPosition()));
+//                    }
+//                } else {
+//                    if (playingAlbum) {
+//                        MainActivityViewModel.getNowPlaying().setValue(albumSongs.get((queue.get(pointer - 1) + 1) % albumSongs.size()));
+//                    } else {
+//                        MainActivityViewModel.getNowPlaying().setValue(mediaProvider.getSongAtPosition((queue.get(pointer - 1) + 1) % mediaProvider.getSongCursorSize()));
+//                    }
+//                }
+//
+//            }
 
             Log.d(TAG, "onSkipToNext: " + pointer);
         }
@@ -258,7 +261,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 return;
             }
 
-            NowPlaying.getNowPlaying().setValue(mediaProvider.getSongAtPosition(queue.get(pointer)));
+//            if (playingAlbum) {
+//                MainActivityViewModel.getNowPlaying().setValue(albumSongs.get(queue.get(pointer)));
+//            } else {
+//                MainActivityViewModel.getNowPlaying().setValue(mediaProvider.getSongAtPosition(queue.get(pointer)));
+//            }
 
             Log.d(TAG, "onSkipToPrevious: " + pointer);
         }
@@ -266,13 +273,23 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         @Override
         public void onSetShuffleMode(int shuffleMode) {
             super.onSetShuffleMode(shuffleMode);
-
+            resetQueue();
             MediaPlaybackService.this.shuffleMode = shuffleMode;
             Log.d(TAG, "onSetShuffleMode: ");
         }
 
         private int getRandomSongPosition() {
-            return rand.nextInt(mediaProvider.getSongCursorSize());
+            if (playingAlbum) {
+                return rand.nextInt(albumSongs.size());
+            } else {
+                return rand.nextInt(mediaProvider.getSongCursorSize());
+            }
+        }
+
+        private void resetQueue() {
+//            queue = new ArrayList<>();
+//            queue.add(MainActivityViewModel.getNowPlaying().getValue().cursorPosition);
+//            pointer = 0;
         }
 
     }
@@ -285,6 +302,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         stateBuilder.setState(newState, reportPosition,1.0f);
         mediaSession.setPlaybackState(stateBuilder.build());
+    }
+
+    private void setNewMetadata(MediaMetadataCompat mediaMetadata){
+        mediaSession.setMetadata(mediaMetadata);
     }
 
     @Nullable
@@ -302,10 +323,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         result.detach();
         Log.d(TAG,"onLoadChildren: 2 params");
 
-        List<MediaBrowserCompat.MediaItem> mediaItems = new ArrayList<>();
-        mediaItems.add(new MediaBrowserCompat.MediaItem(new MediaDescriptionCompat.Builder().setMediaId("12").setTitle("ALBUM TITLE").build(), 0));
-        result.sendResult(mediaItems);
-
+        result.sendResult(null);
     }
 
     @Override
@@ -319,15 +337,13 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         int pageSize = options.getInt(MediaBrowserCompat.EXTRA_PAGE_SIZE);
         options.putInt("songs_count", mediaProvider.getSongCursorSize());
 
-        List<Song> songs = getSongsPage(page, pageSize);
-
-        List<MediaBrowserCompat.MediaItem> mediaItems = Utils.mapToMediaItems(songs);
+        List<MediaBrowserCompat.MediaItem> mediaItems = getSongsPage(page, pageSize);
         result.sendResult(mediaItems);
 
         Log.d(TAG, "onLoadChildren: ");
     }
 
-    private List<Song> getSongsPage(int page, int pageSize) {
+    private List<MediaBrowserCompat.MediaItem> getSongsPage(int page, int pageSize) {
         int startPosition = page * pageSize;
         if (startPosition + pageSize <= mediaProvider.getSongCursorSize())
             return mediaProvider.getSongsAtRange(startPosition, startPosition + pageSize);

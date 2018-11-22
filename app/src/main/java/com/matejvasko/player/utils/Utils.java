@@ -8,6 +8,7 @@ import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 
 import com.matejvasko.player.App;
+import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.Song;
 
 import java.util.ArrayList;
@@ -57,6 +58,26 @@ public class Utils {
 
         return songs;
     }
+
+
+
+
+    public static List<MediaItemData> mapToMediaItemData(List<MediaBrowserCompat.MediaItem> children) {
+        List<MediaItemData> songs = new ArrayList<>();
+        for (MediaBrowserCompat.MediaItem mediaItem : children) {
+            MediaItemData mediaItemData = new MediaItemData(
+                    mediaItem.getDescription().getMediaId(),
+                    mediaItem.getDescription().getTitle().toString(),
+                    mediaItem.getDescription().getSubtitle().toString(),
+                    mediaItem.getDescription().getIconUri(),
+                    mediaItem.isBrowsable());
+            songs.add(mediaItemData);
+        }
+
+        return songs;
+    }
+
+
 
     public static String millisecondsToString(long mills) {
         int seconds = (int) (mills / 1000) % 60 ;

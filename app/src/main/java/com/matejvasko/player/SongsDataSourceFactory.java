@@ -5,7 +5,7 @@ import android.support.v4.media.MediaBrowserCompat;
 import androidx.annotation.NonNull;
 import androidx.paging.DataSource;
 
-public class SongsDataSourceFactory  extends DataSource.Factory<Integer, Song> {
+public class SongsDataSourceFactory  extends DataSource.Factory<Integer, MediaItemData> {
 
     private final MediaBrowserCompat mediaBrowser;
 
@@ -15,7 +15,7 @@ public class SongsDataSourceFactory  extends DataSource.Factory<Integer, Song> {
 
     @NonNull
     @Override
-    public DataSource<Integer, Song> create() {
+    public DataSource<Integer, MediaItemData> create() {
         return new SongsDataSource(mediaBrowser);
     }
 }

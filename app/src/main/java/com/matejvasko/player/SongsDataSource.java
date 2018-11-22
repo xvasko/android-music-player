@@ -14,7 +14,7 @@ import java.util.Set;
 import androidx.annotation.NonNull;
 import androidx.paging.PositionalDataSource;
 
-public class SongsDataSource extends PositionalDataSource<Song> {
+public class SongsDataSource extends PositionalDataSource<MediaItemData> {
 
     private static final String TAG = "SongsDataSource";
     private static int pageSize;
@@ -28,7 +28,7 @@ public class SongsDataSource extends PositionalDataSource<Song> {
     }
 
     @Override
-    public void loadInitial(@NonNull final LoadInitialParams params, @NonNull final LoadInitialCallback<Song> callback) {
+    public void loadInitial(@NonNull final LoadInitialParams params, @NonNull final LoadInitialCallback<MediaItemData> callback) {
         Log.d(TAG, "loadInitial");
         String parentId = getParentId(params.requestedStartPosition);
         Bundle extra = getInitialPageBundle(params);
@@ -39,19 +39,18 @@ public class SongsDataSource extends PositionalDataSource<Song> {
                 Log.d(TAG, "loadInitial: onChildrenLoaded" + options.toString());
                 super.onChildrenLoaded(parentId, children);
                 loadedPages.add(0);
-                List<Song> songs = Utils.mapToSongs(children);
+                List<MediaItemData> songs = Utils.mapToMediaItemData(children);
                 callback.onResult(songs, params.requestedStartPosition, options.getInt("songs_count"));
-//                callback.onResult(songs, params.requestedStartPosition);
             }
         });
     }
 
     @Override
-    public void loadRange(@NonNull LoadRangeParams params, @NonNull final LoadRangeCallback<Song> callback) {
+    public void loadRange(@NonNull LoadRangeParams params, @NonNull final LoadRangeCallback<MediaItemData> callback) {
         Log.d(TAG, "loadRange");
         final int pageIndex = getPageIndex(params);
         if (loadedPages.contains(pageIndex)) {
-            callback.onResult(new ArrayList<Song>());
+            callback.onResult(new ArrayList<MediaItemData>());
             return;
         }
 
@@ -61,8 +60,9 @@ public class SongsDataSource extends PositionalDataSource<Song> {
             @Override
             public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowserCompat.MediaItem> children, @NonNull Bundle options) {
                 Log.d(TAG, "loadRange: onChildrenLoaded");
+                super.onChildrenLoaded(parentId, children);
                 loadedPages.add(pageIndex);
-                List<Song> songs = Utils.mapToSongs(children);
+                List<MediaItemData> songs = Utils.mapToMediaItemData(children);
                 callback.onResult(songs);
             }
         });
