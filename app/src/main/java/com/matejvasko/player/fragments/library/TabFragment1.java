@@ -12,8 +12,7 @@ import android.view.ViewGroup;
 import com.matejvasko.player.MainActivity;
 import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.R;
-import com.matejvasko.player.Song;
-import com.matejvasko.player.adapters.SongListAdapter;
+import com.matejvasko.player.adapters.MediaItemDataListAdapter;
 import com.matejvasko.player.viewmodels.MainActivityViewModel;
 
 import androidx.annotation.Nullable;
@@ -29,10 +28,11 @@ import androidx.recyclerview.widget.RecyclerView;
  * A simple {@link Fragment} subclass.
  */
 public class TabFragment1 extends Fragment implements TabFragment1I {
+
     private static final String TAG = "TabFragment1";
 
     private RecyclerView recyclerView;
-    SongListAdapter songListAdapter;
+    private MediaItemDataListAdapter mediaItemDataListAdapter;
     private MainActivityViewModel mainActivityViewModel;
 
     private MediaBrowserCompat mediaBrowser;
@@ -42,15 +42,13 @@ public class TabFragment1 extends Fragment implements TabFragment1I {
     }
 
     public void setMediaBrowser(MediaBrowserCompat mediaBrowser) {
-
             this.mediaBrowser = mediaBrowser;
-
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        ((MainActivity)context).setListener(this);
+        ((MainActivity)context).setListener1(this);
         Log.d(TAG, "onAttach");
     }
 
@@ -67,9 +65,10 @@ public class TabFragment1 extends Fragment implements TabFragment1I {
         View view =  inflater.inflate(R.layout.fragment_tab_1, container, false);
 
         mainActivityViewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
-        songListAdapter = new SongListAdapter(getActivity(), ((MainActivity)getActivity()));
+        mediaItemDataListAdapter = new MediaItemDataListAdapter(getActivity(), ((MainActivity)getActivity()));
+
         recyclerView = view.findViewById(R.id.songs_recycler_view);
-        recyclerView.setAdapter(songListAdapter);
+        recyclerView.setAdapter(mediaItemDataListAdapter);
         recyclerView.setItemAnimator(null);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
@@ -139,7 +138,7 @@ public class TabFragment1 extends Fragment implements TabFragment1I {
         mainActivityViewModel.getSongs(mediaBrowser).observe(this, new Observer<PagedList<MediaItemData>>() {
             @Override
             public void onChanged(PagedList<MediaItemData> songs) {
-                songListAdapter.submitList(songs);
+                mediaItemDataListAdapter.submitList(songs);
             }
         });
     }

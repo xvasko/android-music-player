@@ -13,6 +13,7 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.matejvasko.player.paging.MediaItemDataSource;
 import com.matejvasko.player.utils.Utils;
 import com.matejvasko.player.viewmodels.MainActivityViewModel;
 
@@ -125,7 +126,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             System.out.println("MediaSessionCallback: onPlayFromMediaId");
         }
 
-        List<Song> albumSongs = new ArrayList<>();
         //List<Integer> queue = new ArrayList<>();
 
         int pointer = -1;
@@ -279,11 +279,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         }
 
         private int getRandomSongPosition() {
-            if (playingAlbum) {
-                return rand.nextInt(albumSongs.size());
-            } else {
-                return rand.nextInt(mediaProvider.getSongCursorSize());
-            }
+            return rand.nextInt(mediaProvider.getSongCursorSize());
         }
 
         private void resetQueue() {
@@ -329,26 +325,56 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     @Override
     public void onLoadChildren(@NonNull String parentId, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result, @NonNull Bundle options) {
         result.detach();
-
         if (!(options.containsKey(MediaBrowserCompat.EXTRA_PAGE) && options.containsKey(MediaBrowserCompat.EXTRA_PAGE_SIZE)))
             return;
 
         int page     = options.getInt(MediaBrowserCompat.EXTRA_PAGE);
         int pageSize = options.getInt(MediaBrowserCompat.EXTRA_PAGE_SIZE);
-        options.putInt("songs_count", mediaProvider.getSongCursorSize());
 
-        List<MediaBrowserCompat.MediaItem> mediaItems = getSongsPage(page, pageSize);
-        result.sendResult(mediaItems);
+        if (options.getInt("source") == MediaItemDataSource.SONG_DATA_SOURCE) {
+            options.putInt("items_count", mediaProvider.getSongCursorSize());
+            List<MediaBrowserCompat.MediaItem> mediaItems = getMediaItemPage(page, pageSize, MediaItemDataSource.SONG_DATA_SOURCE);
+            result.sendResult(mediaItems);
+        } else {
+            options.putInt("items_count", mediaProvider.getAlbumCursorSize());
+            List<MediaBrowserCompat.MediaItem> mediaItems = getMediaItemPage(page, pageSize, MediaItemDataSource.ALBUM_DATA_SOURCE);
+            result.sendResult(mediaItems);
+        }
 
         Log.d(TAG, "onLoadChildren: ");
     }
 
-    private List<MediaBrowserCompat.MediaItem> getSongsPage(int page, int pageSize) {
+    private List<MediaBrowserCompat.MediaItem> getMediaItemPage(int page, int pageSize, int flag) {
+
+        int cursorSize;
+
+        if (flag == MediaItemDataSource.SONG_DATA_SOURCE) {
+            cursorSize = mediaProvider.getSongCursorSize();
+        } else {
+            cursorSize = mediaProvider.getAlbumCursorSize();
+        }
+
         int startPosition = page * pageSize;
-        if (startPosition + pageSize <= mediaProvider.getSongCursorSize())
-            return mediaProvider.getSongsAtRange(startPosition, startPosition + pageSize);
+        if (startPosition + pageSize <= cursorSize)
+            return mediaProvider.getMediaItemsAtRange(startPosition, startPosition + pageSize, flag);
         else
-            return mediaProvider.getSongsAtRange(startPosition, mediaProvider.getSongCursorSize());
+            return mediaProvider.getMediaItemsAtRange(startPosition, cursorSize, flag);
     }
+
+//    private List<MediaBrowserCompat.MediaItem> getSongsPage(int page, int pageSize) {
+//        int startPosition = page * pageSize;
+//        if (startPosition + pageSize <= mediaProvider.getSongCursorSize())
+//            return mediaProvider.getSongsAtRange(startPosition, startPosition + pageSize);
+//        else
+//            return mediaProvider.getSongsAtRange(startPosition, mediaProvider.getSongCursorSize());
+//    }
+//
+//    private List<MediaBrowserCompat.MediaItem> getAlbumsPage(int page, int pageSize) {
+//        int startPosition = page * pageSize;
+//        if (startPosition + pageSize <= mediaProvider.getAlbumCursorSize())
+//            return mediaProvider.getAlbumsAtRange(startPosition, startPosition + pageSize);
+//        else
+//            return mediaProvider.getAlbumsAtRange(startPosition, mediaProvider.getAlbumCursorSize());
+//    }
 
 }

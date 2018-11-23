@@ -24,6 +24,7 @@ import com.matejvasko.player.fragments.FriendsFragment;
 import com.matejvasko.player.fragments.MapFragment;
 import com.matejvasko.player.fragments.library.LibraryFragment;
 import com.matejvasko.player.fragments.library.TabFragment1I;
+import com.matejvasko.player.fragments.library.TabFragment2I;
 import com.matejvasko.player.viewmodels.MainActivityViewModel;
 
 import java.util.List;
@@ -114,13 +115,6 @@ public class MainActivity extends AppCompatActivity {
         );
 
         viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
-        final Observer<Song> songObserver = new Observer<Song>() {
-            @Override
-            public void onChanged(Song song) {
-                System.out.println("SONG HAS CHANGED - lifecycle aware");
-            }
-        };
-        viewModel.getNowPlaying().observe(this, songObserver);
         mediaControllerCallback = new MediaControllerCallback();
 
         libraryFragment = new LibraryFragment();
@@ -259,12 +253,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private TabFragment1I listener;
-
-    public void setListener(TabFragment1I listener) {
-        this.listener = listener;
+    private TabFragment1I listener1;
+    private TabFragment2I listener2;
+    public void setListener1(TabFragment1I listener) {
+        this.listener1 = listener;
     }
-
+    public void setListener2(TabFragment2I listener) {
+        this.listener2 = listener;
+    }
     // Receives callbacks from the MediaBrowser when it has successfully connected to the
     // MediaBrowserService (MusicPlaybackService).
     private class MediaBrowserConnectionCallback extends MediaBrowserCompat.ConnectionCallback {
@@ -272,8 +268,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onConnected() {
             try {
-                listener.setMediaBrowser(mediaBrowser);
-                listener.loadSongs();
+                listener1.setMediaBrowser(mediaBrowser);
+                listener2.setMediaBrowser(mediaBrowser);
+                listener1.loadSongs();
+                listener2.loadAlbums();
                 mediaController = new MediaControllerCompat(MainActivity.this, mediaBrowser.getSessionToken());
                 mediaSeekBar.setMediaController(mediaController);
                 mediaController.registerCallback(mediaControllerCallback);
@@ -288,19 +286,6 @@ public class MainActivity extends AppCompatActivity {
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
-
-            mediaBrowser.subscribe(mediaBrowser.getRoot(), new MediaBrowserCompat.SubscriptionCallback() {
-                @Override
-                public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowserCompat.MediaItem> children) {
-                    super.onChildrenLoaded(parentId, children);
-
-                    System.out.println("onChildrenLoaded callback ");
-                    System.out.println("parentId: " + parentId);
-                    for (MediaBrowserCompat.MediaItem child : children) {
-                        System.out.println(child.getDescription().toString());
-                    }
-                }
-            });
 
             Log.d(TAG, "onConnected: MediaBrowserConnectionCallback");
         }

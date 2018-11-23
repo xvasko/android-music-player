@@ -11,19 +11,18 @@ import android.widget.TextView;
 import com.matejvasko.player.MainActivity;
 import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.R;
-import com.matejvasko.player.Song;
 import com.matejvasko.player.utils.Utils;
 
 import androidx.annotation.NonNull;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class SongListAdapter extends PagedListAdapter<MediaItemData, SongListAdapter.SongViewHolder>  {
+public class MediaItemDataListAdapter extends PagedListAdapter<MediaItemData, RecyclerView.ViewHolder>  {
 
     private final Context context;
     private final MainActivity activity;
 
-    public SongListAdapter(Context context, MainActivity activity) {
+    public MediaItemDataListAdapter(Context context, MainActivity activity) {
         super(MediaItemData.DIFF_CALLBACK);
         this.context = context;
         this.activity = activity;
@@ -31,19 +30,20 @@ public class SongListAdapter extends PagedListAdapter<MediaItemData, SongListAda
 
     @NonNull
     @Override
-    public SongListAdapter.SongViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public MediaItemDataListAdapter.SongViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         View itemView = layoutInflater.inflate(R.layout.song_item, parent, false);
         return new SongViewHolder(itemView, activity);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SongListAdapter.SongViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         MediaItemData mediaItemData = getItem(position);
+
         if (mediaItemData != null) {
-            holder.bindTo(mediaItemData);
+            ((SongViewHolder) holder).bindTo(mediaItemData);
         } else {
-            holder.clear();
+            ((SongViewHolder) holder).clear();
         }
     }
 
@@ -68,7 +68,6 @@ public class SongListAdapter extends PagedListAdapter<MediaItemData, SongListAda
         }
 
         void bindTo(MediaItemData mediaItemData) {
-            //song.setFromSongTab(true);
             this.mediaItemData = mediaItemData;
 
             songItemView.setText(mediaItemData.title);
