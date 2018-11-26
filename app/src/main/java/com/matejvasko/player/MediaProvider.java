@@ -56,28 +56,27 @@ public final class MediaProvider {
         );
     }
 
-
-    int getSongCursorSize() {
+    public int getSongCursorSize() {
         return songCursor.getCount();
     }
 
-    int getAlbumCursorSize() {
+    public int getAlbumCursorSize() {
         return albumCursor.getCount();
     }
 
-    List<MediaBrowserCompat.MediaItem> getMediaItemsAtRange(int startPosition, int endPosition, int flag) {
-        List<MediaBrowserCompat.MediaItem> mediaItems = new ArrayList<>();
+    public List<MediaItemData> getMediaItemDataAtRange(int startPosition, int endPosition, int flag) {
+        List<MediaItemData> mediaItems = new ArrayList<>();
 
         for (int position = startPosition; position < endPosition; ++position) {
-            MediaBrowserCompat.MediaItem mediaItem = getMediaItemAtPosition(position, flag);
-            if (mediaItem != null)
-                mediaItems.add(mediaItem);
+            MediaItemData mediaItemData = getMediaItemDataAtPosition(position, flag);
+            if (mediaItemData != null)
+                mediaItems.add(mediaItemData);
         }
 
         return mediaItems;
     }
 
-    private MediaBrowserCompat.MediaItem getMediaItemAtPosition(int position, int flag) {
+    private MediaItemData getMediaItemDataAtPosition(int position, int flag) {
 
         Cursor cursor;
 
@@ -94,26 +93,47 @@ public final class MediaProvider {
         return createMediaItemData(cursor, flag);
     }
 
+    public List<MediaItemData> getAlbumSongs(String albumId) {
+        if (albumId == null || albumId.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
 
-    private MediaBrowserCompat.MediaItem createMediaItemData(Cursor cursor, int flag) {
+        albumSongsCursor = ContentResolverCompat.query(
+                App.getAppContext().getContentResolver(),
+                getSongUri(),
+                getSongProjection(),
+                getAlbumSongsSelection(albumId),
+                null,
+                null,
+                null
+        );
+
+        List<MediaItemData> songs = new ArrayList<>();
+
+        for (int i = 0; i < albumSongsCursor.getCount(); i++) {
+            albumSongsCursor.moveToNext();
+            songs.add(createMediaItemData(albumSongsCursor, MediaItemDataSource.SONG_DATA_SOURCE));
+        }
+
+        return songs;
+    }
+
+    private MediaItemData createMediaItemData(Cursor cursor, int flag) {
         if (flag == MediaItemDataSource.SONG_DATA_SOURCE) {
-            MediaDescriptionCompat mediaDescription = new MediaDescriptionCompat.Builder()
-                    .setMediaId(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID)))
+            return new MediaItemData.Builder(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID)))
+                    .setBrowseable(false)
                     .setTitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)))
                     .setSubtitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)))
-                    .setIconUri(Uri.parse("content://media/external/audio/albumart/" + cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))))
+                    .setAlbumArtUri(Uri.parse("content://media/external/audio/albumart/" + cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))))
+                    .setDuration(cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)))
                     .build();
-
-            return new MediaBrowserCompat.MediaItem(mediaDescription, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE);
         } else {
-            MediaDescriptionCompat mediaDescription = new MediaDescriptionCompat.Builder()
-                    .setMediaId(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums._ID)))
+            return new MediaItemData.Builder(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums._ID)))
+                    .setBrowseable(true)
                     .setTitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM)))
-                    .setSubtitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)))
-                    .setIconUri(Uri.parse("content://media/external/audio/albumart/" + cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Albums._ID))))
+                    .setSubtitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ARTIST)))
+                    .setAlbumArtUri(Uri.parse("content://media/external/audio/albumart/" + cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Albums._ID))))
                     .build();
-
-            return new MediaBrowserCompat.MediaItem(mediaDescription, MediaBrowserCompat.MediaItem.FLAG_BROWSABLE);
         }
     }
 

@@ -15,21 +15,6 @@ import java.util.Map;
 
 public class Utils {
 
-    public static List<MediaItemData> mapToMediaItemData(List<MediaBrowserCompat.MediaItem> children) {
-        List<MediaItemData> mediaItemsData = new ArrayList<>();
-        for (MediaBrowserCompat.MediaItem mediaItem : children) {
-            MediaItemData mediaItemData = new MediaItemData(
-                    mediaItem.getDescription().getMediaId(),
-                    mediaItem.getDescription().getTitle().toString(),
-                    mediaItem.getDescription().getSubtitle().toString(),
-                    mediaItem.getDescription().getIconUri(),
-                    mediaItem.isBrowsable());
-            mediaItemsData.add(mediaItemData);
-        }
-
-        return mediaItemsData;
-    }
-
     public static String millisecondsToString(long mills) {
         int seconds = (int) (mills / 1000) % 60 ;
         int minutes = (int) ((mills / (1000*60)) % 60);

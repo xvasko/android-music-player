@@ -1,6 +1,6 @@
 package com.matejvasko.player.adapters;
 
-import com.matejvasko.player.fragments.library.TabFragment1;
+import com.matejvasko.player.fragments.library.SongsFragment;
 import com.matejvasko.player.fragments.library.TabFragment2;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ public class PagerAdapter extends FragmentPagerAdapter {
 
     public PagerAdapter(FragmentManager fm) {
         super(fm);
-        fragmentList.add(new TabFragment1());
+        fragmentList.add(new SongsFragment());
         fragmentList.add(new TabFragment2());
     }
 

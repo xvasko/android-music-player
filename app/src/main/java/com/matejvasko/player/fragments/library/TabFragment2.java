@@ -6,50 +6,33 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
-import androidx.paging.PagedList;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
-import android.support.v4.media.MediaBrowserCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.matejvasko.player.MainActivity;
-import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.R;
-import com.matejvasko.player.adapters.MediaItemDataListAdapter;
-import com.matejvasko.player.viewmodels.MainActivityViewModel;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class TabFragment2 extends Fragment implements TabFragment2I {
+public class TabFragment2 extends Fragment {
 
     private static final String TAG = "TabFragment2";
-
-    private RecyclerView recyclerView;
-    private MediaItemDataListAdapter mediaItemDataListAdapter;
-    private MainActivityViewModel mainActivityViewModel;
-
-    private MediaBrowserCompat mediaBrowser;
 
     public TabFragment2() {
         // Required empty public constructor
     }
 
-    public void setMediaBrowser(MediaBrowserCompat mediaBrowser) {
-        this.mediaBrowser = mediaBrowser;
-    }
+
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        ((MainActivity)context).setListener2(this);
         Log.d(TAG, "onAttach");
     }
 
@@ -66,23 +49,11 @@ public class TabFragment2 extends Fragment implements TabFragment2I {
 
         View view =  inflater.inflate(R.layout.fragment_tab_2, container, false);
 
-        mainActivityViewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
-        mediaItemDataListAdapter = new MediaItemDataListAdapter(getActivity(), ((MainActivity)getActivity()));
-
-        recyclerView = view.findViewById(R.id.albums_recycler_view);
-        recyclerView.setAdapter(mediaItemDataListAdapter);
-        recyclerView.setItemAnimator(null);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-        if (mediaBrowser != null) {
-            loadAlbums();
-        } else {
-            MediaBrowserCompat mediaBrowser = ((MainActivity)getActivity()).getMediaBrowser();
-            if(mediaBrowser != null && mediaBrowser.isConnected()) {
-                setMediaBrowser(mediaBrowser);
-                loadAlbums();
-            }
-        }
+        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        AlbumsFragment albumsListFragment = new AlbumsFragment();
+        fragmentTransaction.add(R.id.album_fragment_container, albumsListFragment);
+        fragmentTransaction.commit();
 
         return view;
     }
@@ -133,17 +104,6 @@ public class TabFragment2 extends Fragment implements TabFragment2I {
     public void onDetach() {
         super.onDetach();
         Log.d(TAG, "onDetach");
-    }
-
-    // as a result of MainActivity.MediaControllerCallback.onConnected()
-    public void loadAlbums() {
-        System.out.println("LOAD ALBUMS");
-        mainActivityViewModel.getAlbums(mediaBrowser).observe(this, new Observer<PagedList<MediaItemData>>() {
-            @Override
-            public void onChanged(PagedList<MediaItemData> albums) {
-                mediaItemDataListAdapter.submitList(albums);
-            }
-        });
     }
 
 }

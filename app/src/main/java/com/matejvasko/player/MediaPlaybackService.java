@@ -322,59 +322,43 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         result.sendResult(null);
     }
 
-    @Override
-    public void onLoadChildren(@NonNull String parentId, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result, @NonNull Bundle options) {
-        result.detach();
-        if (!(options.containsKey(MediaBrowserCompat.EXTRA_PAGE) && options.containsKey(MediaBrowserCompat.EXTRA_PAGE_SIZE)))
-            return;
-
-        int page     = options.getInt(MediaBrowserCompat.EXTRA_PAGE);
-        int pageSize = options.getInt(MediaBrowserCompat.EXTRA_PAGE_SIZE);
-
-        if (options.getInt("source") == MediaItemDataSource.SONG_DATA_SOURCE) {
-            options.putInt("items_count", mediaProvider.getSongCursorSize());
-            List<MediaBrowserCompat.MediaItem> mediaItems = getMediaItemPage(page, pageSize, MediaItemDataSource.SONG_DATA_SOURCE);
-            result.sendResult(mediaItems);
-        } else {
-            options.putInt("items_count", mediaProvider.getAlbumCursorSize());
-            List<MediaBrowserCompat.MediaItem> mediaItems = getMediaItemPage(page, pageSize, MediaItemDataSource.ALBUM_DATA_SOURCE);
-            result.sendResult(mediaItems);
-        }
-
-        Log.d(TAG, "onLoadChildren: ");
-    }
-
-    private List<MediaBrowserCompat.MediaItem> getMediaItemPage(int page, int pageSize, int flag) {
-
-        int cursorSize;
-
-        if (flag == MediaItemDataSource.SONG_DATA_SOURCE) {
-            cursorSize = mediaProvider.getSongCursorSize();
-        } else {
-            cursorSize = mediaProvider.getAlbumCursorSize();
-        }
-
-        int startPosition = page * pageSize;
-        if (startPosition + pageSize <= cursorSize)
-            return mediaProvider.getMediaItemsAtRange(startPosition, startPosition + pageSize, flag);
-        else
-            return mediaProvider.getMediaItemsAtRange(startPosition, cursorSize, flag);
-    }
-
-//    private List<MediaBrowserCompat.MediaItem> getSongsPage(int page, int pageSize) {
-//        int startPosition = page * pageSize;
-//        if (startPosition + pageSize <= mediaProvider.getSongCursorSize())
-//            return mediaProvider.getSongsAtRange(startPosition, startPosition + pageSize);
-//        else
-//            return mediaProvider.getSongsAtRange(startPosition, mediaProvider.getSongCursorSize());
-//    }
+//    @Override
+//    public void onLoadChildren(@NonNull String parentId, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result, @NonNull Bundle options) {
+//        result.detach();
+//        if (!(options.containsKey(MediaBrowserCompat.EXTRA_PAGE) && options.containsKey(MediaBrowserCompat.EXTRA_PAGE_SIZE)))
+//            return;
 //
-//    private List<MediaBrowserCompat.MediaItem> getAlbumsPage(int page, int pageSize) {
+//        int page     = options.getInt(MediaBrowserCompat.EXTRA_PAGE);
+//        int pageSize = options.getInt(MediaBrowserCompat.EXTRA_PAGE_SIZE);
+//
+//        if (options.getInt("source") == MediaItemDataSource.SONG_DATA_SOURCE) {
+//            options.putInt("items_count", mediaProvider.getSongCursorSize());
+//            List<MediaBrowserCompat.MediaItem> mediaItems = getMediaItemPage(page, pageSize, MediaItemDataSource.SONG_DATA_SOURCE);
+//            result.sendResult(mediaItems);
+//        } else {
+//            options.putInt("items_count", mediaProvider.getAlbumCursorSize());
+//            List<MediaBrowserCompat.MediaItem> mediaItems = getMediaItemPage(page, pageSize, MediaItemDataSource.ALBUM_DATA_SOURCE);
+//            result.sendResult(mediaItems);
+//        }
+//
+//        Log.d(TAG, "onLoadChildren: ");
+//    }
+
+//    private List<MediaBrowserCompat.MediaItem> getMediaItemPage(int page, int pageSize, int flag) {
+//
+//        int cursorSize;
+//
+//        if (flag == MediaItemDataSource.SONG_DATA_SOURCE) {
+//            cursorSize = mediaProvider.getSongCursorSize();
+//        } else {
+//            cursorSize = mediaProvider.getAlbumCursorSize();
+//        }
+//
 //        int startPosition = page * pageSize;
-//        if (startPosition + pageSize <= mediaProvider.getAlbumCursorSize())
-//            return mediaProvider.getAlbumsAtRange(startPosition, startPosition + pageSize);
+//        if (startPosition + pageSize <= cursorSize)
+//            return mediaProvider.getMediaItemsAtRange(startPosition, startPosition + pageSize, flag);
 //        else
-//            return mediaProvider.getAlbumsAtRange(startPosition, mediaProvider.getAlbumCursorSize());
+//            return mediaProvider.getMediaItemsAtRange(startPosition, cursorSize, flag);
 //    }
 
 }

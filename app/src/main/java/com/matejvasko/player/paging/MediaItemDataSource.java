@@ -5,6 +5,7 @@ import android.support.v4.media.MediaBrowserCompat;
 import android.util.Log;
 
 import com.matejvasko.player.MediaItemData;
+import com.matejvasko.player.MediaProvider;
 import com.matejvasko.player.utils.Utils;
 
 import java.util.ArrayList;
@@ -23,13 +24,12 @@ public class MediaItemDataSource extends PositionalDataSource<MediaItemData> {
     public static final int SONG_DATA_SOURCE = 0;
     public static final int ALBUM_DATA_SOURCE = 1;
 
-    private final MediaBrowserCompat mediaBrowser;
+    private MediaProvider mediaProvider = MediaProvider.getInstance();
+
     private final int flag;
-    private String rootId;
     private Set<Integer> loadedPages = new HashSet<>();
 
-    MediaItemDataSource(MediaBrowserCompat mediaBrowser, int flag) {
-        this.mediaBrowser = mediaBrowser;
+    MediaItemDataSource(int flag) {
         this.flag = flag;
     }
 
@@ -37,27 +37,22 @@ public class MediaItemDataSource extends PositionalDataSource<MediaItemData> {
     public void loadInitial(@NonNull final LoadInitialParams params, @NonNull final LoadInitialCallback<MediaItemData> callback) {
         Log.d(TAG, "loadInitial");
 
-        String parentId = getParentId(params.requestedStartPosition);
-        Bundle extra = getInitialPageBundle(params);
         pageSize = params.pageSize;
+        loadedPages.add(0);
 
-        synchronized (mediaBrowser) {
-            mediaBrowser.subscribe(parentId, extra, new MediaBrowserCompat.SubscriptionCallback() {
-                @Override
-                public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowserCompat.MediaItem> children, @NonNull Bundle options) {
-                    Log.d(TAG, "loadInitial: onChildrenLoaded" + options.toString());
-                    super.onChildrenLoaded(parentId, children);
-                    loadedPages.add(0);
-                    List<MediaItemData> mediaItemsData = Utils.mapToMediaItemData(children);
-                    callback.onResult(mediaItemsData, params.requestedStartPosition, options.getInt("items_count"));
-                }
-            });
+        int size;
+        if (this.flag == SONG_DATA_SOURCE) {
+            size = mediaProvider.getSongCursorSize();
+        } else {
+            size = mediaProvider.getAlbumCursorSize();
         }
+
+        callback.onResult(getMediaItemPage(0, pageSize), params.requestedStartPosition, size);
     }
 
     @Override
     public void loadRange(@NonNull LoadRangeParams params, @NonNull final LoadRangeCallback<MediaItemData> callback) {
-        Log.d(TAG, "loadRange");
+        Log.d(TAG, "loadRange " + flag);
 
         final int pageIndex = getPageIndex(params);
         if (loadedPages.contains(pageIndex)) {
@@ -65,52 +60,30 @@ public class MediaItemDataSource extends PositionalDataSource<MediaItemData> {
             return;
         }
 
-        String parentId = getParentId(params.startPosition);
-        Bundle extra = getRangeBundle(params);
+        loadedPages.add(pageIndex);
+        callback.onResult(getMediaItemPage(pageIndex, pageSize));
+    }
 
-        synchronized (mediaBrowser) {
-            mediaBrowser.subscribe(parentId, extra, new MediaBrowserCompat.SubscriptionCallback() {
-                @Override
-                public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowserCompat.MediaItem> children, @NonNull Bundle options) {
-                    Log.d(TAG, "loadRange: onChildrenLoaded");
-                    super.onChildrenLoaded(parentId, children);
-                    loadedPages.add(pageIndex);
-                    List<MediaItemData> songs = Utils.mapToMediaItemData(children);
-                    callback.onResult(songs);
-                }
-            });
+    private List<MediaItemData> getMediaItemPage(int page, int pageSize) {
+
+        int cursorSize;
+
+        if (flag == MediaItemDataSource.SONG_DATA_SOURCE) {
+            cursorSize = mediaProvider.getSongCursorSize();
+        } else {
+            cursorSize = mediaProvider.getAlbumCursorSize();
         }
-    }
 
-    @NonNull
-    private Bundle getInitialPageBundle(@NonNull LoadInitialParams params) {
-        Bundle extra = new Bundle();
-        extra.putInt(MediaBrowserCompat.EXTRA_PAGE, 0);
-        extra.putInt(MediaBrowserCompat.EXTRA_PAGE_SIZE, params.pageSize);
-        extra.putInt("source", flag);
-        return extra;
-    }
-
-    private Bundle getRangeBundle(LoadRangeParams params) {
-        Bundle extra = new Bundle();
-        extra.putInt(MediaBrowserCompat.EXTRA_PAGE, getPageIndex(params));
-        extra.putInt(MediaBrowserCompat.EXTRA_PAGE_SIZE, pageSize);
-        extra.putInt("source", flag);
-        return extra;
+        int startPosition = page * pageSize;
+        if (startPosition + pageSize <= cursorSize) {
+            return mediaProvider.getMediaItemDataAtRange(startPosition, startPosition + pageSize, flag);
+        }else {
+            return mediaProvider.getMediaItemDataAtRange(startPosition, cursorSize, flag);
+        }
     }
 
     private int getPageIndex(LoadRangeParams params) {
         return params.startPosition / pageSize;
-    }
-
-    private String getParentId(int requestedStartPosition) {
-        if (rootId == null)
-            rootId = mediaBrowser.getRoot();
-        if (flag == SONG_DATA_SOURCE) {
-            return rootId + "/songs/" + requestedStartPosition;
-        } else {
-            return rootId + "/albums/" + requestedStartPosition;
-        }
     }
 
 }

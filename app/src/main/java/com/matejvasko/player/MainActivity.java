@@ -4,7 +4,6 @@ import android.content.ComponentName;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v4.media.MediaBrowserCompat;
-import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -22,9 +21,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.matejvasko.player.fragments.FriendsFragment;
 import com.matejvasko.player.fragments.MapFragment;
+import com.matejvasko.player.fragments.library.SongsFragmentI;
 import com.matejvasko.player.fragments.library.LibraryFragment;
-import com.matejvasko.player.fragments.library.TabFragment1I;
-import com.matejvasko.player.fragments.library.TabFragment2I;
+import com.matejvasko.player.fragments.library.AlbumsFragmentI;
 import com.matejvasko.player.viewmodels.MainActivityViewModel;
 
 import java.util.List;
@@ -34,7 +33,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 public class MainActivity extends AppCompatActivity {
@@ -253,12 +251,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private TabFragment1I listener1;
-    private TabFragment2I listener2;
-    public void setListener1(TabFragment1I listener) {
+    private SongsFragmentI listener1;
+    private AlbumsFragmentI listener2;
+    public void setListener1(SongsFragmentI listener) {
         this.listener1 = listener;
     }
-    public void setListener2(TabFragment2I listener) {
+    public void setListener2(AlbumsFragmentI listener) {
         this.listener2 = listener;
     }
     // Receives callbacks from the MediaBrowser when it has successfully connected to the
@@ -268,8 +266,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onConnected() {
             try {
-                listener1.setMediaBrowser(mediaBrowser);
-                listener2.setMediaBrowser(mediaBrowser);
                 listener1.loadSongs();
                 listener2.loadAlbums();
                 mediaController = new MediaControllerCompat(MainActivity.this, mediaBrowser.getSessionToken());

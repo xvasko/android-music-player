@@ -2,18 +2,22 @@ package com.matejvasko.player.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.matejvasko.player.fragments.library.AlbumFragment;
 import com.matejvasko.player.MainActivity;
 import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.R;
 import com.matejvasko.player.utils.Utils;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,10 +26,10 @@ public class MediaItemDataListAdapter extends PagedListAdapter<MediaItemData, Re
     private final Context context;
     private final MainActivity activity;
 
-    public MediaItemDataListAdapter(Context context, MainActivity activity) {
+    public MediaItemDataListAdapter(Context context) {
         super(MediaItemData.DIFF_CALLBACK);
         this.context = context;
-        this.activity = activity;
+        this.activity = (MainActivity) context;
     }
 
     @NonNull
@@ -88,7 +92,20 @@ public class MediaItemDataListAdapter extends PagedListAdapter<MediaItemData, Re
 
         @Override
         public void onClick(View v) {
-            activity.playFromMediaId(mediaItemData);
+            if (mediaItemData.isBrowseable) {
+                FragmentManager fragmentManager = activity.getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                Bundle bundle = new Bundle();
+                bundle.putString("album_id", mediaItemData.mediaId);
+                AlbumFragment albumFragment = new AlbumFragment();
+                albumFragment.setArguments(bundle);
+                fragmentTransaction.replace(R.id.album_fragment_container, albumFragment);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
+            } else {
+                activity.playFromMediaId(mediaItemData);
+            }
+
         }
     }
 

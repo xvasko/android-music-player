@@ -9,17 +9,15 @@ import androidx.paging.DataSource;
 
 public class MediaItemDataSourceFactory extends DataSource.Factory<Integer, MediaItemData> {
 
-    private final MediaBrowserCompat mediaBrowser;
     private final int flag;
 
-    public MediaItemDataSourceFactory(MediaBrowserCompat mediaBrowser, int flag) {
-        this.mediaBrowser = mediaBrowser;
+    public MediaItemDataSourceFactory(int flag) {
         this.flag = flag;
     }
 
     @NonNull
     @Override
     public DataSource<Integer, MediaItemData> create() {
-        return new MediaItemDataSource(mediaBrowser, flag);
+        return new MediaItemDataSource(flag);
     }
 }
