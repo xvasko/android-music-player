@@ -67,17 +67,7 @@ public class SongsFragment extends Fragment implements SongsFragmentI {
         recyclerView.setItemAnimator(null);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-
-        //loadSongs();
-//        if (mediaBrowser != null) {
-//            loadSongs();
-//        } else {
-//            MediaBrowserCompat mediaBrowser = ((MainActivity)getActivity()).getMediaBrowser();
-//            if(mediaBrowser != null && mediaBrowser.isConnected()) {
-//                setMediaBrowser(mediaBrowser);
-//                loadSongs();
-//            }
-//        }
+        loadSongs();
 
         return view;
     }

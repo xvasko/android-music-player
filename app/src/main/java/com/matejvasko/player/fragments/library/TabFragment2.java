@@ -16,6 +16,8 @@ import android.view.ViewGroup;
 
 import com.matejvasko.player.R;
 
+import java.lang.reflect.Field;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -42,6 +44,8 @@ public class TabFragment2 extends Fragment {
         Log.d(TAG, "onCreate");
     }
 
+    FragmentManager fm;
+    Fragment fragment;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -49,11 +53,15 @@ public class TabFragment2 extends Fragment {
 
         View view =  inflater.inflate(R.layout.fragment_tab_2, container, false);
 
-        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        AlbumsFragment albumsListFragment = new AlbumsFragment();
-        fragmentTransaction.add(R.id.album_fragment_container, albumsListFragment);
-        fragmentTransaction.commit();
+          fm = getActivity().getSupportFragmentManager();
+//        fragment = fm.findFragmentByTag("albumsFragment");
+//        if (fragment == null) {
+            fm.beginTransaction()
+                    .add(R.id.album_fragment_container, new AlbumsFragment(), "albumsFragment")
+                    .commit();
+//            System.out.println("fragment isnull");
+//        }
+
 
         return view;
     }
@@ -103,6 +111,10 @@ public class TabFragment2 extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+//        Fragment fragment = fm.findFragmentByTag("albumsFragment");
+//        if (fragment != null) {
+//            fm.beginTransaction().remove(fragment).commit();
+//        }
         Log.d(TAG, "onDetach");
     }
 

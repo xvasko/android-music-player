@@ -97,13 +97,15 @@ public class MediaItemDataListAdapter extends PagedListAdapter<MediaItemData, Re
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 Bundle bundle = new Bundle();
                 bundle.putString("album_id", mediaItemData.mediaId);
+                bundle.putString("album_title", mediaItemData.title);
                 AlbumFragment albumFragment = new AlbumFragment();
                 albumFragment.setArguments(bundle);
-                fragmentTransaction.replace(R.id.album_fragment_container, albumFragment);
+                fragmentTransaction.replace(R.id.album_fragment_container, albumFragment, "albumFragment");
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
             } else {
-                activity.playFromMediaId(mediaItemData);
+                System.out.println("MEDIAITEMDATA CURSOR POSITION: " + mediaItemData.cursorPosition);
+                activity.customAction("playSong", mediaItemData);
             }
 
         }

@@ -21,6 +21,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.matejvasko.player.fragments.FriendsFragment;
 import com.matejvasko.player.fragments.MapFragment;
+import com.matejvasko.player.fragments.library.AlbumsFragment;
 import com.matejvasko.player.fragments.library.SongsFragmentI;
 import com.matejvasko.player.fragments.library.LibraryFragment;
 import com.matejvasko.player.fragments.library.AlbumsFragmentI;
@@ -32,6 +33,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -67,10 +69,6 @@ public class MainActivity extends AppCompatActivity {
     private MediaBrowserCompat mediaBrowser;
     private MediaControllerCompat mediaController;
     private MediaControllerCallback mediaControllerCallback;
-
-    public MediaBrowserCompat getMediaBrowser() {
-        return mediaBrowser;
-    }
 
     private boolean isPlaying;
     private boolean isShuffle;
@@ -145,23 +143,18 @@ public class MainActivity extends AppCompatActivity {
             public void onStateChanged(@NonNull View view, int i) {
                 switch (i) {
                     case BottomSheetBehavior.STATE_COLLAPSED:
-                        System.out.println("BottomSheetBehavior.STATE_COLLAPSED");
                         playPauseImageView.setVisibility(View.VISIBLE);
                         playPauseButton.setEnabled(true);
                         break;
                     case BottomSheetBehavior.STATE_EXPANDED:
-                        System.out.println("BottomSheetBehavior.STATE_EXPANDED");
                         playPauseImageView.setVisibility(View.INVISIBLE);
                         playPauseButton.setEnabled(false);
                         break;
                     case BottomSheetBehavior.STATE_DRAGGING:
-                        System.out.println("BottomSheetBehavior.STATE_DRAGGING");
                         break;
                     case BottomSheetBehavior.STATE_SETTLING:
-                        System.out.println("BottomSheetBehavior.STATE_SETTLING");
                         break;
                     case BottomSheetBehavior.STATE_HIDDEN:
-                        System.out.println("BottomSheetBehavior.STATE_HIDDEN");
                         break;
                 }
             }
@@ -173,8 +166,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void playFromMediaId(MediaItemData mediaItemData) {
-        mediaController.getTransportControls().playFromMediaId(mediaItemData.mediaId, null);
+    public void customAction(String action, MediaItemData mediaItemData) {
+        Bundle bundle = new Bundle();
+        bundle.putInt("cursor_position", mediaItemData.cursorPosition);
+        mediaController.getTransportControls().sendCustomAction(action, bundle);
     }
 
     private class ClickListener implements View.OnClickListener {
@@ -209,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
                         mediaController.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL);
                         isShuffle = true;
                     }
-                    shuffleImageView.setPressed(isShuffle);
+                    shuffleImageView.setImageResource(isShuffle ? R.drawable.ic_shuffle_primary_24dp : R.drawable.ic_shuffle_black_24dp);
                     break;
                 case R.id.bottom_sheet_on_click:
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
@@ -315,8 +310,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onPlaybackStateChanged(@Nullable final PlaybackStateCompat state) {
             isPlaying = state != null && state.getState() == PlaybackStateCompat.STATE_PLAYING;
-            playPauseImageView.setPressed(isPlaying);
-            playPauseBigImageView.setPressed(isPlaying);
+            playPauseImageView.setImageResource(isPlaying ? R.drawable.ic_pause_black_24dp : R.drawable.ic_play_arrow_black_24dp);
+            playPauseBigImageView.setImageResource(isPlaying ? R.drawable.ic_pause_black_24dp : R.drawable.ic_play_arrow_black_24dp);
 
             Log.d(TAG, "onPlaybackStateChanged: MediaControllerCallback + " + state);
         }
@@ -324,6 +319,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onQueueChanged(List<MediaSessionCompat.QueueItem> queue) {
             super.onQueueChanged(queue);
+
+            Log.d(TAG, "onQueueChanged: ");
         }
 
         // This might happen if the MusicService is killed while the Activity is in the
@@ -338,8 +335,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setFragment(Fragment fragment) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, fragment).commit();
+
+        if (!(fragment instanceof LibraryFragment)) {
+            Fragment albumsFragment = getSupportFragmentManager().findFragmentByTag("albumsFragment");
+            Fragment albumFragment  = getSupportFragmentManager().findFragmentByTag("albumFragment");
+
+            if (albumsFragment != null) {
+                getSupportFragmentManager().beginTransaction().remove(albumsFragment).commit();
+            }
+
+            if (albumFragment != null) {
+                getSupportFragmentManager().beginTransaction().remove(albumFragment).commit();
+                getSupportFragmentManager().popBackStack();
+            }
+        }
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .commit();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause: ");
+    }
 }

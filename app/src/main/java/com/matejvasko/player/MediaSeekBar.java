@@ -120,7 +120,6 @@ public class MediaSeekBar extends AppCompatSeekBar {
 
             if (state != null && state.getState() == PlaybackStateCompat.STATE_PLAYING) {
                 final int timeToEnd = (int) ((getMax() - progress) / state.getPlaybackSpeed());
-                System.out.println("ASDASD");
                 valueAnimator = ValueAnimator.ofInt(progress, getMax()).setDuration(timeToEnd);
                 valueAnimator.setInterpolator(new LinearInterpolator());
                 valueAnimator.addUpdateListener(this);

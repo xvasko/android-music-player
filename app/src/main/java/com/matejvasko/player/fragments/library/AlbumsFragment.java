@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
@@ -75,15 +76,8 @@ public class AlbumsFragment extends Fragment implements AlbumsFragmentI {
         recyclerView.setItemAnimator(null);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-//        if (mediaBrowser != null) {
-//            loadAlbums();
-//        } else {
-//            MediaBrowserCompat mediaBrowser = ((MainActivity)getActivity()).getMediaBrowser();
-//            if(mediaBrowser != null && mediaBrowser.isConnected()) {
-//                setMediaBrowser(mediaBrowser);
-//                loadAlbums();
-//            }
-//        }
+        // TODO what if this is called sooner than browser media will be connected
+        loadAlbums();
 
         return view;
     }
@@ -133,6 +127,7 @@ public class AlbumsFragment extends Fragment implements AlbumsFragmentI {
     @Override
     public void onDetach() {
         super.onDetach();
+
         Log.d(TAG, "onDetach");
     }
 

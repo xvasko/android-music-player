@@ -74,7 +74,7 @@
                     android:layout_height="40dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic_play_pause_toggle"
+                    android:src="@drawable/ic_play_arrow_black_24dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -140,7 +140,7 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="20dp"
                     android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic_play_pause_toggle"
+                    android:src="@drawable/ic_play_arrow_black_24dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/media_seek_bar" />
@@ -184,7 +184,7 @@
                     android:layout_height="24dp"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic_shuffle_toggle"
+                    android:src="@drawable/ic_shuffle_black_24dp"
                     app:layout_constraintBottom_toBottomOf="@+id/skip_next_button"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.7"

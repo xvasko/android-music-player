@@ -3,8 +3,6 @@ package com.matejvasko.player;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.v4.media.MediaBrowserCompat;
-import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 
 import com.matejvasko.player.paging.MediaItemDataSource;
@@ -13,7 +11,6 @@ import com.matejvasko.player.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.annotation.Nullable;
 import androidx.core.content.ContentResolverCompat;
 
 public final class MediaProvider {
@@ -60,6 +57,10 @@ public final class MediaProvider {
         return songCursor.getCount();
     }
 
+    public int getAlbumSongCursorSize() {
+        return albumSongsCursor.getCount();
+    }
+
     public int getAlbumCursorSize() {
         return albumCursor.getCount();
     }
@@ -76,7 +77,7 @@ public final class MediaProvider {
         return mediaItems;
     }
 
-    private MediaItemData getMediaItemDataAtPosition(int position, int flag) {
+    public MediaItemData getMediaItemDataAtPosition(int position, int flag) {
 
         Cursor cursor;
 
@@ -118,6 +119,11 @@ public final class MediaProvider {
         return songs;
     }
 
+    public MediaItemData getSongFromAlbum(int position) {
+        albumSongsCursor.moveToPosition(position);
+        return createMediaItemData(albumSongsCursor, MediaItemDataSource.SONG_DATA_SOURCE);
+    }
+
     private MediaItemData createMediaItemData(Cursor cursor, int flag) {
         if (flag == MediaItemDataSource.SONG_DATA_SOURCE) {
             return new MediaItemData.Builder(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID)))
@@ -126,6 +132,7 @@ public final class MediaProvider {
                     .setSubtitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)))
                     .setAlbumArtUri(Uri.parse("content://media/external/audio/albumart/" + cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))))
                     .setDuration(cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)))
+                    .setCursorPosition(cursor.getPosition())
                     .build();
         } else {
             return new MediaItemData.Builder(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums._ID)))
@@ -179,34 +186,27 @@ public final class MediaProvider {
         return "(" + MediaStore.Audio.Media.ALBUM_ID + "==" + albumId + ")";
     }
 
-    @Nullable
     private String getSongSortOrder() {
         return MediaStore.Audio.Media.TITLE + " ASC";
     }
 
-    private String getSongByIdSelection(String mediaId) {
-        return "(" + MediaStore.Audio.Media._ID + "==" + mediaId + ")";
-    }
+    MediaMetadataCompat getMediaMetadata(int cursorPosition, boolean playingAlbum) {
+        Cursor cursor;
+        if (playingAlbum) {
+            cursor = albumSongsCursor;
+        } else {
+            cursor = songCursor;
+        }
 
-    MediaMetadataCompat getMediaMetadata(String mediaId) {
-        Cursor mediaItemByIdCursor = ContentResolverCompat.query(
-                App.getAppContext().getContentResolver(),
-                getSongUri(),
-                getSongProjection(),
-                getSongByIdSelection(mediaId),
-                null,
-                getSongSortOrder(),
-                null);
-
-        mediaItemByIdCursor.moveToNext();
+        cursor.moveToPosition(cursorPosition);
 
         return createMediaMetadata(
-                mediaItemByIdCursor.getString(mediaItemByIdCursor.getColumnIndex(MediaStore.Audio.Media._ID)),
-                mediaItemByIdCursor.getString(mediaItemByIdCursor.getColumnIndex(MediaStore.Audio.Media.TITLE)),
-                mediaItemByIdCursor.getString(mediaItemByIdCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
-                mediaItemByIdCursor.getString(mediaItemByIdCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)),
-                mediaItemByIdCursor.getString(mediaItemByIdCursor.getColumnIndex(MediaStore.Audio.Media.DATA)),
-                mediaItemByIdCursor.getLong(mediaItemByIdCursor.getColumnIndex(MediaStore.Audio.Media.DURATION))
+                cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID)),
+                cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)),
+                cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
+                cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)),
+                cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)),
+                cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION))
         );
     }
 

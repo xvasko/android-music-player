@@ -1,12 +1,15 @@
 package com.matejvasko.player.adapters;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.matejvasko.player.MainActivity;
 import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.R;
+import com.matejvasko.player.utils.Utils;
 
 import java.util.List;
 
@@ -15,10 +18,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class AlbumSongsListAdapter extends RecyclerView.Adapter<AlbumSongsListAdapter.SongViewHolder> {
 
+    private MainActivity mainActivity;
     private List<MediaItemData> songs;
 
-    public AlbumSongsListAdapter(List<MediaItemData> songs) {
+    public AlbumSongsListAdapter(Context context, List<MediaItemData> songs) {
         this.songs = songs;
+        this.mainActivity = (MainActivity) context;
     }
 
     @NonNull
@@ -33,9 +38,10 @@ public class AlbumSongsListAdapter extends RecyclerView.Adapter<AlbumSongsListAd
     @Override
     public void onBindViewHolder(@NonNull AlbumSongsListAdapter.SongViewHolder holder, int position) {
         MediaItemData mediaItemData = songs.get(position);
-        holder.number.setText("0");
+        holder.mediaItemData = mediaItemData;
+        holder.number.setText(position + 1 + "");
         holder.title.setText(mediaItemData.title);
-        holder.duration.setText(mediaItemData.mediaId);
+        holder.duration.setText(Utils.millisecondsToString(mediaItemData.duration));
     }
 
     @Override
@@ -43,15 +49,24 @@ public class AlbumSongsListAdapter extends RecyclerView.Adapter<AlbumSongsListAd
         return songs.size();
     }
 
-    class SongViewHolder extends RecyclerView.ViewHolder {
+    class SongViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
+        MediaItemData mediaItemData;
         TextView number, title, duration;
 
          SongViewHolder(@NonNull View itemView) {
             super(itemView);
+
+            itemView.setOnClickListener(this);
+
             number   = itemView.findViewById(R.id.album_song_item_index);
             title    = itemView.findViewById(R.id.album_song_item_title);
             duration = itemView.findViewById(R.id.album_song_item_duration);
+        }
+
+        @Override
+        public void onClick(View view) {
+            mainActivity.customAction("playSongFromAlbum", mediaItemData);
         }
     }
 

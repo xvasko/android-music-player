@@ -1,7 +1,6 @@
 package com.matejvasko.player;
 
 import android.net.Uri;
-import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
@@ -14,17 +13,17 @@ public class MediaItemData {
     public String subtitle;
     public Uri albumArtUri;
     public long duration;
+    public int cursorPosition;
 
-    private MediaItemData(String mediaId, boolean isBrowseable, String title, String subtitle, Uri albumArtUri, long duration) {
+    private MediaItemData(String mediaId, boolean isBrowseable, String title, String subtitle, Uri albumArtUri, long duration, int cursorPosition) {
         this.mediaId = mediaId;
         this.isBrowseable = isBrowseable;
         this.title = title;
         this.subtitle = subtitle;
         this.albumArtUri = albumArtUri;
         this.duration = duration;
+        this.cursorPosition = cursorPosition;
     }
-
-
 
     public static class Builder {
         private String mediaId;
@@ -33,7 +32,7 @@ public class MediaItemData {
         private String subtitle;
         private Uri albumArtUri;
         private long duration;
-
+        private int cursorPosition;
 
         public Builder(String mediaId) {
             this.mediaId = mediaId;
@@ -64,8 +63,13 @@ public class MediaItemData {
             return this;
         }
 
+        public Builder setCursorPosition(int cursorPosition) {
+            this.cursorPosition = cursorPosition;
+            return this;
+        }
+
         public MediaItemData build() {
-            return new MediaItemData(mediaId, isBrowseable, title, subtitle, albumArtUri, duration);
+            return new MediaItemData(mediaId, isBrowseable, title, subtitle, albumArtUri, duration, cursorPosition);
         }
 
     }
