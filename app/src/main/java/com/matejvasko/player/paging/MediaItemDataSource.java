@@ -1,8 +1,12 @@
 package com.matejvasko.player.paging;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.media.MediaBrowserCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.MediaProvider;
@@ -14,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.paging.PositionalDataSource;
 
 public class MediaItemDataSource extends PositionalDataSource<MediaItemData> {
@@ -25,6 +30,41 @@ public class MediaItemDataSource extends PositionalDataSource<MediaItemData> {
     public static final int ALBUM_DATA_SOURCE = 1;
 
     private MediaProvider mediaProvider = MediaProvider.getInstance();
+//
+//    private static final int READ_EXTERNAL_STORAGE_PERMISSION = 0;
+//
+//    private void checkReadExternalStoragePermission() {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+//                listener1.loadSongs();
+//                listener2.loadAlbums();
+//            } else {
+//                if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+//                    Toast.makeText(this, "App needs to load music", Toast.LENGTH_SHORT).show();
+//                }
+//                requestPermissions(new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, READ_EXTERNAL_STORAGE_PERMISSION);
+//            }
+//        } else {
+//            listener1.loadSongs();
+//            listener2.loadAlbums();
+//        }
+//    }
+//
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        switch (requestCode) {
+//            case READ_EXTERNAL_STORAGE_PERMISSION:
+//                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    Toast.makeText(this, "Now have access to views thumbnails", Toast.LENGTH_SHORT).show();
+//                    listener1.loadSongs();
+//                    listener2.loadAlbums();
+//                }
+//                break;
+//            default:
+//                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        }
+//
+//    }
 
     private final int flag;
     private Set<Integer> loadedPages = new HashSet<>();

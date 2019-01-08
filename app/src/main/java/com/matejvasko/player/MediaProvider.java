@@ -187,7 +187,7 @@ public final class MediaProvider {
     }
 
     private String getSongSortOrder() {
-        return MediaStore.Audio.Media.TITLE + " ASC";
+        return MediaStore.Audio.Media.TITLE + " COLLATE NOCASE ASC";
     }
 
     MediaMetadataCompat getMediaMetadata(int cursorPosition, boolean playingAlbum) {

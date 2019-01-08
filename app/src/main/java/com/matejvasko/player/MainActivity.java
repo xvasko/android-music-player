@@ -1,6 +1,9 @@
 package com.matejvasko.player;
 
+import android.Manifest;
 import android.content.ComponentName;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v4.media.MediaBrowserCompat;
@@ -21,10 +24,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.matejvasko.player.fragments.FriendsFragment;
 import com.matejvasko.player.fragments.MapFragment;
-import com.matejvasko.player.fragments.library.AlbumsFragment;
-import com.matejvasko.player.fragments.library.SongsFragmentI;
-import com.matejvasko.player.fragments.library.LibraryFragment;
 import com.matejvasko.player.fragments.library.AlbumsFragmentI;
+import com.matejvasko.player.fragments.library.LibraryFragment;
+import com.matejvasko.player.fragments.library.SongsFragmentI;
 import com.matejvasko.player.viewmodels.MainActivityViewModel;
 
 import java.util.List;
@@ -32,9 +34,8 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProviders;
 
 public class MainActivity extends AppCompatActivity {
@@ -213,20 +214,51 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     @Override
     protected void onStart() {
         super.onStart();
         if (mediaBrowser == null) {
-            mediaBrowser = new MediaBrowserCompat(
-                            this,
-                            new ComponentName(this, MediaPlaybackService.class),
-                            new MediaBrowserConnectionCallback(),
-                            null);
-            mediaBrowser.connect();
+            if (isStoragePermissionGranted()) {
+                createMediaBrowser();
+            }
+
         }
 
         Log.d(TAG, "onStart: Creating MediaBrowser, and connecting");
+    }
+
+    private void createMediaBrowser() {
+        mediaBrowser = new MediaBrowserCompat(
+                this,
+                new ComponentName(this, MediaPlaybackService.class),
+                new MediaBrowserConnectionCallback(),
+                null);
+        mediaBrowser.connect();
+    }
+
+    private boolean isStoragePermissionGranted() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                Log.v(TAG,"Permission is granted");
+                return true;
+            } else {
+                Log.v(TAG,"Permission is revoked");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        } else {
+            Log.v(TAG,"Permission is granted");
+            return true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            Log.v(TAG,"Permission: " + permissions[0] + " was " + grantResults[0]);
+            createMediaBrowser();
+        }
     }
 
     @Override
@@ -245,7 +277,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onStop:");
     }
 
-
     private SongsFragmentI listener1;
     private AlbumsFragmentI listener2;
     public void setListener1(SongsFragmentI listener) {
@@ -262,7 +293,7 @@ public class MainActivity extends AppCompatActivity {
         public void onConnected() {
             try {
                 listener1.loadSongs();
-                listener2.loadAlbums();
+//                listener2.loadAlbums();
                 mediaController = new MediaControllerCompat(MainActivity.this, mediaBrowser.getSessionToken());
                 mediaSeekBar.setMediaController(mediaController);
                 mediaController.registerCallback(mediaControllerCallback);
