@@ -42,5 +42,4 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/cover_item" />
 
-
 </androidx.constraintlayout.widget.ConstraintLayout>

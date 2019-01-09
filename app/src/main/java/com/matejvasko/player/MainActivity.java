@@ -37,6 +37,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.NavigationUI;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,9 +48,6 @@ public class MainActivity extends AppCompatActivity {
     private BottomSheetBehavior bottomSheetBehavior;
 
     public MainActivityViewModel viewModel;
-
-    BottomNavigationView bottomNav;
-    RelativeLayout fragmentContainer;
 
     View bottomSheetOnClickView;
     RelativeLayout bottomSheet;
@@ -81,8 +81,10 @@ public class MainActivity extends AppCompatActivity {
 
         ClickListener clickListener = new ClickListener();
 
-        bottomNav = findViewById(R.id.bottom_nav);
-        fragmentContainer = findViewById(R.id.fragment_container);
+        // setup navigation
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        NavigationUI.setupWithNavController(bottomNav, navController);
 
         bottomSheetOnClickView = findViewById(R.id.bottom_sheet_on_click);
         bottomSheetOnClickView.setOnClickListener(clickListener);
@@ -118,27 +120,6 @@ public class MainActivity extends AppCompatActivity {
         friendsFragment = new FriendsFragment();
         mapFragment = new MapFragment();
 
-        setFragment(libraryFragment);
-
-        bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.bottom_nav_library:
-                        setFragment(libraryFragment);
-                        return true;
-                    case R.id.bottom_nav_friends:
-                        setFragment(friendsFragment);
-                        return true;
-                    case R.id.bottom_nav_map:
-                        setFragment(mapFragment);
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-        });
-
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View view, int i) {
@@ -165,6 +146,11 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        return Navigation.findNavController(this, R.id.nav_host_fragment).navigateUp();
     }
 
     public void customAction(String action, MediaItemData mediaItemData) {
@@ -221,7 +207,6 @@ public class MainActivity extends AppCompatActivity {
             if (isStoragePermissionGranted()) {
                 createMediaBrowser();
             }
-
         }
 
         Log.d(TAG, "onStart: Creating MediaBrowser, and connecting");
@@ -363,28 +348,6 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "onSessionDestroyed: MediaControllerCallback");
         }
 
-    }
-
-    private void setFragment(Fragment fragment) {
-
-        if (!(fragment instanceof LibraryFragment)) {
-            Fragment albumsFragment = getSupportFragmentManager().findFragmentByTag("albumsFragment");
-            Fragment albumFragment  = getSupportFragmentManager().findFragmentByTag("albumFragment");
-
-            if (albumsFragment != null) {
-                getSupportFragmentManager().beginTransaction().remove(albumsFragment).commit();
-            }
-
-            if (albumFragment != null) {
-                getSupportFragmentManager().beginTransaction().remove(albumFragment).commit();
-                getSupportFragmentManager().popBackStack();
-            }
-        }
-
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .commit();
     }
 
     @Override

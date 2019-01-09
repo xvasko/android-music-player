@@ -1,6 +1,5 @@
 package com.matejvasko.player.fragments.library;
 
-
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,7 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.matejvasko.player.App;
 import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.MediaProvider;
 import com.matejvasko.player.R;
@@ -19,7 +20,10 @@ import com.matejvasko.player.utils.Utils;
 import java.util.List;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -51,7 +55,7 @@ public class AlbumFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
-        View view = inflater.inflate(R.layout.fragment_album, container, false);
+        final View view = inflater.inflate(R.layout.fragment_album, container, false);
 
         Bundle bundle = getArguments();
 
@@ -69,6 +73,14 @@ public class AlbumFragment extends Fragment {
         TextView albumArtist = view.findViewById(R.id.album_artist);
         albumTitle.setText(bundle.getString("album_title"));
         albumArtist.setText(songs.get(0).subtitle);
+
+        Toolbar toolbar = view.findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Navigation.findNavController(view).navigateUp();
+            }
+        });
 
         return view;
     }

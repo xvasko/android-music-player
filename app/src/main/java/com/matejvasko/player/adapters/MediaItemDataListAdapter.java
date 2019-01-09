@@ -2,26 +2,23 @@ package com.matejvasko.player.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.matejvasko.player.fragments.library.AlbumFragment;
 import com.matejvasko.player.MainActivity;
 import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.R;
 import com.matejvasko.player.utils.Utils;
+import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class MediaItemDataListAdapter extends PagedListAdapter<MediaItemData, RecyclerView.ViewHolder>  {
+public class MediaItemDataListAdapter extends PagedListAdapter<MediaItemData, RecyclerView.ViewHolder> implements FastScrollRecyclerView.SectionedAdapter {
 
     private final Context context;
     private final MainActivity activity;
@@ -36,7 +33,7 @@ public class MediaItemDataListAdapter extends PagedListAdapter<MediaItemData, Re
     @Override
     public MediaItemDataListAdapter.SongViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View itemView = layoutInflater.inflate(R.layout.song_item, parent, false);
+        View itemView = layoutInflater.inflate(R.layout.item_song, parent, false);
         return new SongViewHolder(itemView, activity);
     }
 
@@ -49,6 +46,12 @@ public class MediaItemDataListAdapter extends PagedListAdapter<MediaItemData, Re
         } else {
             ((SongViewHolder) holder).clear();
         }
+    }
+
+    @NonNull
+    @Override
+    public String getSectionName(int position) {
+        return (getItem(position).title.charAt(0) + "").toUpperCase();
     }
 
     class SongViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -93,16 +96,16 @@ public class MediaItemDataListAdapter extends PagedListAdapter<MediaItemData, Re
         @Override
         public void onClick(View v) {
             if (mediaItemData.isBrowseable) {
-                FragmentManager fragmentManager = activity.getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                Bundle bundle = new Bundle();
-                bundle.putString("album_id", mediaItemData.mediaId);
-                bundle.putString("album_title", mediaItemData.title);
-                AlbumFragment albumFragment = new AlbumFragment();
-                albumFragment.setArguments(bundle);
-                fragmentTransaction.replace(R.id.album_fragment_container, albumFragment, "albumFragment");
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
+//                FragmentManager fragmentManager = activity.getSupportFragmentManager();
+//                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+//                Bundle bundle = new Bundle();
+//                bundle.putString("album_id", mediaItemData.mediaId);
+//                bundle.putString("album_title", mediaItemData.title);
+//                AlbumFragment albumFragment = new AlbumFragment();
+//                albumFragment.setArguments(bundle);
+//                fragmentTransaction.replace(R.id.album_fragment_container, albumFragment, "albumFragment");
+//                fragmentTransaction.addToBackStack(null);
+//                fragmentTransaction.commit();
             } else {
                 System.out.println("MEDIAITEMDATA CURSOR POSITION: " + mediaItemData.cursorPosition);
                 activity.customAction("playSong", mediaItemData);

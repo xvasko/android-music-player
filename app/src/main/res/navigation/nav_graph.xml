@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/libraryFragment">
+
+    <fragment
+        android:id="@+id/libraryFragment"
+        android:name="com.matejvasko.player.fragments.library.LibraryFragment"
+        android:label="fragment_library"
+        tools:layout="@layout/fragment_library" />
+
+    <fragment
+        android:id="@+id/friendsFragment"
+        android:name="com.matejvasko.player.fragments.FriendsFragment"
+        android:label="fragment_friends"
+        tools:layout="@layout/fragment_friends" />
+
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.matejvasko.player.fragments.MapFragment"
+        android:label="fragment_map"
+        tools:layout="@layout/fragment_map" />
+
+    <fragment
+        android:id="@+id/albumFragment"
+        android:name="com.matejvasko.player.fragments.library.AlbumFragment"
+        android:label="fragment_album"
+        tools:layout="@layout/fragment_album" />
+
+</navigation>
