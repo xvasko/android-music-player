@@ -48,7 +48,7 @@ public final class MediaProvider {
                 getAlbumProjection(),
                 null,
                 null,
-                null,
+                getAlbumSortOrder(),
                 null
         );
     }
@@ -188,6 +188,10 @@ public final class MediaProvider {
 
     private String getSongSortOrder() {
         return MediaStore.Audio.Media.TITLE + " COLLATE NOCASE ASC";
+    }
+
+    private String getAlbumSortOrder() {
+        return MediaStore.Audio.Albums.ALBUM+ " COLLATE NOCASE ASC";
     }
 
     MediaMetadataCompat getMediaMetadata(int cursorPosition, boolean playingAlbum) {

@@ -63,14 +63,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                FragmentManager fragmentManager = ((MainActivity) context).getSupportFragmentManager();
-//                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-//                AlbumFragment albumFragment = new AlbumFragment();
-//                albumFragment.setArguments(bundle);
-//                fragmentTransaction.replace(R.id.nav_host_fragment, albumFragment, "albumFragment");
-//                fragmentTransaction.addToBackStack(null);
-//                fragmentTransaction.commit();
-//                System.out.println("XXX");
                 Bundle bundle = new Bundle();
                 bundle.putString("album_id", data.get(position).mediaId);
                 bundle.putString("album_title", data.get(position).title);

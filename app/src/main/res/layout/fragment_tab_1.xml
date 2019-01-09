@@ -8,9 +8,9 @@
 
     <com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
         android:id="@+id/songs_recycler_view"
-        app:fastScrollAutoHide="false"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:fastScrollAutoHide="false"
         app:fastScrollThumbEnabled="true"
         app:fastScrollPopupBackgroundSize="70dp"
         app:fastScrollPopupBgColor="@color/colorAccent"

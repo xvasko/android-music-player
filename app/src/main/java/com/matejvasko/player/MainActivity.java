@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
         ClickListener clickListener = new ClickListener();
 
-        // setup navigation
+        // setup bottom navigation
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupWithNavController(bottomNav, navController);
@@ -221,14 +221,15 @@ public class MainActivity extends AppCompatActivity {
         mediaBrowser.connect();
     }
 
-    private boolean isStoragePermissionGranted() {
+    public boolean isStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            if ((checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) &&
+                (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
                 Log.v(TAG,"Permission is granted");
                 return true;
             } else {
                 Log.v(TAG,"Permission is revoked");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 return false;
             }
         } else {
@@ -240,9 +241,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
-            Log.v(TAG,"Permission: " + permissions[0] + " was " + grantResults[0]);
-            createMediaBrowser();
+        switch (requestCode) {
+            case 1:
+                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    Log.v(TAG,"Permission: " + permissions[0] + " was " + grantResults[0]);
+                    createMediaBrowser();
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
@@ -278,7 +285,7 @@ public class MainActivity extends AppCompatActivity {
         public void onConnected() {
             try {
                 listener1.loadSongs();
-//                listener2.loadAlbums();
+                listener2.loadAlbums();
                 mediaController = new MediaControllerCompat(MainActivity.this, mediaBrowser.getSessionToken());
                 mediaSeekBar.setMediaController(mediaController);
                 mediaController.registerCallback(mediaControllerCallback);

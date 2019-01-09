@@ -1,6 +1,5 @@
 package com.matejvasko.player.fragments.library;
 
-
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,7 +20,6 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -67,7 +65,9 @@ public class SongsFragment extends Fragment implements SongsFragmentI {
         recyclerView.setItemAnimator(null);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        loadSongs();
+        if (((MainActivity) getActivity()).isStoragePermissionGranted()) {
+            loadSongs();
+        }
 
         return view;
     }
