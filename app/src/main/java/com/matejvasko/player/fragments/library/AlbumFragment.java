@@ -60,8 +60,9 @@ public class AlbumFragment extends Fragment {
         Bundle bundle = getArguments();
 
         MediaProvider mediaProvider = MediaProvider.getInstance();
-        List<MediaItemData> songs = mediaProvider.getAlbumSongs(bundle.getString("album_id"));
-        AlbumSongsListAdapter albumSongsListAdapter = new AlbumSongsListAdapter(getActivity(), songs);
+        String albumId = bundle.getString("album_id");
+        List<MediaItemData> songs = mediaProvider.getAlbumSongs(albumId);
+        AlbumSongsListAdapter albumSongsListAdapter = new AlbumSongsListAdapter(getActivity(), songs, albumId);
         RecyclerView recyclerView = view.findViewById(R.id.albums_songs_list);
         recyclerView.setAdapter(albumSongsListAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));

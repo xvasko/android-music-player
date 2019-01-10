@@ -9,15 +9,17 @@ public class MediaItemData {
 
     public String mediaId;
     public boolean isBrowseable;
+    public boolean isFromAlbum;
     public String title;
     public String subtitle;
     public Uri albumArtUri;
     public long duration;
     public int cursorPosition;
 
-    private MediaItemData(String mediaId, boolean isBrowseable, String title, String subtitle, Uri albumArtUri, long duration, int cursorPosition) {
+    private MediaItemData(String mediaId, boolean isBrowseable, boolean isFromAlbum, String title, String subtitle, Uri albumArtUri, long duration, int cursorPosition) {
         this.mediaId = mediaId;
         this.isBrowseable = isBrowseable;
+        this.isFromAlbum = isFromAlbum;
         this.title = title;
         this.subtitle = subtitle;
         this.albumArtUri = albumArtUri;
@@ -28,6 +30,7 @@ public class MediaItemData {
     public static class Builder {
         private String mediaId;
         private boolean isBrowseable;
+        private boolean isFromAlbum;
         private String title;
         private String subtitle;
         private Uri albumArtUri;
@@ -40,6 +43,11 @@ public class MediaItemData {
 
         public Builder setBrowseable(boolean isBrowseable) {
             this.isBrowseable = isBrowseable;
+            return this;
+        }
+
+        public Builder setFromAlbum(boolean isFromAlbum) {
+            this.isFromAlbum = isFromAlbum;
             return this;
         }
 
@@ -69,7 +77,7 @@ public class MediaItemData {
         }
 
         public MediaItemData build() {
-            return new MediaItemData(mediaId, isBrowseable, title, subtitle, albumArtUri, duration, cursorPosition);
+            return new MediaItemData(mediaId, isBrowseable, isFromAlbum, title, subtitle, albumArtUri, duration, cursorPosition);
         }
 
     }

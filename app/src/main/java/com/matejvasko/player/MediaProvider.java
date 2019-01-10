@@ -17,9 +17,9 @@ public final class MediaProvider {
 
     private static volatile MediaProvider instance;
 
-    private  Cursor songCursor;
-    private  Cursor albumCursor;
-    private  Cursor albumSongsCursor;
+    private Cursor songCursor;
+    private Cursor albumCursor;
+    private Cursor albumSongsCursor;
 
     public static MediaProvider getInstance() {
         if (instance == null) {
@@ -95,6 +95,7 @@ public final class MediaProvider {
     }
 
     public List<MediaItemData> getAlbumSongs(String albumId) {
+        System.out.println("album id inside getAlbumSongs:" + albumId);
         if (albumId == null || albumId.isEmpty()) {
             throw new IllegalArgumentException();
         }
@@ -113,7 +114,7 @@ public final class MediaProvider {
 
         for (int i = 0; i < albumSongsCursor.getCount(); i++) {
             albumSongsCursor.moveToNext();
-            songs.add(createMediaItemData(albumSongsCursor, MediaItemDataSource.SONG_DATA_SOURCE));
+            songs.add(createMediaItemData(albumSongsCursor, MediaItemDataSource.SONG_DATA_SOURCE, true));
         }
 
         return songs;
@@ -125,9 +126,14 @@ public final class MediaProvider {
     }
 
     private MediaItemData createMediaItemData(Cursor cursor, int flag) {
+        return createMediaItemData(cursor, flag, false);
+    }
+
+    private MediaItemData createMediaItemData(Cursor cursor, int flag, boolean isFromAlbum) {
         if (flag == MediaItemDataSource.SONG_DATA_SOURCE) {
             return new MediaItemData.Builder(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID)))
                     .setBrowseable(false)
+                    .setFromAlbum(isFromAlbum)
                     .setTitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)))
                     .setSubtitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)))
                     .setAlbumArtUri(Uri.parse("content://media/external/audio/albumart/" + cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))))
@@ -191,7 +197,7 @@ public final class MediaProvider {
     }
 
     private String getAlbumSortOrder() {
-        return MediaStore.Audio.Albums.ALBUM+ " COLLATE NOCASE ASC";
+        return MediaStore.Audio.Albums.ALBUM + " COLLATE NOCASE ASC";
     }
 
     MediaMetadataCompat getMediaMetadata(int cursorPosition, boolean playingAlbum) {

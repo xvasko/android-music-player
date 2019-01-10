@@ -2,6 +2,8 @@ package com.matejvasko.player;
 
 import android.Manifest;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,20 +15,19 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.Html;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.matejvasko.player.fragments.FriendsFragment;
-import com.matejvasko.player.fragments.MapFragment;
 import com.matejvasko.player.fragments.library.AlbumsFragmentI;
-import com.matejvasko.player.fragments.library.LibraryFragment;
 import com.matejvasko.player.fragments.library.SongsFragmentI;
+import com.matejvasko.player.utils.SharedPref;
+import com.matejvasko.player.utils.Utils;
 import com.matejvasko.player.viewmodels.MainActivityViewModel;
 
 import java.util.List;
@@ -35,10 +36,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private BottomSheetBehavior bottomSheetBehavior;
+    private View navHostFragment;
 
     public MainActivityViewModel viewModel;
 
@@ -63,10 +65,6 @@ public class MainActivity extends AppCompatActivity {
     Button shuffleButton;
     MediaSeekBar mediaSeekBar;
 
-    private LibraryFragment libraryFragment;
-    private FriendsFragment friendsFragment;
-    private MapFragment mapFragment;
-
     private MediaBrowserCompat mediaBrowser;
     private MediaControllerCompat mediaController;
     private MediaControllerCallback mediaControllerCallback;
@@ -74,15 +72,18 @@ public class MainActivity extends AppCompatActivity {
     private boolean isPlaying;
     private boolean isShuffle;
 
+    SharedPref sharedPref;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        sharedPref = SharedPref.getInstance();
         ClickListener clickListener = new ClickListener();
 
         // setup bottom navigation
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+        navHostFragment = findViewById(R.id.nav_host_fragment);
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupWithNavController(bottomNav, navController);
 
@@ -116,10 +117,8 @@ public class MainActivity extends AppCompatActivity {
         viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
         mediaControllerCallback = new MediaControllerCallback();
 
-        libraryFragment = new LibraryFragment();
-        friendsFragment = new FriendsFragment();
-        mapFragment = new MapFragment();
-
+        bottomSheetBehavior.setHideable(true);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View view, int i) {
@@ -146,6 +145,8 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        Log.d(TAG, "onCreate: ");
     }
 
     @Override
@@ -154,9 +155,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void customAction(String action, MediaItemData mediaItemData) {
-        Bundle bundle = new Bundle();
-        bundle.putInt("cursor_position", mediaItemData.cursorPosition);
-        mediaController.getTransportControls().sendCustomAction(action, bundle);
+        sharedPref.setCurrentSong(mediaItemData);
+        mediaController.getTransportControls().sendCustomAction(action, null);
     }
 
     private class ClickListener implements View.OnClickListener {
@@ -290,12 +290,14 @@ public class MainActivity extends AppCompatActivity {
                 mediaSeekBar.setMediaController(mediaController);
                 mediaController.registerCallback(mediaControllerCallback);
 
+                if (sharedPref.getCurrentSongCursorPosition() >= 0) {
+                    mediaController.getTransportControls().prepare();
+                    bottomSheetBehavior.setHideable(false);
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                }
+
                 // enables handling of media buttons
                 MediaControllerCompat.setMediaController(MainActivity.this, mediaController);
-
-                // Display the initial state
-                MediaMetadataCompat metadata = mediaController.getMetadata();
-                PlaybackStateCompat plabackState = mediaController.getPlaybackState();
 
             } catch (RemoteException e) {
                 e.printStackTrace();

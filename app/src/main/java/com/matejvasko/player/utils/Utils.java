@@ -45,4 +45,9 @@ public class Utils {
         }
     }
 
+    public static int densityPixelToPixel(int densityPixel) {
+        final float scale = App.getAppContext().getResources().getDisplayMetrics().density;
+        return (int) (densityPixel * scale + 0.5f);
+    }
+
 }

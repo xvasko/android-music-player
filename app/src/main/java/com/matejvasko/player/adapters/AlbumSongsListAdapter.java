@@ -1,14 +1,17 @@
 package com.matejvasko.player.adapters;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.matejvasko.player.App;
 import com.matejvasko.player.MainActivity;
 import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.R;
+import com.matejvasko.player.utils.SharedPref;
 import com.matejvasko.player.utils.Utils;
 
 import java.util.List;
@@ -20,10 +23,14 @@ public class AlbumSongsListAdapter extends RecyclerView.Adapter<AlbumSongsListAd
 
     private MainActivity mainActivity;
     private List<MediaItemData> songs;
+    private String albumId;
 
-    public AlbumSongsListAdapter(Context context, List<MediaItemData> songs) {
+    private SharedPref sharedPref = SharedPref.getInstance();
+
+    public AlbumSongsListAdapter(Context context, List<MediaItemData> songs, String albumId) {
         this.songs = songs;
         this.mainActivity = (MainActivity) context;
+        this.albumId = albumId;
     }
 
     @NonNull
@@ -66,6 +73,7 @@ public class AlbumSongsListAdapter extends RecyclerView.Adapter<AlbumSongsListAd
 
         @Override
         public void onClick(View view) {
+            sharedPref.setCurrentAlbumId(albumId);
             mainActivity.customAction("playSongFromAlbum", mediaItemData);
         }
     }

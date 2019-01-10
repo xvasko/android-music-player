@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.matejvasko.player.paging.MediaItemDataSource;
+import com.matejvasko.player.utils.SharedPref;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private MediaNotificationManager mediaNotificationManager;
     private boolean serviceInStartedState;
 
+    private SharedPref sharedPref = SharedPref.getInstance();
 
     @Override
     public void onCreate() {
@@ -122,7 +124,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     String fileName;
     String newFileName;
     int currentSongPosition;
-    boolean playningAlbum;
+    boolean playingAlbum;
 
     public class MediaSessionCallback extends MediaSessionCompat.Callback {
 
@@ -132,27 +134,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         public void onCustomAction(String action, Bundle extras) {
             super.onCustomAction(action, extras);
 
-            if (action.equals("playSongFromAlbum")) {
-                playningAlbum = true;
-
-
-            } else if (action.equals("playSong")) {
-                playningAlbum = false;
-
-            } else {
-                throw new IllegalArgumentException();
-            }
-
-            currentSongPosition = extras.getInt("cursor_position");
-
-            System.out.println("currentSongPosition: " + currentSongPosition);
+            playingAlbum = sharedPref.isCurrentSongFromAlbum();
+            currentSongPosition = sharedPref.getCurrentSongCursorPosition();
 
             queueManager.resetQueue();
             queueManager.addItem(currentSongPosition);
 
             setMediaSessionMetadata(currentSongPosition);
             onPlay();
-
         }
 
         @Override
@@ -185,6 +174,20 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             setNewMetadata(mediaMetadata);
 
             Log.d(TAG, "onPlay: MediaSessionCallback");
+        }
+
+        /**
+         * Prepare the last played song
+         */
+        @Override
+        public void onPrepare() {
+            super.onPrepare();
+            String albumId = sharedPref.getCurrentAlbumId();
+            if (albumId != null) {
+                mediaProvider.getAlbumSongs(albumId);
+            }
+            playingAlbum = sharedPref.isCurrentSongFromAlbum();
+            setMediaSessionMetadata(sharedPref.getCurrentSongCursorPosition());
         }
 
         @Override
@@ -240,7 +243,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         }
 
         private void setMediaSessionMetadata(int cursorPosition) {
-            mediaMetadata = mediaProvider.getMediaMetadata(cursorPosition, playningAlbum);
+            mediaMetadata = mediaProvider.getMediaMetadata(cursorPosition, playingAlbum);
             mediaSession.setMetadata(mediaMetadata);
             newFileName = mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI);
         }
@@ -323,6 +326,12 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        System.out.println("DESTROYING SERVICE");
+    }
+
     private class QueueManager {
 
         List<Integer> queue = new ArrayList<>();
@@ -365,7 +374,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         }
 
         private int getRandomSongPosition() {
-            if (playningAlbum) {
+            if (playingAlbum) {
                 return mediaProvider.getSongFromAlbum(rand.nextInt(mediaProvider.getAlbumSongCursorSize())).cursorPosition;
             } else {
                 return Objects.requireNonNull(mediaProvider.getMediaItemDataAtPosition(
@@ -375,7 +384,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         }
 
         private int getSongAtPosition(int position) {
-            if (playningAlbum) {
+            if (playingAlbum) {
                 return mediaProvider.getSongFromAlbum(position % mediaProvider.getAlbumSongCursorSize()).cursorPosition;
             } else {
                 return Objects.requireNonNull(mediaProvider.getMediaItemDataAtPosition(
