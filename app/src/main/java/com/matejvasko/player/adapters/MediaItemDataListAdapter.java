@@ -65,8 +65,12 @@ public class MediaItemDataListAdapter
 
     @Override
     public int getItemViewType(int position) {
-        // TODO .... null pointer is real
-        return getItem(position).isBrowseable ? TYPE_ALBUM : TYPE_SONG;
+        MediaItemData mediaItemData = getItem(position);
+        if (mediaItemData != null) {
+            return mediaItemData.isBrowseable ? TYPE_ALBUM : TYPE_SONG;
+        } else {
+            return TYPE_SONG;
+        }
     }
 
     @NonNull
