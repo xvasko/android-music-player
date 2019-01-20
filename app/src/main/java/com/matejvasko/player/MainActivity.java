@@ -208,8 +208,6 @@ public class MainActivity extends AppCompatActivity {
                 createMediaBrowser();
             }
         }
-
-        Log.d(TAG, "onStart: Creating MediaBrowser, and connecting");
     }
 
     private void createMediaBrowser() {
@@ -219,6 +217,7 @@ public class MainActivity extends AppCompatActivity {
                 new MediaBrowserConnectionCallback(),
                 null);
         mediaBrowser.connect();
+        Log.d(TAG, "onStart: Creating MediaBrowser, and connecting");
     }
 
     public boolean isStoragePermissionGranted() {
@@ -329,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
                     metadata.getText(MediaMetadataCompat.METADATA_KEY_ARTIST)
             ));
 
-            Log.d(TAG, "onMetadataChanged: MediaControllerCallback + " + metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID));
+            Log.d(TAG, "onMetadataChanged: MediaControllerCallback");
         }
 
         @Override
@@ -341,21 +340,16 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "onPlaybackStateChanged: MediaControllerCallback + " + state);
         }
 
-        @Override
-        public void onQueueChanged(List<MediaSessionCompat.QueueItem> queue) {
-            super.onQueueChanged(queue);
-
-            Log.d(TAG, "onQueueChanged: ");
-        }
-
         // This might happen if the MusicService is killed while the Activity is in the
         // foreground and onStart() has been called (but not onStop()).
         @Override
         public void onSessionDestroyed() {
             super.onSessionDestroyed();
 
-            Log.d(TAG, "onSessionDestroyed: MediaControllerCallback");
+            Log.d(TAG, "onSessionDestroyed: MediaControllerCallback: ");
         }
+
+
 
     }
 

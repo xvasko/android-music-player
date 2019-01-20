@@ -2,6 +2,7 @@ package com.matejvasko.player;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.os.Bundle;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -12,6 +13,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.matejvasko.player.utils.SharedPref;
 import com.matejvasko.player.utils.Utils;
 
 import org.w3c.dom.Text;
@@ -30,6 +32,8 @@ public class MediaSeekBar extends AppCompatSeekBar {
 
     private ValueAnimator valueAnimator;
     private boolean isTracking = false;
+
+    private SharedPref sharedPref = SharedPref.getInstance();
 
     private OnSeekBarChangeListener onSeekBarChangeListener = new OnSeekBarChangeListener() {
 
@@ -108,6 +112,7 @@ public class MediaSeekBar extends AppCompatSeekBar {
 
         @Override
         public void onPlaybackStateChanged(PlaybackStateCompat state) {
+            Log.d(TAG, "onPlaybackStateChanged");
             super.onPlaybackStateChanged(state);
 
             if (valueAnimator != null) {
@@ -118,9 +123,11 @@ public class MediaSeekBar extends AppCompatSeekBar {
             final int progress = state != null ? (int) state.getPosition() : 0;
             setProgress(progress);
 
+            int max = (int) sharedPref.getCurrentSongDuration();
+
             if (state != null && state.getState() == PlaybackStateCompat.STATE_PLAYING) {
-                final int timeToEnd = (int) ((getMax() - progress) / state.getPlaybackSpeed());
-                valueAnimator = ValueAnimator.ofInt(progress, getMax()).setDuration(timeToEnd);
+                final int timeToEnd = max - progress;
+                valueAnimator = ValueAnimator.ofInt(progress, max).setDuration(timeToEnd);
                 valueAnimator.setInterpolator(new LinearInterpolator());
                 valueAnimator.addUpdateListener(this);
                 valueAnimator.start();
@@ -131,15 +138,14 @@ public class MediaSeekBar extends AppCompatSeekBar {
 
         @Override
         public void onMetadataChanged(MediaMetadataCompat metadata) {
-            super.onMetadataChanged(metadata);
+            long duration = sharedPref.getCurrentSongDuration();
 
-            durationTotal.setText(Utils.millisecondsToString(metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)));
+            durationTotal.setText(Utils.millisecondsToString(duration));
 
-            final int max = metadata != null ? (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION) : 0;
             setProgress(0);
-            setMax(max);
+            setMax((int) duration);
 
-            Log.d(TAG, "onMetadataChanged" + max);
+            Log.d(TAG, "onMetadataChanged: MediaControllerCallback");
         }
 
         @Override

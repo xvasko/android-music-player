@@ -11,6 +11,8 @@ public class SharedPref {
 
     private static final String SAVED_SONG_SHARED_PREFERENCES = "saved_song_shared_preferences";
     private static final String CURRENT_ALBUM_ID = "current_album_id";
+    private static final String CURRENT_SONG_POSITION = "current_song_position";
+    private static final String CURRENT_SONG_DURATION = "current_song_duration";
 
     private static volatile SharedPref instance;
 
@@ -28,7 +30,7 @@ public class SharedPref {
         return instance;
     }
 
-    public SharedPref() {
+    SharedPref() {
         sharedPreferences = App.getAppContext().getSharedPreferences(SAVED_SONG_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
     }
@@ -54,6 +56,24 @@ public class SharedPref {
 
     public String getCurrentAlbumId() {
         return sharedPreferences.getString(CURRENT_ALBUM_ID, null);
+    }
+
+    public void setCurrentSongPosition(long position) {
+        editor.putLong(CURRENT_SONG_POSITION, position);
+        editor.commit();
+    }
+
+    public long getCurrentSongPosition() {
+        return sharedPreferences.getLong(CURRENT_SONG_POSITION, 0);
+    }
+
+    public void setCurrentSongDuration(long duration) {
+        editor.putLong(CURRENT_SONG_DURATION, duration);
+        editor.commit();
+    }
+
+    public long getCurrentSongDuration() {
+        return sharedPreferences.getLong(CURRENT_SONG_DURATION, 0);
     }
 
 }
