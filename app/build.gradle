@@ -51,4 +51,9 @@ dependencies {
 
     // RecyclerView-FastScroll https://github.com/timusus/RecyclerView-FastScroll
     implementation 'com.simplecityapps:recyclerview-fastscroll:1.0.20'
+
+    // Room
+    def room_version = "2.1.0-alpha03"
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
 }

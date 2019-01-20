@@ -3,18 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragments.library.AlbumsFragment">
 
-    <com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/albums_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:fastScrollAutoHide="false"
-        app:fastScrollPopupBackgroundSize="70dp"
-        app:fastScrollPopupBgColor="@color/colorAccent"
-        app:fastScrollPopupTextColor="@android:color/primary_text_dark"
-        app:fastScrollThumbColor="@color/colorAccent">
-    </com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView>
+        android:scrollbars="vertical"
+        android:fadeScrollbars="false" />
 
 </FrameLayout>

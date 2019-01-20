@@ -8,9 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.matejvasko.player.App;
 import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.MediaProvider;
 import com.matejvasko.player.R;
@@ -22,7 +20,6 @@ import java.util.List;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -57,31 +54,31 @@ public class AlbumFragment extends Fragment {
         Log.d(TAG, "onCreateView");
         final View view = inflater.inflate(R.layout.fragment_album, container, false);
 
-        Bundle bundle = getArguments();
-
-        MediaProvider mediaProvider = MediaProvider.getInstance();
-        String albumId = bundle.getString("album_id");
-        List<MediaItemData> songs = mediaProvider.getAlbumSongs(albumId);
-        AlbumSongsListAdapter albumSongsListAdapter = new AlbumSongsListAdapter(getActivity(), songs, albumId);
-        RecyclerView recyclerView = view.findViewById(R.id.albums_songs_list);
-        recyclerView.setAdapter(albumSongsListAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-        ImageView albumArt = view.findViewById(R.id.album_art);
-        albumArt.setImageBitmap(Utils.getBitmapFromMediaStore(songs.get(0).albumArtUri));
-
-        TextView albumTitle = view.findViewById(R.id.album_title);
-        TextView albumArtist = view.findViewById(R.id.album_artist);
-        albumTitle.setText(bundle.getString("album_title"));
-        albumArtist.setText(songs.get(0).subtitle);
-
-        Toolbar toolbar = view.findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Navigation.findNavController(view).navigateUp();
-            }
-        });
+//        Bundle bundle = getArguments();
+//
+//        MediaProvider mediaProvider = MediaProvider.getInstance();
+//        String albumId = bundle.getString("album_id");
+//        List<MediaItemData> songs = mediaProvider.getAlbumSongs(albumId);
+//        AlbumSongsListAdapter albumSongsListAdapter = new AlbumSongsListAdapter(getActivity(), songs, albumId);
+//        RecyclerView recyclerView = view.findViewById(R.id.albums_songs_list);
+//        recyclerView.setAdapter(albumSongsListAdapter);
+//        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+//
+//        ImageView albumArt = view.findViewById(R.id.album_art);
+//        albumArt.setImageBitmap(Utils.getBitmapFromMediaStore(songs.get(0).albumArtUri));
+//
+//        TextView albumTitle = view.findViewById(R.id.album_title);
+//        TextView albumArtist = view.findViewById(R.id.album_artist);
+//        albumTitle.setText(bundle.getString("album_title"));
+//        albumArtist.setText(songs.get(0).subtitle);
+//
+//        Toolbar toolbar = view.findViewById(R.id.toolbar);
+//        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Navigation.findNavController(view).navigateUp();
+//            }
+//        });
 
         return view;
     }
@@ -131,7 +128,6 @@ public class AlbumFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-
         Log.d(TAG, "onDetach");
     }
 

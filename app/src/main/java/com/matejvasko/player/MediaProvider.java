@@ -5,7 +5,8 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.media.MediaMetadataCompat;
 
-import com.matejvasko.player.paging.MediaItemDataSource;
+import com.matejvasko.player.models.Album;
+import com.matejvasko.player.models.Song;
 import com.matejvasko.player.utils.Utils;
 
 import java.util.ArrayList;
@@ -65,90 +66,161 @@ public final class MediaProvider {
         return albumCursor.getCount();
     }
 
-    public List<MediaItemData> getMediaItemDataAtRange(int startPosition, int endPosition, int flag) {
-        List<MediaItemData> mediaItems = new ArrayList<>();
+    /**
+     * SONG
+     */
+
+    public List<Song> getSongAtRange(int startPosition, int endPosition) {
+        List<Song> songs = new ArrayList<>();
 
         for (int position = startPosition; position < endPosition; ++position) {
-            MediaItemData mediaItemData = getMediaItemDataAtPosition(position, flag);
-            if (mediaItemData != null)
-                mediaItems.add(mediaItemData);
-        }
-
-        return mediaItems;
-    }
-
-    public MediaItemData getMediaItemDataAtPosition(int position, int flag) {
-
-        Cursor cursor;
-
-        if (flag == MediaItemDataSource.SONG_DATA_SOURCE) {
-            cursor = songCursor;
-        } else {
-            cursor = albumCursor;
-        }
-
-        if (!cursor.moveToPosition(position)) {
-            return null;
-        }
-
-        return createMediaItemData(cursor, flag);
-    }
-
-    public List<MediaItemData> getAlbumSongs(String albumId) {
-        System.out.println("album id inside getAlbumSongs:" + albumId);
-        if (albumId == null || albumId.isEmpty()) {
-            throw new IllegalArgumentException();
-        }
-
-        albumSongsCursor = ContentResolverCompat.query(
-                App.getAppContext().getContentResolver(),
-                getSongUri(),
-                getSongProjection(),
-                getAlbumSongsSelection(albumId),
-                null,
-                null,
-                null
-        );
-
-        List<MediaItemData> songs = new ArrayList<>();
-
-        for (int i = 0; i < albumSongsCursor.getCount(); i++) {
-            albumSongsCursor.moveToNext();
-            songs.add(createMediaItemData(albumSongsCursor, MediaItemDataSource.SONG_DATA_SOURCE, true));
+            Song song = getSongAtPosition(position);
+            if (song != null)
+                songs.add(song);
         }
 
         return songs;
     }
 
-    public MediaItemData getSongFromAlbum(int position) {
-        albumSongsCursor.moveToPosition(position);
-        return createMediaItemData(albumSongsCursor, MediaItemDataSource.SONG_DATA_SOURCE);
-    }
-
-    private MediaItemData createMediaItemData(Cursor cursor, int flag) {
-        return createMediaItemData(cursor, flag, false);
-    }
-
-    private MediaItemData createMediaItemData(Cursor cursor, int flag, boolean isFromAlbum) {
-        if (flag == MediaItemDataSource.SONG_DATA_SOURCE) {
-            return new MediaItemData.Builder(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID)))
-                    .setBrowseable(false)
-                    .setFromAlbum(isFromAlbum)
-                    .setTitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)))
-                    .setSubtitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)))
-                    .setAlbumArtUri(Uri.parse("content://media/external/audio/albumart/" + cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))))
-                    .setDuration(cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)))
-                    .setCursorPosition(cursor.getPosition())
-                    .build();
-        } else {
-            return new MediaItemData.Builder(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums._ID)))
-                    .setBrowseable(true)
-                    .setTitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM)))
-                    .setSubtitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ARTIST)))
-                    .setAlbumArtUri(Uri.parse("content://media/external/audio/albumart/" + cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Albums._ID))))
-                    .build();
+    protected Song getSongAtPosition(int position) {
+        if (!songCursor.moveToPosition(position)) {
+            return null;
         }
+
+        return createSong();
     }
+
+    private Song createSong() {
+        return new Song(
+                songCursor.getString(songCursor.getColumnIndex(MediaStore.Audio.Media._ID)),
+                false, // TODO decide if is from album or not
+                songCursor.getString(songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE)),
+                songCursor.getString(songCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
+                Uri.parse("content://media/external/audio/albumart/" + songCursor.getLong(songCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))),
+                songCursor.getLong(songCursor.getColumnIndex(MediaStore.Audio.Media.DURATION)),
+                songCursor.getPosition()
+        );
+    }
+
+    /**
+     * ALBUM
+     */
+
+    public List<Album> getAlbumAtRange(int startPosition, int endPosition) {
+        List<Album> albums = new ArrayList<>();
+
+        for (int position = startPosition; position < endPosition; ++position) {
+            Album album = getAlbumAtPosition(position);
+            if (album != null)
+                albums.add(album);
+        }
+
+        return albums;
+    }
+
+    private Album getAlbumAtPosition(int position) {
+        if (!albumCursor.moveToPosition(position)) {
+            return null;
+        }
+
+        return createAlbum();
+    }
+
+    private Album createAlbum() {
+        return new Album(
+                albumCursor.getString(albumCursor.getColumnIndex(MediaStore.Audio.Albums._ID)),
+                albumCursor.getString(albumCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM)),
+                albumCursor.getString(albumCursor.getColumnIndex(MediaStore.Audio.Albums.ARTIST)),
+                Uri.parse("content://media/external/audio/albumart/" + albumCursor.getLong(albumCursor.getColumnIndex(MediaStore.Audio.Albums._ID))),
+                albumCursor.getPosition()
+        );
+    }
+
+
+//    public List<MediaItemData> getMediaItemDataAtRange(int startPosition, int endPosition, int flag) {
+//        List<MediaItemData> mediaItems = new ArrayList<>();
+//
+//        for (int position = startPosition; position < endPosition; ++position) {
+//            MediaItemData mediaItemData = getMediaItemDataAtPosition(position, flag);
+//            if (mediaItemData != null)
+//                mediaItems.add(mediaItemData);
+//        }
+//
+//        return mediaItems;
+//    }
+//
+//    public MediaItemData getMediaItemDataAtPosition(int position, int flag) {
+//
+//        Cursor cursor;
+//
+//        if (flag == MediaItemDataSource.SONG_DATA_SOURCE) {
+//            cursor = songCursor;
+//        } else {
+//            cursor = albumCursor;
+//        }
+//
+//        if (!cursor.moveToPosition(position)) {
+//            return null;
+//        }
+//
+//        return createMediaItemData(cursor, flag);
+//    }
+
+//    public List<MediaItemData> getAlbumSongs(String albumId) {
+//        System.out.println("album id inside getAlbumSongs:" + albumId);
+//        if (albumId == null || albumId.isEmpty()) {
+//            throw new IllegalArgumentException();
+//        }
+//
+//        albumSongsCursor = ContentResolverCompat.query(
+//                App.getAppContext().getContentResolver(),
+//                getSongUri(),
+//                getSongProjection(),
+//                getAlbumSongsSelection(albumId),
+//                null,
+//                null,
+//                null
+//        );
+//
+//        List<MediaItemData> songs = new ArrayList<>();
+//
+//        for (int i = 0; i < albumSongsCursor.getCount(); i++) {
+//            albumSongsCursor.moveToNext();
+//            songs.add(createMediaItemData(albumSongsCursor, MediaItemDataSource.SONG_DATA_SOURCE, true));
+//        }
+//
+//        return songs;
+//    }
+
+//    public MediaItemData getSongFromAlbum(int position) {
+//        albumSongsCursor.moveToPosition(position);
+//        return createMediaItemData(albumSongsCursor, MediaItemDataSource.SONG_DATA_SOURCE);
+//    }
+
+//    private MediaItemData createMediaItemData(Cursor cursor, int flag) {
+//        return createMediaItemData(cursor, flag, false);
+//    }
+
+//    private MediaItemData createMediaItemData(Cursor cursor, int flag, boolean isFromAlbum) {
+//        if (flag == MediaItemDataSource.SONG_DATA_SOURCE) {
+//            return new MediaItemData.Builder(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media._ID)))
+//                    .setBrowseable(false)
+//                    .setFromAlbum(isFromAlbum)
+//                    .setTitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)))
+//                    .setSubtitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)))
+//                    .setAlbumArtUri(Uri.parse("content://media/external/audio/albumart/" + cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))))
+//                    .setDuration(cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)))
+//                    .setCursorPosition(cursor.getPosition())
+//                    .build();
+//        } else {
+//            return new MediaItemData.Builder(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums._ID)))
+//                    .setBrowseable(true)
+//                    .setTitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM)))
+//                    .setSubtitle(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ARTIST)))
+//                    .setAlbumArtUri(Uri.parse("content://media/external/audio/albumart/" + cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Albums._ID))))
+//                    .build();
+//        }
+//    }
 
     private Uri getSongUri() {
         return MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;

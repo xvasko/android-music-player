@@ -2,8 +2,6 @@ package com.matejvasko.player;
 
 import android.Manifest;
 import android.content.ComponentName;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,26 +9,23 @@ import android.os.RemoteException;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
-import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.matejvasko.player.fragments.library.AlbumsFragmentI;
 import com.matejvasko.player.fragments.library.SongsFragmentI;
+import com.matejvasko.player.models.Song;
 import com.matejvasko.player.utils.SharedPref;
-import com.matejvasko.player.utils.Utils;
 import com.matejvasko.player.viewmodels.MainActivityViewModel;
-
-import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,7 +34,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 public class MainActivity extends AppCompatActivity {
@@ -154,8 +148,15 @@ public class MainActivity extends AppCompatActivity {
         return Navigation.findNavController(this, R.id.nav_host_fragment).navigateUp();
     }
 
+    public void playSong(Song song) {
+        Toast.makeText(getApplicationContext(), "playSong()", Toast.LENGTH_SHORT).show();
+        System.out.println("xxasxas");
+        //sharedPref.setCurrentSong(mediaItemData);
+        //mediaController.getTransportControls().sendCustomAction("", null);
+    }
+
     public void customAction(String action, MediaItemData mediaItemData) {
-        sharedPref.setCurrentSong(mediaItemData);
+        sharedPref.setCurrentSong(null);
         mediaController.getTransportControls().sendCustomAction(action, null);
     }
 

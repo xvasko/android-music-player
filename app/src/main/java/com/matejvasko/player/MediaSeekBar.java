@@ -106,15 +106,7 @@ public class MediaSeekBar extends AppCompatSeekBar {
     private class MediaControllerCallback extends MediaControllerCompat.Callback implements ValueAnimator.AnimatorUpdateListener {
 
         @Override
-        public void onSessionDestroyed() {
-            super.onSessionDestroyed();
-        }
-
-        @Override
         public void onPlaybackStateChanged(PlaybackStateCompat state) {
-            Log.d(TAG, "onPlaybackStateChanged");
-            super.onPlaybackStateChanged(state);
-
             if (valueAnimator != null) {
                 valueAnimator.cancel();
                 valueAnimator = null;

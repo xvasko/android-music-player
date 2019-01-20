@@ -9,9 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.matejvasko.player.MainActivity;
-import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.R;
-import com.matejvasko.player.adapters.MediaItemDataListAdapter;
+import com.matejvasko.player.adapters.AlbumListAdapter;
+import com.matejvasko.player.models.Album;
 import com.matejvasko.player.viewmodels.MainActivityViewModel;
 
 import androidx.annotation.Nullable;
@@ -31,7 +31,7 @@ public class AlbumsFragment extends Fragment implements AlbumsFragmentI {
     private static final String TAG = "AlbumsFragment";
 
     private RecyclerView recyclerView;
-    private MediaItemDataListAdapter mediaItemDataListAdapter;
+    private AlbumListAdapter albumListAdapter;
     private MainActivityViewModel mainActivityViewModel;
 
     private MediaBrowserCompat mediaBrowser;
@@ -65,10 +65,10 @@ public class AlbumsFragment extends Fragment implements AlbumsFragmentI {
         View view = inflater.inflate(R.layout.fragment_tab_2, container, false);
 
         mainActivityViewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
-        mediaItemDataListAdapter = new MediaItemDataListAdapter(getActivity());
+        albumListAdapter = new AlbumListAdapter(getActivity());
 
         recyclerView = view.findViewById(R.id.albums_recycler_view);
-        recyclerView.setAdapter(mediaItemDataListAdapter);
+        recyclerView.setAdapter(albumListAdapter);
         recyclerView.setItemAnimator(null);
         recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
 
@@ -130,10 +130,10 @@ public class AlbumsFragment extends Fragment implements AlbumsFragmentI {
 
     // as a result of MainActivity.MediaControllerCallback.onConnected()
     public void loadAlbums() {
-        mainActivityViewModel.getAlbums().observe(this, new Observer<PagedList<MediaItemData>>() {
+        mainActivityViewModel.getAlbums().observe(this, new Observer<PagedList<Album>>() {
             @Override
-            public void onChanged(PagedList<MediaItemData> albums) {
-                mediaItemDataListAdapter.submitList(albums);
+            public void onChanged(PagedList<Album> albums) {
+                albumListAdapter.submitList(albums);
             }
         });
     }

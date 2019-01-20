@@ -8,9 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.matejvasko.player.MainActivity;
-import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.R;
-import com.matejvasko.player.adapters.MediaItemDataListAdapter;
+import com.matejvasko.player.adapters.SongListAdapter;
+import com.matejvasko.player.models.Song;
 import com.matejvasko.player.viewmodels.MainActivityViewModel;
 
 import androidx.annotation.Nullable;
@@ -29,7 +29,7 @@ public class SongsFragment extends Fragment implements SongsFragmentI {
     private static final String TAG = "SongsFragment";
 
     private RecyclerView recyclerView;
-    private MediaItemDataListAdapter mediaItemDataListAdapter;
+    private SongListAdapter songListAdapter;
     private MainActivityViewModel mainActivityViewModel;
 
 
@@ -54,14 +54,13 @@ public class SongsFragment extends Fragment implements SongsFragmentI {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
-
         View view =  inflater.inflate(R.layout.fragment_tab_1, container, false);
 
         mainActivityViewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
-        mediaItemDataListAdapter = new MediaItemDataListAdapter(getActivity());
+        songListAdapter = new SongListAdapter(getActivity());
 
         recyclerView = view.findViewById(R.id.songs_recycler_view);
-        recyclerView.setAdapter(mediaItemDataListAdapter);
+        recyclerView.setAdapter(songListAdapter);
         recyclerView.setItemAnimator(null);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
@@ -122,10 +121,10 @@ public class SongsFragment extends Fragment implements SongsFragmentI {
 
     // as a result of MainActivity.MediaControllerCallback.onConnected()
     public void loadSongs() {
-        mainActivityViewModel.getSongs().observe(this, new Observer<PagedList<MediaItemData>>() {
+        mainActivityViewModel.getSongs().observe(this, new Observer<PagedList<Song>>() {
             @Override
-            public void onChanged(PagedList<MediaItemData> songs) {
-                mediaItemDataListAdapter.submitList(songs);
+            public void onChanged(PagedList<Song> songs) {
+                songListAdapter.submitList(songs);
             }
         });
     }

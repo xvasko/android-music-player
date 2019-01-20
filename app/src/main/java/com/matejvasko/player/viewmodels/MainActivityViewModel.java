@@ -1,8 +1,9 @@
 package com.matejvasko.player.viewmodels;
 
-import com.matejvasko.player.MediaItemData;
-import com.matejvasko.player.paging.MediaItemDataSource;
-import com.matejvasko.player.paging.MediaItemDataSourceFactory;
+import com.matejvasko.player.models.Album;
+import com.matejvasko.player.models.Song;
+import com.matejvasko.player.paging.AlbumDataSourceFactory;
+import com.matejvasko.player.paging.SongDataSourceFactory;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
@@ -11,20 +12,20 @@ import androidx.paging.PagedList;
 
 public class MainActivityViewModel extends ViewModel {
 
-    public LiveData<PagedList<MediaItemData>> getSongs() {
+    public LiveData<PagedList<Song>> getSongs() {
         PagedList.Config config = new PagedList.Config.Builder()
                 .setEnablePlaceholders(true)
                 .setPageSize(20)
                 .build();
-        return new LivePagedListBuilder<>(new MediaItemDataSourceFactory(MediaItemDataSource.SONG_DATA_SOURCE), config).build();
+        return new LivePagedListBuilder<>(new SongDataSourceFactory(), config).build();
     }
 
-    public LiveData<PagedList<MediaItemData>> getAlbums() {
+    public LiveData<PagedList<Album>> getAlbums() {
         PagedList.Config config = new PagedList.Config.Builder()
                 .setEnablePlaceholders(true)
                 .setPageSize(20)
                 .build();
-        return new LivePagedListBuilder<>(new MediaItemDataSourceFactory(MediaItemDataSource.ALBUM_DATA_SOURCE), config).build();
+        return new LivePagedListBuilder<>(new AlbumDataSourceFactory(), config).build();
     }
 
 }

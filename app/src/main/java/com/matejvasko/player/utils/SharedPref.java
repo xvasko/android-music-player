@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import com.matejvasko.player.App;
 import com.matejvasko.player.MediaItemData;
+import com.matejvasko.player.models.Song;
 
 public class SharedPref {
 
@@ -35,9 +36,9 @@ public class SharedPref {
         editor = sharedPreferences.edit();
     }
 
-    public void setCurrentSong(MediaItemData mediaItemData) {
-        editor.putInt("cursor_position", mediaItemData.cursorPosition);
-        editor.putBoolean("is_from_album", mediaItemData.isFromAlbum);
+    public void setCurrentSong(Song song) {
+        editor.putInt("cursor_position", song.cursorPosition);
+        editor.putBoolean("is_from_album", song.isFromAlbum);
         editor.commit();
     }
 

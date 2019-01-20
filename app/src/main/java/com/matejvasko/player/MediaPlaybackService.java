@@ -11,13 +11,12 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.matejvasko.player.paging.MediaItemDataSource;
+import com.matejvasko.player.models.Song;
 import com.matejvasko.player.utils.SharedPref;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 
 import androidx.annotation.NonNull;
@@ -187,7 +186,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             super.onPrepare();
             String albumId = sharedPref.getCurrentAlbumId();
             if (albumId != null) {
-                mediaProvider.getAlbumSongs(albumId);
+//                mediaProvider.getAlbumSongs(albumId);
             }
 
             // retrieve if playing album
@@ -236,13 +235,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         public void onSkipToNext() {
             // save the next song
             queueManager.skipToNext();
-            MediaItemData mediaItemData;
+            Song song;
             if (sharedPref.isCurrentSongFromAlbum()) {
-                mediaItemData = mediaProvider.getAlbumSongs(sharedPref.getCurrentAlbumId()).get(currentSongCursorPosition);
+//                mediaItemData = mediaProvider.getAlbumSongs(sharedPref.getCurrentAlbumId()).get(currentSongCursorPosition);
+                song = null;
             } else {
-                mediaItemData = mediaProvider.getMediaItemDataAtPosition(currentSongCursorPosition, MediaItemDataSource.SONG_DATA_SOURCE);
+                song = mediaProvider.getSongAtPosition(currentSongCursorPosition);
             }
-            sharedPref.setCurrentSong(mediaItemData);
+            sharedPref.setCurrentSong(song);
 
             setMediaSessionMetadata(currentSongCursorPosition);
             onPlay();
@@ -253,13 +253,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         public void onSkipToPrevious() {
             if (queueManager.skipToPrevious()) {
 
-                MediaItemData mediaItemData;
+                Song song;
                 if (sharedPref.isCurrentSongFromAlbum()) {
-                    mediaItemData = mediaProvider.getAlbumSongs(sharedPref.getCurrentAlbumId()).get(currentSongCursorPosition);
+//                    mediaItemData = mediaProvider.getAlbumSongs(sharedPref.getCurrentAlbumId()).get(currentSongCursorPosition);
+                    song = null;
                 } else {
-                    mediaItemData = mediaProvider.getMediaItemDataAtPosition(currentSongCursorPosition, MediaItemDataSource.SONG_DATA_SOURCE);
+                    song = mediaProvider.getSongAtPosition(currentSongCursorPosition);
                 }
-                sharedPref.setCurrentSong(mediaItemData);
+                sharedPref.setCurrentSong(song);
 
                 setMediaSessionMetadata(currentSongCursorPosition);
                 onPlay();
@@ -397,11 +398,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         private int getRandomSongPosition() {
             if (playingAlbum) {
-                return mediaProvider.getSongFromAlbum(rand.nextInt(mediaProvider.getAlbumSongCursorSize())).cursorPosition;
+//                return mediaProvider.getSongFromAlbum(rand.nextInt(mediaProvider.getAlbumSongCursorSize())).cursorPosition;
+                return 0;
             } else {
-                return Objects.requireNonNull(mediaProvider.getMediaItemDataAtPosition(
-                        rand.nextInt(mediaProvider.getSongCursorSize()),
-                        MediaItemDataSource.SONG_DATA_SOURCE)).cursorPosition;
+                return mediaProvider.getSongAtPosition(rand.nextInt(mediaProvider.getSongCursorSize())).cursorPosition;
             }
         }
 
@@ -411,15 +411,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 if (position < 0) {
                     position = position + mediaProvider.getAlbumSongCursorSize();
                 }
-                return mediaProvider.getSongFromAlbum(position % mediaProvider.getAlbumSongCursorSize()).cursorPosition;
+                //return mediaProvider.getSongFromAlbum(position % mediaProvider.getAlbumSongCursorSize()).cursorPosition;
+                return 0;
             } else {
                 // to avoid circular crashes
                 if (position < 0) {
                     position = position + mediaProvider.getSongCursorSize();
                 }
-                return Objects.requireNonNull(mediaProvider.getMediaItemDataAtPosition(
-                        (position % mediaProvider.getSongCursorSize()),
-                        MediaItemDataSource.SONG_DATA_SOURCE)).cursorPosition;
+                return mediaProvider.getSongAtPosition((position % mediaProvider.getSongCursorSize())).cursorPosition;
             }
         }
 
