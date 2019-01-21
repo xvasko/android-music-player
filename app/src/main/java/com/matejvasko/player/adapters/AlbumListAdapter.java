@@ -16,6 +16,7 @@ import com.matejvasko.player.utils.Utils;
 
 import androidx.annotation.NonNull;
 import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
@@ -84,12 +85,13 @@ public class AlbumListAdapter
 
         @Override
         public void onClick(View v) {
-            Bundle bundle = new Bundle();
-            bundle.putString("album_id", album.id);
-            bundle.putString("album_title", album.title);
-            bundle.putParcelable("album", album);
+            Bundle extras = new Bundle();
+            extras.putParcelable("album", album);
+            NavOptions navOptions = new NavOptions.Builder()
+                    .setEnterAnim(R.anim.animation)
+                    .build();
             NavController navController = Navigation.findNavController(((MainActivity) context), R.id.nav_host_fragment);
-            navController.navigate(R.id.albumFragment, bundle);
+            navController.navigate(R.id.albumFragment, extras, navOptions);
         }
     }
 }

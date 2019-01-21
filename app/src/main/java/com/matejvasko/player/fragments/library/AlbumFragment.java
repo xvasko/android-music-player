@@ -58,7 +58,6 @@ public class AlbumFragment extends Fragment {
         Bundle bundle = getArguments();
         Album album = bundle.getParcelable("album");
 
-//        String albumId = album.id;
         List<Song> songs = mediaProvider.getAlbumSongs(album.id);
 
         AlbumSongsListAdapter albumSongsListAdapter = new AlbumSongsListAdapter(getActivity(), album, songs);
