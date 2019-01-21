@@ -96,7 +96,7 @@ public final class MediaProvider {
                 false,
                 songCursor.getString(songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE)),
                 songCursor.getString(songCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
-                Uri.parse("content://media/external/audio/albumart/" + songCursor.getLong(songCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))),
+                "content://media/external/audio/albumart/" + songCursor.getLong(songCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)),
                 songCursor.getLong(songCursor.getColumnIndex(MediaStore.Audio.Media.DURATION)),
                 songCursor.getPosition()
         );
@@ -172,7 +172,7 @@ public final class MediaProvider {
                 true,
                 albumSongsCursor.getString(albumSongsCursor.getColumnIndex(MediaStore.Audio.Media.TITLE)),
                 albumSongsCursor.getString(albumSongsCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
-                Uri.parse("content://media/external/audio/albumart/" + albumSongsCursor.getLong(albumSongsCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))),
+                "content://media/external/audio/albumart/" + albumSongsCursor.getLong(albumSongsCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)),
                 albumSongsCursor.getLong(albumSongsCursor.getColumnIndex(MediaStore.Audio.Media.DURATION)),
                 albumSongsCursor.getPosition()
         );

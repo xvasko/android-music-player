@@ -135,8 +135,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             super.onCustomAction(action, extras);
 
             // playing album changes only on item click
-            playingAlbum = sharedPref.isCurrentSongFromAlbum();
-            currentSongCursorPosition = sharedPref.getCurrentSongCursorPosition();
+            playingAlbum = sharedPref.getSong().isFromAlbum;
+            currentSongCursorPosition = sharedPref.getSong().cursorPosition;
 
             queueManager.resetQueue();
             queueManager.addItem(currentSongCursorPosition);
@@ -242,7 +242,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             } else {
                 song = mediaProvider.getSongAtPosition(currentSongCursorPosition);
             }
-            sharedPref.setCurrentSong(song);
+            sharedPref.setSong(song);
 
             setMediaSessionMetadata(currentSongCursorPosition);
             onPlay();
@@ -260,7 +260,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 } else {
                     song = mediaProvider.getSongAtPosition(currentSongCursorPosition);
                 }
-                sharedPref.setCurrentSong(song);
+                sharedPref.setSong(song);
 
                 setMediaSessionMetadata(currentSongCursorPosition);
                 onPlay();

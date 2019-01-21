@@ -2,6 +2,7 @@ package com.matejvasko.player.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -77,7 +78,7 @@ public class SongListAdapter
         void bindTo(Song song) {
             this.song = song;
 
-            Bitmap iconBitmap = Utils.getBitmapFromMediaStore(song.albumArtUri);
+            Bitmap iconBitmap = Utils.getBitmapFromMediaStore(Uri.parse(song.albumArtUri));
             if (iconBitmap != null) {
                 songArt.setImageBitmap(iconBitmap);
             } else {

@@ -1,7 +1,5 @@
 package com.matejvasko.player.models;
 
-import android.net.Uri;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 
@@ -11,11 +9,11 @@ public class Song {
     public boolean isFromAlbum;
     public String title;
     public String artist;
-    public Uri albumArtUri;
+    public String albumArtUri;
     public long duration;
     public int cursorPosition;
 
-    public Song(String id, boolean isFromAlbum, String title, String artist, Uri albumArtUri, long duration, int cursorPosition) {
+    public Song(String id, boolean isFromAlbum, String title, String artist, String albumArtUri, long duration, int cursorPosition) {
         this.id = id;
         this.isFromAlbum = isFromAlbum;
         this.title = title;

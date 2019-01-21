@@ -56,4 +56,7 @@ dependencies {
     def room_version = "2.1.0-alpha03"
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
+
+    // Gson
+    implementation 'com.google.code.gson:gson:2.8.5'
 }

@@ -3,6 +3,7 @@ package com.matejvasko.player.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.google.gson.Gson;
 import com.matejvasko.player.App;
 import com.matejvasko.player.models.Song;
 
@@ -17,6 +18,7 @@ public class SharedPref {
 
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
+    private Gson gson;
 
     public static SharedPref getInstance() {
         if (instance == null) {
@@ -29,15 +31,20 @@ public class SharedPref {
         return instance;
     }
 
-    SharedPref() {
+    private SharedPref() {
         sharedPreferences = App.getAppContext().getSharedPreferences(SAVED_SONG_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
+        gson = new Gson();
     }
 
-    public void setCurrentSong(Song song) {
-        editor.putInt("cursor_position", song.cursorPosition);
-        editor.putBoolean("is_from_album", song.isFromAlbum);
+    public void setSong(Song song) {
+        editor.putString("SongJSON", gson.toJson(song));
         editor.commit();
+    }
+
+    public Song getSong() {
+        String json = sharedPreferences.getString("SongJSON", "");
+        return gson.fromJson(json, Song.class);
     }
 
     public int getCurrentSongCursorPosition() {

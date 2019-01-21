@@ -149,12 +149,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void playSong(Song song) {
-        Toast.makeText(getApplicationContext(), "playSong()", Toast.LENGTH_SHORT).show();
-        //sharedPref.setCurrentSong(mediaItemData);
-        //mediaController.getTransportControls().sendCustomAction("", null);
+        sharedPref.setSong(song);
+        mediaController.getTransportControls().sendCustomAction("x", null);
+        Toast.makeText(getApplicationContext(), "playSong(): " + sharedPref.getSong().title, Toast.LENGTH_SHORT).show();
     }
 
     public void playSongFromAlbum(Song song) {
+        sharedPref.setSong(song);
+        mediaController.getTransportControls().sendCustomAction("x", null);
         Toast.makeText(getApplicationContext(), "playSongFromAlbum", Toast.LENGTH_SHORT).show();
     }
 
@@ -217,38 +219,6 @@ public class MainActivity extends AppCompatActivity {
                 null);
         mediaBrowser.connect();
         Log.d(TAG, "onStart: Creating MediaBrowser, and connecting");
-    }
-
-    public boolean isStoragePermissionGranted() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if ((checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) &&
-                (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
-                Log.v(TAG,"Permission is granted");
-                return true;
-            } else {
-                Log.v(TAG,"Permission is revoked");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                return false;
-            }
-        } else {
-            Log.v(TAG,"Permission is granted");
-            return true;
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case 1:
-                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    Log.v(TAG,"Permission: " + permissions[0] + " was " + grantResults[0]);
-                    createMediaBrowser();
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
     }
 
     @Override
@@ -348,13 +318,43 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "onSessionDestroyed: MediaControllerCallback: ");
         }
 
-
-
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause: ");
+    }
+
+    public boolean isStoragePermissionGranted() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if ((checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) &&
+                    (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
+                Log.v(TAG,"Permission is granted");
+                return true;
+            } else {
+                Log.v(TAG,"Permission is revoked");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        } else {
+            Log.v(TAG,"Permission is granted");
+            return true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case 1:
+                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    Log.v(TAG,"Permission: " + permissions[0] + " was " + grantResults[0]);
+                    createMediaBrowser();
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 }
