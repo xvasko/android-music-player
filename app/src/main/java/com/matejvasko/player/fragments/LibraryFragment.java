@@ -1,4 +1,4 @@
-package com.matejvasko.player.fragments.library;
+package com.matejvasko.player.fragments;
 
 
 import android.content.Context;

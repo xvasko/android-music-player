@@ -2,10 +2,8 @@ package com.matejvasko.player.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Bundle;
 
 import com.matejvasko.player.App;
-import com.matejvasko.player.MediaItemData;
 import com.matejvasko.player.models.Song;
 
 public class SharedPref {

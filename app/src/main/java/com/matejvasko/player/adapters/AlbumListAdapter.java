@@ -87,6 +87,7 @@ public class AlbumListAdapter
             Bundle bundle = new Bundle();
             bundle.putString("album_id", album.id);
             bundle.putString("album_title", album.title);
+            bundle.putParcelable("album", album);
             NavController navController = Navigation.findNavController(((MainActivity) context), R.id.nav_host_fragment);
             navController.navigate(R.id.albumFragment, bundle);
         }

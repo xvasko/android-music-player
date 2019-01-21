@@ -93,7 +93,7 @@ public final class MediaProvider {
     private Song createSong() {
         return new Song(
                 songCursor.getString(songCursor.getColumnIndex(MediaStore.Audio.Media._ID)),
-                false, // TODO decide if is from album or not
+                false,
                 songCursor.getString(songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE)),
                 songCursor.getString(songCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
                 Uri.parse("content://media/external/audio/albumart/" + songCursor.getLong(songCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))),
@@ -136,6 +136,48 @@ public final class MediaProvider {
         );
     }
 
+    /**
+     * ALBUM SONGS
+     */
+
+    public List<Song> getAlbumSongs(String albumId) {
+
+        if (albumId == null || albumId.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+
+        albumSongsCursor = ContentResolverCompat.query(
+                App.getAppContext().getContentResolver(),
+                getSongUri(),
+                getSongProjection(),
+                getAlbumSongsSelection(albumId),
+                null,
+                null,
+                null
+        );
+
+        List<Song> songs = new ArrayList<>();
+
+        for (int i = 0; i < albumSongsCursor.getCount(); i++) {
+            albumSongsCursor.moveToNext();
+            songs.add(createAlbumSong());
+        }
+
+        return songs;
+    }
+
+    private Song createAlbumSong() {
+        return new Song(
+                albumSongsCursor.getString(albumSongsCursor.getColumnIndex(MediaStore.Audio.Media._ID)),
+                true,
+                albumSongsCursor.getString(albumSongsCursor.getColumnIndex(MediaStore.Audio.Media.TITLE)),
+                albumSongsCursor.getString(albumSongsCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)),
+                Uri.parse("content://media/external/audio/albumart/" + albumSongsCursor.getLong(albumSongsCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))),
+                albumSongsCursor.getLong(albumSongsCursor.getColumnIndex(MediaStore.Audio.Media.DURATION)),
+                albumSongsCursor.getPosition()
+        );
+    }
+
 
 //    public List<MediaItemData> getMediaItemDataAtRange(int startPosition, int endPosition, int flag) {
 //        List<MediaItemData> mediaItems = new ArrayList<>();
@@ -166,31 +208,7 @@ public final class MediaProvider {
 //        return createMediaItemData(cursor, flag);
 //    }
 
-//    public List<MediaItemData> getAlbumSongs(String albumId) {
-//        System.out.println("album id inside getAlbumSongs:" + albumId);
-//        if (albumId == null || albumId.isEmpty()) {
-//            throw new IllegalArgumentException();
-//        }
-//
-//        albumSongsCursor = ContentResolverCompat.query(
-//                App.getAppContext().getContentResolver(),
-//                getSongUri(),
-//                getSongProjection(),
-//                getAlbumSongsSelection(albumId),
-//                null,
-//                null,
-//                null
-//        );
-//
-//        List<MediaItemData> songs = new ArrayList<>();
-//
-//        for (int i = 0; i < albumSongsCursor.getCount(); i++) {
-//            albumSongsCursor.moveToNext();
-//            songs.add(createMediaItemData(albumSongsCursor, MediaItemDataSource.SONG_DATA_SOURCE, true));
-//        }
-//
-//        return songs;
-//    }
+
 
 //    public MediaItemData getSongFromAlbum(int position) {
 //        albumSongsCursor.moveToPosition(position);

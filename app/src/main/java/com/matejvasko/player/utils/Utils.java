@@ -3,14 +3,10 @@ package com.matejvasko.player.utils;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.v4.media.MediaBrowserCompat;
 
 import com.matejvasko.player.App;
-import com.matejvasko.player.MediaItemData;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Utils {
