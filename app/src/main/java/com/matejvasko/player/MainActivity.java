@@ -150,14 +150,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void playSong(Song song) {
         sharedPref.setSong(song);
-        mediaController.getTransportControls().sendCustomAction("x", null);
-        Toast.makeText(getApplicationContext(), "playSong(): " + sharedPref.getSong().title, Toast.LENGTH_SHORT).show();
+        mediaController.getTransportControls().sendCustomAction("play", null);
     }
 
     public void playSongFromAlbum(Song song) {
         sharedPref.setSong(song);
         mediaController.getTransportControls().sendCustomAction("x", null);
-        Toast.makeText(getApplicationContext(), "playSongFromAlbum", Toast.LENGTH_SHORT).show();
     }
 
     private class ClickListener implements View.OnClickListener {

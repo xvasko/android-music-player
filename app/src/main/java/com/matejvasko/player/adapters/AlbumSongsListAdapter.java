@@ -55,10 +55,11 @@ public class AlbumSongsListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        Song song = songs.get(position);
-        if (position == 0) {
+
+        if (holder instanceof FirstItemHolder) {
             ((FirstItemHolder) holder).bindTo();
         } else {
+            Song song = songs.get(position - 1);
             ((SongViewHolder) holder).bindTo(song, position);
         }
 
@@ -72,7 +73,7 @@ public class AlbumSongsListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     @Override
     public int getItemCount() {
-        return songs.size();
+        return songs.size() + 1;
     }
 
     class SongViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

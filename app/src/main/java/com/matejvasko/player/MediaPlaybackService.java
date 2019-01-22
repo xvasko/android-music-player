@@ -56,11 +56,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         mediaSessionCallback = new MediaSessionCallback();
         mediaSession.setCallback(mediaSessionCallback);
         mediaSession.setFlags(
-                        MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
+                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
                         MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS |
                         MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS);
         stateBuilder = new PlaybackStateCompat.Builder().setActions(
-                        PlaybackStateCompat.ACTION_PLAY |
+                PlaybackStateCompat.ACTION_PLAY |
                         PlaybackStateCompat.ACTION_PAUSE |
                         PlaybackStateCompat.ACTION_PLAY_PAUSE |
                         PlaybackStateCompat.ACTION_SKIP_TO_NEXT |
@@ -122,32 +122,40 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
     MediaMetadataCompat mediaMetadata;
     String fileName;
-    String newFileName;
-    int currentSongCursorPosition;
-    boolean playingAlbum;
+    Song song;
 
     public class MediaSessionCallback extends MediaSessionCompat.Callback {
 
         QueueManager queueManager = new QueueManager();
 
+
         @Override
         public void onCustomAction(String action, Bundle extras) {
             super.onCustomAction(action, extras);
 
-            // playing album changes only on item click
-            playingAlbum = sharedPref.getSong().isFromAlbum;
-            currentSongCursorPosition = sharedPref.getSong().cursorPosition;
+            song = sharedPref.getSong();
+            setMediaSessionMetadata(song);
 
-            queueManager.resetQueue();
-            queueManager.addItem(currentSongCursorPosition);
+            if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
+                queueManager.resetQueue();
+                queueManager.addItem(song.cursorPosition);
+            }
 
-            setMediaSessionMetadata(currentSongCursorPosition);
             onPlay();
+            Log.d(TAG, "onCustomAction:");
+        }
+
+        /**
+         * On explicit item click.
+         */
+        @Override
+        public void onPrepare() {
+
         }
 
         @Override
         public void onPlay() {
-            boolean mediaChanged = (fileName == null || !fileName.equals(newFileName));
+            boolean mediaChanged = (fileName == null || !fileName.equals(song.fileName));
             mediaSession.setActive(true);
 
             // media did not change, continue playback
@@ -158,11 +166,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 return;
             }
 
-
             releaseMediaPlayer();
             initializeMediaPlayer();
 
-            fileName = newFileName;
+            fileName = song.fileName;
 
             try {
                 mediaPlayer.setDataSource(fileName);
@@ -173,35 +180,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             mediaPlayer.start();
             setNewState(PlaybackStateCompat.STATE_PLAYING);
-            mediaSession.setMetadata(mediaMetadata);
 
             Log.d(TAG, "onPlay: MediaSessionCallback");
-        }
-
-        /**
-         * Prepare the last played song
-         */
-        @Override
-        public void onPrepare() {
-            super.onPrepare();
-            String albumId = sharedPref.getCurrentAlbumId();
-            if (albumId != null) {
-//                mediaProvider.getAlbumSongs(albumId);
-            }
-
-            // retrieve if playing album
-            playingAlbum = sharedPref.isCurrentSongFromAlbum();
-            currentSongCursorPosition = sharedPref.getCurrentSongCursorPosition();
-
-            // retrieve the saved songs metadata
-            setMediaSessionMetadata(sharedPref.getCurrentSongCursorPosition()); // this might take a while due to large bitmaps
-            if (state == PlaybackStateCompat.STATE_PLAYING) {
-                int reportPosition = mediaPlayer != null ? mediaPlayer.getCurrentPosition() : 0;
-                stateBuilder.setState(state, reportPosition, 1.0f);
-                mediaSession.setPlaybackState(stateBuilder.build());
-            }
-
-            Log.d(TAG, "onPrepare");
         }
 
         @Override
@@ -233,38 +213,57 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         @Override
         public void onSkipToNext() {
-            // save the next song
-            queueManager.skipToNext();
-            Song song;
-            if (sharedPref.isCurrentSongFromAlbum()) {
-//                mediaItemData = mediaProvider.getAlbumSongs(sharedPref.getCurrentAlbumId()).get(currentSongCursorPosition);
-                song = null;
-            } else {
-                song = mediaProvider.getSongAtPosition(currentSongCursorPosition);
-            }
-            sharedPref.setSong(song);
 
-            setMediaSessionMetadata(currentSongCursorPosition);
+            Song nextSong;
+
+            if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
+                nextSong = queueManager.skipToNext();
+            } else {
+                if (song.isFromAlbum) {
+                    nextSong = mediaProvider.getAlbumSongs(song.albumId).get((song.cursorPosition + 1) % mediaProvider.getAlbumSongCursorSize());
+                } else {
+                    nextSong = mediaProvider.getSongAtPosition((song.cursorPosition + 1) % mediaProvider.getSongCursorSize());
+                }
+            }
+
+            song = nextSong;
+            sharedPref.setSong(nextSong);
+
+            setMediaSessionMetadata(nextSong);
             onPlay();
             Log.d(TAG, "onSkipToNext: ");
         }
 
         @Override
         public void onSkipToPrevious() {
-            if (queueManager.skipToPrevious()) {
 
-                Song song;
-                if (sharedPref.isCurrentSongFromAlbum()) {
-//                    mediaItemData = mediaProvider.getAlbumSongs(sharedPref.getCurrentAlbumId()).get(currentSongCursorPosition);
-                    song = null;
-                } else {
-                    song = mediaProvider.getSongAtPosition(currentSongCursorPosition);
+            Song previousSong;
+
+            if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
+                previousSong = queueManager.skipToPrevious();
+                if (previousSong == null) {
+                    return;
                 }
-                sharedPref.setSong(song);
-
-                setMediaSessionMetadata(currentSongCursorPosition);
-                onPlay();
+            } else {
+                int position = song.cursorPosition - 1;
+                if (song.isFromAlbum) {
+                    if (song.cursorPosition == 0) {
+                        position = mediaProvider.getAlbumSongCursorSize() - 1;
+                    }
+                    previousSong = mediaProvider.getAlbumSongs(song.albumId).get(position);
+                } else {
+                    if (song.cursorPosition == 0) {
+                        position = mediaProvider.getSongCursorSize() - 1;
+                    }
+                    previousSong = mediaProvider.getSongAtPosition(position);
+                }
             }
+
+            song = previousSong;
+            sharedPref.setSong(previousSong);
+
+            setMediaSessionMetadata(previousSong);
+            onPlay();
             Log.d(TAG, "onSkipToPrevious: ");
         }
 
@@ -276,11 +275,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             Log.d(TAG, "onSetShuffleMode: " + shuffleMode);
         }
 
-        private void setMediaSessionMetadata(int cursorPosition) {
-            mediaMetadata = mediaProvider.getMediaMetadata(cursorPosition, playingAlbum);
-            sharedPref.setCurrentSongDuration(mediaMetadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION));
+        private void setMediaSessionMetadata(Song song) {
+            mediaMetadata = song.getMetadata();
             mediaSession.setMetadata(mediaMetadata);
-            newFileName = mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI);
         }
     }
 
@@ -360,85 +357,72 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private class QueueManager {
 
         // TODO save queue to shared preferences as set and retrieve it after service is recreated
+        // TODO cut the queue so it won't grow to unbearable sizes
         List<Integer> queue = new ArrayList<>();
         Random rand = new Random();
         int pointer = -1;
 
-        void skipToNext() {
+        Song skipToNext() {
 
             pointer++;
 
-            if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
-                if (pointer < queue.size()) {
-                    currentSongCursorPosition = queue.get(pointer);
+            if (pointer < queue.size()) {
+                if (song.isFromAlbum) {
+                    return mediaProvider.getAlbumSongs(song.albumId).get(queue.get(pointer));
                 } else {
-                    currentSongCursorPosition = getRandomSongPosition();
-                    queue.add(currentSongCursorPosition);
+                    return mediaProvider.getSongAtPosition(queue.get(pointer));
                 }
             } else {
-                // if Shuffle mode is off no queue exists
-                currentSongCursorPosition = getSongAtPosition(currentSongCursorPosition + 1);
+                if (song.isFromAlbum) {
+                    int randomSongPosition = getRandomSongPosition();
+                    queue.add(randomSongPosition);
+                    return mediaProvider.getAlbumSongs(song.albumId).get(randomSongPosition);
+                } else {
+                    int randomSongPosition = getRandomSongPosition();
+                    queue.add(randomSongPosition);
+                    return mediaProvider.getSongAtPosition(randomSongPosition);
+                }
             }
+
         }
 
-        boolean skipToPrevious() {
-            if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
-                if (pointer <= 0) {
-                    return false;
-                }
+        Song skipToPrevious() {
 
-                pointer--;
-                currentSongCursorPosition = queue.get(pointer);
-                return true;
+            if (pointer <= 0) {
+                return null;
+            }
+
+            pointer--;
+
+            if (song.isFromAlbum) {
+                return mediaProvider.getAlbumSongs(song.albumId).get(queue.get(pointer));
             } else {
-                currentSongCursorPosition = getSongAtPosition(currentSongCursorPosition - 1);
-                return true;
+                return mediaProvider.getSongAtPosition(queue.get(pointer));
             }
         }
 
         private int getRandomSongPosition() {
-            if (playingAlbum) {
-//                return mediaProvider.getSongFromAlbum(rand.nextInt(mediaProvider.getAlbumSongCursorSize())).cursorPosition;
-                return 0;
+            if (song.isFromAlbum) {
+                return mediaProvider.getAlbumSongs(song.albumId).get(rand.nextInt(mediaProvider.getAlbumSongCursorSize())).cursorPosition;
             } else {
                 return mediaProvider.getSongAtPosition(rand.nextInt(mediaProvider.getSongCursorSize())).cursorPosition;
             }
         }
 
-        private int getSongAtPosition(int position) {
-            if (playingAlbum) {
-                // to avoid circular crashes
-                if (position < 0) {
-                    position = position + mediaProvider.getAlbumSongCursorSize();
-                }
-                //return mediaProvider.getSongFromAlbum(position % mediaProvider.getAlbumSongCursorSize()).cursorPosition;
-                return 0;
-            } else {
-                // to avoid circular crashes
-                if (position < 0) {
-                    position = position + mediaProvider.getSongCursorSize();
-                }
-                return mediaProvider.getSongAtPosition((position % mediaProvider.getSongCursorSize())).cursorPosition;
-            }
-        }
-
         void resetQueue() {
-            //if (queue.size() != 0) {
-                pointer = -1;
-                queue = new ArrayList<>();
-            //}
+            pointer = -1;
+            queue = new ArrayList<>();
         }
 
         void resetQueueFromShuffle() {
             resetQueue();
-            addItem(currentSongCursorPosition);
+            addItem(song.cursorPosition);
         }
 
         void addItem(int cursorPosition) {
             pointer++;
             queue.add(cursorPosition);
         }
-
     }
 
 }
