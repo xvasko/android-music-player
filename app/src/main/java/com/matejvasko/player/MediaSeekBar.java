@@ -89,7 +89,7 @@ public class MediaSeekBar extends AppCompatSeekBar {
         this.mediaController = mediaController;
         mediaControllerCallback = new MediaControllerCallback();
         this.mediaController.registerCallback(mediaControllerCallback);
-
+        mediaControllerCallback.onPlaybackStateChanged(mediaController.getPlaybackState());
         Log.d(TAG, "setMediaController");
     }
 
@@ -112,12 +112,20 @@ public class MediaSeekBar extends AppCompatSeekBar {
                 valueAnimator = null;
             }
 
+            if (state == null) {
+                System.out.println("STATE IS NULL");
+            }
+
             final int progress = state != null ? (int) state.getPosition() : 0;
+            System.out.println("progress #1: " + progress);
+            System.out.println("stat is: " + state.getState());
             setProgress(progress);
 
-            int max = (int) sharedPref.getCurrentSongDuration();
+            int max = sharedPref.getSong() != null ? (int) sharedPref.getSong().duration : 0;
 
             if (state != null && state.getState() == PlaybackStateCompat.STATE_PLAYING) {
+                System.out.println("max: " + max);
+                System.out.println("progress: " + progress);
                 final int timeToEnd = max - progress;
                 valueAnimator = ValueAnimator.ofInt(progress, max).setDuration(timeToEnd);
                 valueAnimator.setInterpolator(new LinearInterpolator());
@@ -130,7 +138,7 @@ public class MediaSeekBar extends AppCompatSeekBar {
 
         @Override
         public void onMetadataChanged(MediaMetadataCompat metadata) {
-            long duration = sharedPref.getCurrentSongDuration();
+            long duration = sharedPref.getSong().duration;
 
             durationTotal.setText(Utils.millisecondsToString(duration));
 

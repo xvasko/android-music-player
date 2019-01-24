@@ -49,7 +49,6 @@
                     android:layout_width="56dp"
                     android:layout_height="56dp"
                     android:contentDescription="@string/app_name"
-                    android:src="@drawable/ic_launcher_background"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -59,7 +58,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="8dp"
-                    android:text="Bad Kingdom - Moderat"
                     app:layout_constraintBottom_toBottomOf="@+id/album_art_image_view"
                     app:layout_constraintEnd_toStartOf="@+id/play_pause_button"
                     app:layout_constraintStart_toEndOf="@+id/album_art_image_view"
@@ -71,7 +69,6 @@
                     android:layout_height="40dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic_play_arrow_black_24dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 

@@ -104,8 +104,7 @@ public class AlbumSongsListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
         @Override
         public void onClick(View view) {
-            sharedPref.setCurrentAlbumId(album.id);
-            ((MainActivity) context).playSongFromAlbum(song);
+            ((MainActivity) context).playSong(song);
         }
     }
 

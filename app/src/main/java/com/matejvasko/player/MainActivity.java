@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         sharedPref = SharedPref.getInstance();
+        isShuffle = sharedPref.isShuffle();
         ClickListener clickListener = new ClickListener();
 
         // setup bottom navigation
@@ -101,29 +102,35 @@ public class MainActivity extends AppCompatActivity {
         shuffleButton = findViewById(R.id.shuffle_button);
         shuffleButton.setOnClickListener(clickListener);
         shuffleImageView = findViewById(R.id.shuffle_image_view);
+        shuffleImageView.setImageResource(isShuffle ? R.drawable.ic_shuffle_primary_24dp : R.drawable.ic_shuffle_black_24dp);
         mediaSeekBar = findViewById(R.id.media_seek_bar);
         mediaSeekBar.setPadding(0, 16, 0, 16);
         mediaSeekBar.setTextViews(
                 (TextView) findViewById(R.id.duration_current),
-                (TextView)findViewById(R.id.duration_total)
+                (TextView) findViewById(R.id.duration_total)
         );
 
         viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
         mediaControllerCallback = new MediaControllerCallback();
 
-        bottomSheetBehavior.setHideable(true);
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        //bottomSheetBehavior.setHideable(true);
+        //bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View view, int i) {
                 switch (i) {
                     case BottomSheetBehavior.STATE_COLLAPSED:
+                        sharedPref.setBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
                         playPauseImageView.setVisibility(View.VISIBLE);
                         playPauseButton.setEnabled(true);
+                        System.out.println("onStateChanged: STATE_COLLAPSED");
                         break;
                     case BottomSheetBehavior.STATE_EXPANDED:
+                        sharedPref.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
+                        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                         playPauseImageView.setVisibility(View.INVISIBLE);
                         playPauseButton.setEnabled(false);
+                        System.out.println("onStateChanged: STATE_EXPANDED");
                         break;
                     case BottomSheetBehavior.STATE_DRAGGING:
                         break;
@@ -140,22 +147,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
         Log.d(TAG, "onCreate: ");
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        return Navigation.findNavController(this, R.id.nav_host_fragment).navigateUp();
-    }
-
-    public void playSong(Song song) {
-        sharedPref.setSong(song);
-        mediaController.getTransportControls().sendCustomAction("play", null);
-    }
-
-    public void playSongFromAlbum(Song song) {
-        sharedPref.setSong(song);
-        mediaController.getTransportControls().sendCustomAction("x", null);
     }
 
     private class ClickListener implements View.OnClickListener {
@@ -200,6 +193,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onSupportNavigateUp() {
+        return Navigation.findNavController(this, R.id.nav_host_fragment).navigateUp();
+    }
+
+    public void playSong(Song song) {
+        sharedPref.setSong(song);
+        handleBottomSheetBehaviour();
+        mediaController.getTransportControls().sendCustomAction("play", null);
+    }
+
+    private void handleBottomSheetBehaviour() {
+//        if (sharedPref.getSong() != null && sharedPref.getBottomSheetState() != BottomSheetBehavior.STATE_HIDDEN) {
+//
+//        }
+
+
+        if (sharedPref.getSong() == null) {
+            bottomSheetBehavior.setHideable(true);
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            System.out.println("XXX1");
+        } else {
+            bottomSheetBehavior.setHideable(false);
+            if (sharedPref.getBottomSheetState() == BottomSheetBehavior.STATE_EXPANDED) {
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                System.out.println("XXX2");
+            } else if (sharedPref.getBottomSheetState() == BottomSheetBehavior.STATE_COLLAPSED) {
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                System.out.println("XXX3");
+            }
+        }
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
         if (mediaBrowser == null) {
@@ -207,6 +233,26 @@ public class MainActivity extends AppCompatActivity {
                 createMediaBrowser();
             }
         }
+
+        handleBottomSheetBehaviour();
+
+        Log.d(TAG, "onStart: ");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mediaSeekBar.disconnectMediaController();
+        if (mediaController != null) {
+            mediaController.unregisterCallback(mediaControllerCallback);
+            mediaController = null;
+        }
+        if (mediaBrowser != null && mediaBrowser.isConnected()) {
+            mediaBrowser.disconnect();
+            mediaBrowser = null;
+        }
+
+        Log.d(TAG, "onStop: ");
     }
 
     private void createMediaBrowser() {
@@ -219,30 +265,17 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onStart: Creating MediaBrowser, and connecting");
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        mediaSeekBar.disconnectMediaController();
-        if (mediaController != null) {
-            mediaController.unregisterCallback(mediaControllerCallback);
-            mediaController = null;
-        }
-        if (mediaBrowser != null && mediaBrowser.isConnected()) {
-            mediaBrowser.disconnect();
-            mediaBrowser = null;
-        }
-
-        Log.d(TAG, "onStop:");
-    }
-
     private SongsFragmentI listener1;
     private AlbumsFragmentI listener2;
+
     public void setListener1(SongsFragmentI listener) {
         this.listener1 = listener;
     }
+
     public void setListener2(AlbumsFragmentI listener) {
         this.listener2 = listener;
     }
+
     // Receives callbacks from the MediaBrowser when it has successfully connected to the
     // MediaBrowserService (MusicPlaybackService).
     private class MediaBrowserConnectionCallback extends MediaBrowserCompat.ConnectionCallback {
@@ -256,10 +289,13 @@ public class MainActivity extends AppCompatActivity {
                 mediaSeekBar.setMediaController(mediaController);
                 mediaController.registerCallback(mediaControllerCallback);
 
-                if (sharedPref.getCurrentSongCursorPosition() >= 0) {
+                // media metadata is retrieved from shared preferences inside MediaPlaybackService.java
+                mediaControllerCallback.onPlaybackStateChanged(mediaController.getPlaybackState());
+
+                if (sharedPref.getSong() != null) {
                     mediaController.getTransportControls().prepare();
-                    bottomSheetBehavior.setHideable(false);
-                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+//                    bottomSheetBehavior.setHideable(false);
+//                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 }
 
                 // enables handling of media buttons
@@ -290,10 +326,10 @@ public class MainActivity extends AppCompatActivity {
 
             songTitleTextView.setText(
                     String.format("%s   %s   %s",
-                    metadata.getText(MediaMetadataCompat.METADATA_KEY_TITLE),
-                    String.valueOf(Html.fromHtml("&#8226;")),
-                    metadata.getText(MediaMetadataCompat.METADATA_KEY_ARTIST)
-            ));
+                            metadata.getText(MediaMetadataCompat.METADATA_KEY_TITLE),
+                            String.valueOf(Html.fromHtml("&#8226;")),
+                            metadata.getText(MediaMetadataCompat.METADATA_KEY_ARTIST)
+                    ));
 
             Log.d(TAG, "onMetadataChanged: MediaControllerCallback");
         }
@@ -318,25 +354,20 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG, "onPause: ");
-    }
 
     public boolean isStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if ((checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) &&
                     (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
-                Log.v(TAG,"Permission is granted");
+                Log.v(TAG, "Permission is granted");
                 return true;
             } else {
-                Log.v(TAG,"Permission is revoked");
+                Log.v(TAG, "Permission is revoked");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 return false;
             }
         } else {
-            Log.v(TAG,"Permission is granted");
+            Log.v(TAG, "Permission is granted");
             return true;
         }
     }
@@ -346,8 +377,8 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case 1:
-                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    Log.v(TAG,"Permission: " + permissions[0] + " was " + grantResults[0]);
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.v(TAG, "Permission: " + permissions[0] + " was " + grantResults[0]);
                     createMediaBrowser();
                 }
                 break;

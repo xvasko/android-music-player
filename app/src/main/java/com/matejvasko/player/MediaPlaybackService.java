@@ -29,7 +29,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private static final String TAG = MediaPlaybackService.class.getSimpleName();
 
     private int state;
-    int shuffleMode = PlaybackStateCompat.SHUFFLE_MODE_NONE;
 
     private MediaProvider mediaProvider;
     private MediaSessionCompat mediaSession;
@@ -62,6 +61,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         stateBuilder = new PlaybackStateCompat.Builder().setActions(
                 PlaybackStateCompat.ACTION_PLAY |
                         PlaybackStateCompat.ACTION_PAUSE |
+                        PlaybackStateCompat.ACTION_STOP |
                         PlaybackStateCompat.ACTION_PLAY_PAUSE |
                         PlaybackStateCompat.ACTION_SKIP_TO_NEXT |
                         PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
@@ -129,14 +129,15 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         QueueManager queueManager = new QueueManager();
 
 
+        /**
+         * On explicit item click.
+         */
         @Override
         public void onCustomAction(String action, Bundle extras) {
-            super.onCustomAction(action, extras);
-
             song = sharedPref.getSong();
             setMediaSessionMetadata(song);
 
-            if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
+            if (sharedPref.isShuffle()) {
                 queueManager.resetQueue();
                 queueManager.addItem(song.cursorPosition);
             }
@@ -145,12 +146,16 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             Log.d(TAG, "onCustomAction:");
         }
 
-        /**
-         * On explicit item click.
-         */
         @Override
         public void onPrepare() {
-
+            song = sharedPref.getSong();
+            if (song != null) {
+                setMediaSessionMetadata(song);
+                //if (mediaSession.getController().getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING){
+                setNewState(mediaSession.getController().getPlaybackState().getState());
+                //}
+            }
+            Log.d(TAG, "onPrepare: ");
         }
 
         @Override
@@ -160,6 +165,12 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             // media did not change, continue playback
             if (!mediaChanged) {
+
+                // scenario: play song, go to another app, pause from notification, swipe to stop service, open app, continue playing
+                if (mediaPlayer == null) {
+                    initializeMediaPlayer();
+                }
+
                 mediaPlayer.start();
                 setNewState(PlaybackStateCompat.STATE_PLAYING);
                 System.out.println("Media did not change!");
@@ -186,8 +197,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         @Override
         public void onPause() {
-            mediaPlayer.pause();
-            setNewState(PlaybackStateCompat.STATE_PAUSED);
+            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                mediaPlayer.pause();
+                setNewState(PlaybackStateCompat.STATE_PAUSED);
+            }
 
             Log.d(TAG, "onPause: MediaSessionCallback");
         }
@@ -216,7 +229,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             Song nextSong;
 
-            if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
+            if (sharedPref.isShuffle()) {
                 nextSong = queueManager.skipToNext();
             } else {
                 if (song.isFromAlbum) {
@@ -239,7 +252,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             Song previousSong;
 
-            if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
+            if (sharedPref.isShuffle()) {
                 previousSong = queueManager.skipToPrevious();
                 if (previousSong == null) {
                     return;
@@ -270,7 +283,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         @Override
         public void onSetShuffleMode(int shuffleMode) {
             super.onSetShuffleMode(shuffleMode);
-            MediaPlaybackService.this.shuffleMode = shuffleMode;
+            boolean isShuffle = shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL;
+            sharedPref.setShuffle(isShuffle);
             queueManager.resetQueueFromShuffle();
             Log.d(TAG, "onSetShuffleMode: " + shuffleMode);
         }
@@ -279,6 +293,12 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             mediaMetadata = song.getMetadata();
             mediaSession.setMetadata(mediaMetadata);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
     }
 
     private void setNewState(@PlaybackStateCompat.State int newState) {

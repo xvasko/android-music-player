@@ -55,4 +55,18 @@ public class Song {
         }
     };
 
+    @Override
+    public String toString() {
+        return "Song{" +
+                "id='" + id + '\'' +
+                ", isFromAlbum=" + isFromAlbum +
+                ", title='" + title + '\'' +
+                ", artist='" + artist + '\'' +
+                ", albumArtUri='" + albumArtUri + '\'' +
+                ", duration=" + duration +
+                ", cursorPosition=" + cursorPosition +
+                ", fileName='" + fileName + '\'' +
+                ", albumId='" + albumId + '\'' +
+                '}';
+    }
 }
