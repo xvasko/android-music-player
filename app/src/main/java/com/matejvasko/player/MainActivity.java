@@ -27,6 +27,8 @@ import com.matejvasko.player.models.Song;
 import com.matejvasko.player.utils.SharedPref;
 import com.matejvasko.player.viewmodels.MainActivityViewModel;
 
+import java.util.concurrent.TimeUnit;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -112,9 +114,6 @@ public class MainActivity extends AppCompatActivity {
 
         viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
         mediaControllerCallback = new MediaControllerCallback();
-
-        //bottomSheetBehavior.setHideable(true);
-        //bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View view, int i) {
@@ -133,10 +132,16 @@ public class MainActivity extends AppCompatActivity {
                         System.out.println("onStateChanged: STATE_EXPANDED");
                         break;
                     case BottomSheetBehavior.STATE_DRAGGING:
+                        System.out.println("onStateChanged: STATE_DRAGGING");
                         break;
                     case BottomSheetBehavior.STATE_SETTLING:
+                        System.out.println("onStateChanged: STATE_SETTLING");
                         break;
                     case BottomSheetBehavior.STATE_HIDDEN:
+                        System.out.println("onStateChanged: STATE_HIDDEN");
+                        break;
+                    case BottomSheetBehavior.STATE_HALF_EXPANDED:
+                        System.out.println("onStateChanged: STATE_HALF_EXPANDED");
                         break;
                 }
             }
@@ -146,7 +151,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
 
         Log.d(TAG, "onCreate: ");
     }
@@ -204,11 +208,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleBottomSheetBehaviour() {
-//        if (sharedPref.getSong() != null && sharedPref.getBottomSheetState() != BottomSheetBehavior.STATE_HIDDEN) {
-//
-//        }
-
-
         if (sharedPref.getSong() == null) {
             bottomSheetBehavior.setHideable(true);
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
@@ -216,10 +215,14 @@ public class MainActivity extends AppCompatActivity {
         } else {
             bottomSheetBehavior.setHideable(false);
             if (sharedPref.getBottomSheetState() == BottomSheetBehavior.STATE_EXPANDED) {
+                playPauseImageView.setVisibility(View.INVISIBLE);
+                playPauseButton.setEnabled(false);
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 System.out.println("XXX2");
             } else if (sharedPref.getBottomSheetState() == BottomSheetBehavior.STATE_COLLAPSED) {
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                playPauseImageView.setVisibility(View.VISIBLE);
+                playPauseButton.setEnabled(true);
                 System.out.println("XXX3");
             }
         }
@@ -294,8 +297,6 @@ public class MainActivity extends AppCompatActivity {
 
                 if (sharedPref.getSong() != null) {
                     mediaController.getTransportControls().prepare();
-//                    bottomSheetBehavior.setHideable(false);
-//                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 }
 
                 // enables handling of media buttons
@@ -337,9 +338,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onPlaybackStateChanged(@Nullable final PlaybackStateCompat state) {
             isPlaying = state != null && state.getState() == PlaybackStateCompat.STATE_PLAYING;
-            playPauseImageView.setImageResource(isPlaying ? R.drawable.ic_pause_black_24dp : R.drawable.ic_play_arrow_black_24dp);
+            playPauseImageView.setImageDrawable(isPlaying ? getResources().getDrawable(R.drawable.ic_pause_black_24dp) :  getResources().getDrawable(R.drawable.ic_play_arrow_black_24dp) );
             playPauseBigImageView.setImageResource(isPlaying ? R.drawable.ic_pause_black_24dp : R.drawable.ic_play_arrow_black_24dp);
-
             Log.d(TAG, "onPlaybackStateChanged: MediaControllerCallback + " + state);
         }
 

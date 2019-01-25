@@ -121,7 +121,7 @@ public class MediaSeekBar extends AppCompatSeekBar {
             System.out.println("stat is: " + state.getState());
             setProgress(progress);
 
-            int max = sharedPref.getSong() != null ? (int) sharedPref.getSong().duration : 0;
+            int max = sharedPref.getSong() != null ? (int) sharedPref.getSong().duration : 1;
 
             if (state != null && state.getState() == PlaybackStateCompat.STATE_PLAYING) {
                 System.out.println("max: " + max);
