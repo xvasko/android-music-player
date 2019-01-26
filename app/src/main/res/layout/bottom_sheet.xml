@@ -1,21 +1,23 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
-    android:layout_height="210dp"
-    app:behavior_peekHeight="56dp"
+    android:layout_height="250dp"
+    app:behavior_peekHeight="60dp"
     app:layout_behavior="@string/bottom_sheet_behavior">
 
-    <!--<View-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="3dp"-->
-    <!--android:background="@drawable/top_shadow"/>-->
+    <View
+    android:layout_width="match_parent"
+    android:layout_height="1dp"
+    android:background="@color/colorWhiteE0"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="210dp"
-        android:background="@color/colorPrimaryDark">
+        android:layout_marginTop="1dp"
+        android:layout_height="match_parent"
+        android:background="@color/colorWhite">
 
         <View
             android:id="@+id/bottom_sheet_on_click"
@@ -23,23 +25,33 @@
             android:layout_height="56dp"
             android:layout_marginEnd="56dp" />
 
-        <ImageView
-            android:id="@+id/album_art_image_view"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:contentDescription="@string/app_name"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="3dp"
+            app:cardCornerRadius="24dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/album_art_image_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/app_name"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.cardview.widget.CardView>
+
 
         <TextView
             android:id="@+id/song_title_text_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            app:layout_constraintBottom_toBottomOf="@+id/album_art_image_view"
+            app:layout_constraintBottom_toBottomOf="@+id/bottom_sheet_on_click"
             app:layout_constraintEnd_toStartOf="@+id/play_pause_button"
-            app:layout_constraintStart_toEndOf="@+id/album_art_image_view"
+            app:layout_constraintStart_toEndOf="@+id/card"
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
@@ -60,19 +72,36 @@
             app:layout_constraintTop_toTopOf="parent"/>
 
         <com.matejvasko.player.MediaSeekBar
+            android:id="@+id/media_seek_bar_indicator"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            app:layout_constraintBottom_toTopOf="@+id/media_seek_bar"
+            app:layout_constraintTop_toBottomOf="@+id/bottom_sheet_on_click"
+            app:layout_constraintVertical_chainStyle="packed" />
+
+        <!--<View-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="1dp"-->
+            <!--android:background="#2c000000"-->
+            <!--app:layout_constraintBottom_toTopOf="@+id/media_seek_bar"-->
+            <!--app:layout_constraintTop_toBottomOf="@+id/bottom_sheet_on_click" />-->
+
+        <com.matejvasko.player.MediaSeekBar
             android:id="@+id/media_seek_bar"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="70dp"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/media_seek_bar_indicator" />
 
         <TextView
             android:id="@+id/duration_current"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="48dp"
             android:text="0:00"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/media_seek_bar" />
@@ -81,7 +110,7 @@
             android:id="@+id/duration_total"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="48dp"
             android:text="1:23"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/media_seek_bar" />
@@ -90,28 +119,26 @@
             android:id="@+id/skip_previous_image_view"
             android:layout_width="36dp"
             android:layout_height="56dp"
-            android:layout_marginTop="20dp"
             android:layout_marginEnd="20dp"
             android:src="@drawable/ic_skip_previous_black_24dp"
             app:layout_constraintEnd_toStartOf="@+id/play_pause_button_big"
-            app:layout_constraintTop_toBottomOf="@+id/media_seek_bar" />
+            app:layout_constraintTop_toTopOf="@+id/play_pause_button_big" />
 
         <Button
             android:id="@+id/skip_previous_button"
             android:layout_width="56dp"
             android:layout_height="56dp"
-            android:layout_marginTop="20dp"
             android:layout_marginEnd="8dp"
             android:background="@android:color/transparent"
             app:layout_constraintEnd_toStartOf="@+id/play_pause_button_big"
-            app:layout_constraintTop_toBottomOf="@+id/media_seek_bar" />
+            app:layout_constraintTop_toTopOf="@+id/play_pause_button_big" />
 
         <ImageView
             android:id="@+id/play_pause_image_view_big"
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="32dp"
             android:layout_marginEnd="8dp"
             android:src="@drawable/ic_play_arrow_black_24dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -123,7 +150,7 @@
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="32dp"
             android:layout_marginEnd="8dp"
             android:background="@android:color/transparent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -135,21 +162,18 @@
             android:layout_width="36dp"
             android:layout_height="56dp"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
             android:src="@drawable/ic_skip_next_black_24dp"
             app:layout_constraintStart_toEndOf="@+id/play_pause_image_view_big"
-            app:layout_constraintTop_toBottomOf="@+id/media_seek_bar" />
+            app:layout_constraintTop_toTopOf="@+id/play_pause_button_big" />
 
         <Button
             android:id="@+id/skip_next_button"
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="8dp"
             android:background="@android:color/transparent"
             app:layout_constraintStart_toEndOf="@+id/play_pause_image_view_big"
-            app:layout_constraintTop_toBottomOf="@+id/media_seek_bar" />
+            app:layout_constraintTop_toTopOf="@+id/play_pause_button_big" />
 
         <ImageView
             android:id="@+id/shuffle_image_view"
@@ -175,6 +199,16 @@
             app:layout_constraintStart_toEndOf="@+id/skip_next_button"
             app:layout_constraintTop_toTopOf="@+id/skip_next_button" />
 
+
+        <!--<View-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="1dp"-->
+            <!--android:background="@color/colorGrayTransparent"-->
+            <!--app:layout_constraintBottom_toBottomOf="parent"-->
+            <!--app:layout_constraintEnd_toEndOf="parent"-->
+            <!--app:layout_constraintStart_toStartOf="parent" />-->
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 
 </RelativeLayout>

@@ -40,7 +40,10 @@ public class MediaSeekBar extends AppCompatSeekBar {
         @Override
         public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
             // TODO this method is called every time progress is made - overkill?
-            durationCurrent.setText(Utils.millisecondsToString(i));
+            if (durationCurrent != null) {
+                durationCurrent.setText(Utils.millisecondsToString(i));
+            }
+
         }
 
         @Override
@@ -142,7 +145,10 @@ public class MediaSeekBar extends AppCompatSeekBar {
         public void onMetadataChanged(MediaMetadataCompat metadata) {
             long duration = sharedPref.getSong().duration;
 
-            durationTotal.setText(Utils.millisecondsToString(duration));
+            if (durationCurrent != null) {
+                durationTotal.setText(Utils.millisecondsToString(duration));
+            }
+
 
             //setProgress(0);
             setMax((int) duration);

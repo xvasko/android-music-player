@@ -3,6 +3,7 @@ package com.matejvasko.player;
 import android.Manifest;
 import android.content.ComponentName;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -12,7 +13,9 @@ import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.Html;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -59,7 +62,9 @@ public class MainActivity extends AppCompatActivity {
     Button skipNextButton;
     Button skipPreviousButton;
     Button shuffleButton;
+    MediaSeekBar mediaSeekBarIndicator;
     MediaSeekBar mediaSeekBar;
+    View backgroundDimmer;
 
     private MediaBrowserCompat mediaBrowser;
     private MediaControllerCompat mediaController;
@@ -73,6 +78,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+//            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            getWindow().setStatusBarColor(Color.WHITE);
+
+        }
+
         setContentView(R.layout.activity_main);
         sharedPref = SharedPref.getInstance();
         isShuffle = sharedPref.isShuffle();
@@ -83,6 +96,9 @@ public class MainActivity extends AppCompatActivity {
         navHostFragment = findViewById(R.id.nav_host_fragment);
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupWithNavController(bottomNav, navController);
+
+        backgroundDimmer = findViewById(R.id.background_dimmer);
+        backgroundDimmer.setOnClickListener(clickListener);
 
         bottomSheetOnClickView = findViewById(R.id.bottom_sheet_on_click);
         bottomSheetOnClickView.setOnClickListener(clickListener);
@@ -105,8 +121,16 @@ public class MainActivity extends AppCompatActivity {
         shuffleButton.setOnClickListener(clickListener);
         shuffleImageView = findViewById(R.id.shuffle_image_view);
         shuffleImageView.setImageResource(isShuffle ? R.drawable.ic_shuffle_primary_24dp : R.drawable.ic_shuffle_black_24dp);
+        mediaSeekBarIndicator = findViewById(R.id.media_seek_bar_indicator);
+        mediaSeekBarIndicator.setPadding(0, 0, 0, 0);
+        mediaSeekBarIndicator.setOnTouchListener(new View.OnTouchListener(){
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return true;
+            }
+        });
+        mediaSeekBarIndicator.setThumbOffset(10000);
         mediaSeekBar = findViewById(R.id.media_seek_bar);
-        mediaSeekBar.setPadding(0, 16, 0, 16);
         mediaSeekBar.setTextViews(
                 (TextView) findViewById(R.id.duration_current),
                 (TextView) findViewById(R.id.duration_total)
@@ -120,14 +144,14 @@ public class MainActivity extends AppCompatActivity {
                 switch (i) {
                     case BottomSheetBehavior.STATE_COLLAPSED:
                         sharedPref.setBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
-                        playPauseImageView.setVisibility(View.VISIBLE);
+//                        playPauseImageView.setVisibility(View.VISIBLE);
                         playPauseButton.setEnabled(true);
                         System.out.println("onStateChanged: STATE_COLLAPSED");
                         break;
                     case BottomSheetBehavior.STATE_EXPANDED:
                         sharedPref.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
                         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                        playPauseImageView.setVisibility(View.INVISIBLE);
+//                        playPauseImageView.setVisibility(View.INVISIBLE);
                         playPauseButton.setEnabled(false);
                         System.out.println("onStateChanged: STATE_EXPANDED");
                         break;
@@ -148,7 +172,17 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSlide(@NonNull View view, float v) {
-
+                if (v == 0.0) {
+                    backgroundDimmer.setVisibility(View.INVISIBLE);
+                    mediaSeekBarIndicator.setVisibility(View.VISIBLE);
+                } else if (backgroundDimmer.getVisibility() != View.VISIBLE && bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED) {
+                    backgroundDimmer.setVisibility(View.VISIBLE);
+                } else {
+                    mediaSeekBarIndicator.setVisibility(View.INVISIBLE);
+                }
+                backgroundDimmer.setAlpha(v);
+                playPauseImageView.setAlpha(1 - v);
+                System.out.println("onSlide: " + v);
             }
         });
 
@@ -192,6 +226,9 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.bottom_sheet_on_click:
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                     break;
+                case R.id.background_dimmer:
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                    break;
             }
         }
     }
@@ -215,13 +252,17 @@ public class MainActivity extends AppCompatActivity {
         } else {
             bottomSheetBehavior.setHideable(false);
             if (sharedPref.getBottomSheetState() == BottomSheetBehavior.STATE_EXPANDED) {
-                playPauseImageView.setVisibility(View.INVISIBLE);
+                playPauseImageView.setAlpha(0f);
+                backgroundDimmer.setVisibility(View.VISIBLE);
                 playPauseButton.setEnabled(false);
+                mediaSeekBarIndicator.setVisibility(View.INVISIBLE);
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 System.out.println("XXX2");
             } else if (sharedPref.getBottomSheetState() == BottomSheetBehavior.STATE_COLLAPSED) {
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                playPauseImageView.setVisibility(View.VISIBLE);
+                playPauseImageView.setAlpha(1f);
+                backgroundDimmer.setVisibility(View.INVISIBLE);
+                mediaSeekBarIndicator.setVisibility(View.VISIBLE);
                 playPauseButton.setEnabled(true);
                 System.out.println("XXX3");
             }
@@ -246,6 +287,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         mediaSeekBar.disconnectMediaController();
+        mediaSeekBarIndicator.disconnectMediaController();
         if (mediaController != null) {
             mediaController.unregisterCallback(mediaControllerCallback);
             mediaController = null;
@@ -290,6 +332,7 @@ public class MainActivity extends AppCompatActivity {
                 listener2.loadAlbums();
                 mediaController = new MediaControllerCompat(MainActivity.this, mediaBrowser.getSessionToken());
                 mediaSeekBar.setMediaController(mediaController);
+                mediaSeekBarIndicator.setMediaController(mediaController);
                 mediaController.registerCallback(mediaControllerCallback);
 
                 if (sharedPref.getSong() != null) {
