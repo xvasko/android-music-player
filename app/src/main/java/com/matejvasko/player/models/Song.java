@@ -19,6 +19,7 @@ public class Song {
     public int cursorPosition;
     public String fileName;
     public String albumId;
+    public long progress = 0;
 
     public Song(String id, boolean isFromAlbum, String title, String artist, String albumArtUri, long duration, int cursorPosition, String fileName, String albumId) {
         this.id = id;

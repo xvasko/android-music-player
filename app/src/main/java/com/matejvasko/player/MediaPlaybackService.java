@@ -58,13 +58,16 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
                         MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS |
                         MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS);
-        stateBuilder = new PlaybackStateCompat.Builder().setActions(
-                PlaybackStateCompat.ACTION_PLAY |
-                        PlaybackStateCompat.ACTION_PAUSE |
-                        PlaybackStateCompat.ACTION_STOP |
-                        PlaybackStateCompat.ACTION_PLAY_PAUSE |
-                        PlaybackStateCompat.ACTION_SKIP_TO_NEXT |
-                        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
+        int progress = sharedPref.getSong() != null ? (int) sharedPref.getSong().progress : 0;
+        stateBuilder = new PlaybackStateCompat.Builder()
+                .setActions(
+                        PlaybackStateCompat.ACTION_PLAY |
+                                PlaybackStateCompat.ACTION_PAUSE |
+                                PlaybackStateCompat.ACTION_STOP |
+                                PlaybackStateCompat.ACTION_PLAY_PAUSE |
+                                PlaybackStateCompat.ACTION_SKIP_TO_NEXT |
+                                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS)
+                .setState(PlaybackStateCompat.STATE_PAUSED, progress, 1.0f);
         metadataBuilder = new MediaMetadataCompat.Builder();
         mediaSession.setPlaybackState(stateBuilder.build());
 
@@ -121,13 +124,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     }
 
     MediaMetadataCompat mediaMetadata;
-    String fileName;
     Song song;
 
     public class MediaSessionCallback extends MediaSessionCompat.Callback {
 
         QueueManager queueManager = new QueueManager();
-
 
         /**
          * On explicit item click.
@@ -151,40 +152,23 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             song = sharedPref.getSong();
             if (song != null) {
                 setMediaSessionMetadata(song);
-                //if (mediaSession.getController().getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING){
-                setNewState(mediaSession.getController().getPlaybackState().getState());
-                //}
             }
             Log.d(TAG, "onPrepare: ");
         }
 
         @Override
         public void onPlay() {
-            boolean mediaChanged = (fileName == null || !fileName.equals(song.fileName));
             mediaSession.setActive(true);
 
-            // media did not change, continue playback
-            if (!mediaChanged) {
-
-                // scenario: play song, go to another app, pause from notification, swipe to stop service, open app, continue playing
-                if (mediaPlayer == null) {
-                    initializeMediaPlayer();
-                }
-
-                mediaPlayer.start();
-                setNewState(PlaybackStateCompat.STATE_PLAYING);
-                System.out.println("Media did not change!");
-                return;
-            }
-
+            // absolutely necessary to reinitialize media player every time play is called due to
+            // scenario: play song, go to another app, pause from notification, swipe to stop service, open app, continue playing
             releaseMediaPlayer();
             initializeMediaPlayer();
 
-            fileName = song.fileName;
-
             try {
-                mediaPlayer.setDataSource(fileName);
+                mediaPlayer.setDataSource(song.fileName);
                 mediaPlayer.prepare();
+                mediaPlayer.seekTo((int) song.progress);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -199,6 +183,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         public void onPause() {
             if (mediaPlayer != null && mediaPlayer.isPlaying()) {
                 mediaPlayer.pause();
+                Song song1 = sharedPref.getSong();
+                song1.progress = mediaSession.getController().getPlaybackState().getPosition();
+                sharedPref.setSong(song1);
+                song = sharedPref.getSong();
                 setNewState(PlaybackStateCompat.STATE_PAUSED);
             }
 
@@ -217,11 +205,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         @Override
         public void onSeekTo(long pos) {
-            if (mediaPlayer != null) {
-                mediaPlayer.seekTo((int) pos);
+            if (state == PlaybackStateCompat.STATE_PLAYING) {
+                if (mediaPlayer != null) {
+                    mediaPlayer.seekTo((int) pos);
+                }
+                setNewState(state);
+            } else {
+                song.progress = pos;
             }
-
-            setNewState(state);
         }
 
         @Override
@@ -295,17 +286,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         }
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "onDestroy: ");
-    }
-
     private void setNewState(@PlaybackStateCompat.State int newState) {
         state = newState;
         final long reportPosition;
 
-        reportPosition = mediaPlayer != null ? mediaPlayer.getCurrentPosition() : 0;
+        reportPosition = mediaPlayer != null ? mediaPlayer.getCurrentPosition() : sharedPref.getSong().progress;
 
         stateBuilder.setState(newState, reportPosition, 1.0f);
         mediaSession.setPlaybackState(stateBuilder.build());

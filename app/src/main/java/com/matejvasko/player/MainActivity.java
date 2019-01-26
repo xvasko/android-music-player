@@ -292,12 +292,12 @@ public class MainActivity extends AppCompatActivity {
                 mediaSeekBar.setMediaController(mediaController);
                 mediaController.registerCallback(mediaControllerCallback);
 
+                if (sharedPref.getSong() != null) {
+                    mediaController.getTransportControls().prepare(); // set Metadata
+                }
                 // media metadata is retrieved from shared preferences inside MediaPlaybackService.java
                 mediaControllerCallback.onPlaybackStateChanged(mediaController.getPlaybackState());
-
-                if (sharedPref.getSong() != null) {
-                    mediaController.getTransportControls().prepare();
-                }
+                System.out.println("mediaController.getPlaybackState(): " + mediaController.getPlaybackState());
 
                 // enables handling of media buttons
                 MediaControllerCompat.setMediaController(MainActivity.this, mediaController);

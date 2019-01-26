@@ -112,21 +112,23 @@ public class MediaSeekBar extends AppCompatSeekBar {
                 valueAnimator = null;
             }
 
-            if (state == null) {
-                System.out.println("STATE IS NULL");
-            }
-
+            final int max = sharedPref.getSong() != null ? (int) sharedPref.getSong().duration : 0;
             final int progress = state != null ? (int) state.getPosition() : 0;
-            System.out.println("progress #1: " + progress);
-            System.out.println("stat is: " + state.getState());
-            setProgress(progress);
 
-            int max = sharedPref.getSong() != null ? (int) sharedPref.getSong().duration : 1;
+            // https://stackoverflow.com/questions/4348032/android-progressbar-does-not-update-progress-view-drawable
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    setProgress(0);
+                    setMax(max);
+                    setProgress(progress);
+                }
+            });
 
             if (state != null && state.getState() == PlaybackStateCompat.STATE_PLAYING) {
+                final int timeToEnd = max - progress;
                 System.out.println("max: " + max);
                 System.out.println("progress: " + progress);
-                final int timeToEnd = max - progress;
                 valueAnimator = ValueAnimator.ofInt(progress, max).setDuration(timeToEnd);
                 valueAnimator.setInterpolator(new LinearInterpolator());
                 valueAnimator.addUpdateListener(this);
@@ -142,7 +144,7 @@ public class MediaSeekBar extends AppCompatSeekBar {
 
             durationTotal.setText(Utils.millisecondsToString(duration));
 
-            setProgress(0);
+            //setProgress(0);
             setMax((int) duration);
 
             Log.d(TAG, "onMetadataChanged: MediaControllerCallback");
