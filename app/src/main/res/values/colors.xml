@@ -10,6 +10,7 @@
     <color name="colorItemChecked">#212121</color>
     <color name="colorItemUnchecked">#797979</color>
     <color name="colorWhiteGray">#80000000</color>
+    <color name="colorDarkGray">#424242</color>424242
     <color name="colorTextColor">#757575</color>
     <color name="colorBlack">#000000</color>
 </resources>
