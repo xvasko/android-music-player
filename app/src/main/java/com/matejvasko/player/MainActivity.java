@@ -15,6 +15,7 @@ import android.text.Html;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -28,6 +29,7 @@ import com.matejvasko.player.fragments.library.AlbumsFragmentI;
 import com.matejvasko.player.fragments.library.SongsFragmentI;
 import com.matejvasko.player.models.Song;
 import com.matejvasko.player.utils.SharedPref;
+import com.matejvasko.player.utils.Utils;
 import com.matejvasko.player.viewmodels.MainActivityViewModel;
 
 import java.util.concurrent.TimeUnit;
@@ -136,14 +138,12 @@ public class MainActivity extends AppCompatActivity {
                 switch (i) {
                     case BottomSheetBehavior.STATE_COLLAPSED:
                         sharedPref.setBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
-//                        playPauseImageView.setVisibility(View.VISIBLE);
                         playPauseButton.setEnabled(true);
                         System.out.println("onStateChanged: STATE_COLLAPSED");
                         break;
                     case BottomSheetBehavior.STATE_EXPANDED:
                         sharedPref.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
                         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-//                        playPauseImageView.setVisibility(View.INVISIBLE);
                         playPauseButton.setEnabled(false);
                         System.out.println("onStateChanged: STATE_EXPANDED");
                         break;
@@ -243,6 +243,7 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("XXX1");
         } else {
             bottomSheetBehavior.setHideable(false);
+            ((ViewGroup.MarginLayoutParams) navHostFragment.getLayoutParams()).bottomMargin = Utils.densityPixelToPixel(60);
             if (sharedPref.getBottomSheetState() == BottomSheetBehavior.STATE_EXPANDED) {
                 playPauseImageView.setAlpha(0f);
                 backgroundDimmer.setVisibility(View.VISIBLE);
@@ -388,7 +389,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
 
     public boolean isStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

@@ -10,10 +10,9 @@
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         app:navigationIcon="?attr/homeAsUpIndicator"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
+        android:background="@color/colorWhite"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -23,9 +22,8 @@
             android:layout_height="wrap_content"
             android:id="@+id/toolbarTextView"
             android:gravity="center_horizontal"
-            android:layout_marginRight="?android:attr/actionBarSize"
+            android:layout_marginEnd="?android:attr/actionBarSize"
             android:textSize="18sp"
-            android:textColor="@color/colorWhite"
             android:text="Album"/>
 
     </androidx.appcompat.widget.Toolbar>
@@ -35,7 +33,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:overScrollMode="never"
-        android:scrollbars="vertical"
-/>
+        android:scrollbars="vertical" />
 
 </LinearLayout>

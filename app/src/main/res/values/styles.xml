@@ -5,20 +5,13 @@
     <!-- Base application theme. -->
     <style name="BaseAppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">#FFFFFF</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">#212121</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
-
-    <style name="ToolbarTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorControlNormal">#FFFFFF</item>
-    </style>
-
     <style name="AppTabLayout" parent="Widget.Design.TabLayout">
+        <item name="android:background">@color/colorWhite</item>
         <item name="tabIndicator">@drawable/tab_indicator</item>
         <item name="tabIndicatorColor">#424242</item>
         <item name="tabIndicatorFullWidth">false</item>

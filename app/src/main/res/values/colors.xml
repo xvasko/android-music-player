@@ -2,15 +2,16 @@
 <resources>
     <color name="colorPrimary">#2d2d2d</color>
     <color name="colorPrimaryDark">#212121</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorAccent">#ef6c00</color>
 
+    <!--WHITE-->
     <color name="colorWhite">#FFFFFF</color>
-    <color name="colorWhiteTransparent">#80FFFFFF</color>
     <color name="colorWhiteE0">#e0e0e0</color>
-    <color name="colorItemChecked">#212121</color>
+
+    <!--BOTTOM NAV-->
+    <color name="colorItemChecked">@color/colorPrimaryDark</color>
     <color name="colorItemUnchecked">#797979</color>
-    <color name="colorWhiteGray">#80000000</color>
-    <color name="colorDarkGray">#424242</color>424242
-    <color name="colorTextColor">#757575</color>
-    <color name="colorBlack">#000000</color>
+
+    <!--DIMMER-->
+    <color name="colorDimmer">#80000000</color>
 </resources>
