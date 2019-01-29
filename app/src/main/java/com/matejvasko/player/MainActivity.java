@@ -59,11 +59,13 @@ public class MainActivity extends AppCompatActivity {
     ImageView playPauseImageView;
     ImageView playPauseBigImageView;
     ImageView shuffleImageView;
+    ImageView collapseImageView;
     Button playPauseButton;
     Button playPauseButtonBig;
     Button skipNextButton;
     Button skipPreviousButton;
     Button shuffleButton;
+    Button collapseButton;
     MediaSeekBar mediaSeekBarIndicator;
     MediaSeekBar mediaSeekBar;
     View backgroundDimmer;
@@ -101,12 +103,16 @@ public class MainActivity extends AppCompatActivity {
 
         albumArtImageView = findViewById(R.id.album_art_image_view);
         songTitleTextView = findViewById(R.id.song_title_text_view);
+        songTitleTextView.setSelected(true);
         playPauseImageView = findViewById(R.id.play_pause_image_view);
         playPauseBigImageView = findViewById(R.id.play_pause_image_view_big);
         playPauseButton = findViewById(R.id.play_pause_button);
         playPauseButton.setOnClickListener(clickListener);
         playPauseButtonBig = findViewById(R.id.play_pause_button_big);
         playPauseButtonBig.setOnClickListener(clickListener);
+        collapseImageView = findViewById(R.id.collapse_image_view);
+        collapseButton = findViewById(R.id.collapse_button);
+        collapseButton.setOnClickListener(clickListener);
         skipNextButton = findViewById(R.id.skip_next_button);
         skipNextButton.setOnClickListener(clickListener);
         skipPreviousButton = findViewById(R.id.skip_previous_button);
@@ -123,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-        mediaSeekBarIndicator.setThumbOffset(10000);
+        mediaSeekBarIndicator.setThumb(null);
         mediaSeekBar = findViewById(R.id.media_seek_bar);
         mediaSeekBar.setTextViews(
                 (TextView) findViewById(R.id.duration_current),
@@ -139,12 +145,14 @@ public class MainActivity extends AppCompatActivity {
                     case BottomSheetBehavior.STATE_COLLAPSED:
                         sharedPref.setBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
                         playPauseButton.setEnabled(true);
+                        collapseButton.setEnabled(false);
                         System.out.println("onStateChanged: STATE_COLLAPSED");
                         break;
                     case BottomSheetBehavior.STATE_EXPANDED:
                         sharedPref.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
                         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                         playPauseButton.setEnabled(false);
+                        collapseButton.setEnabled(true);
                         System.out.println("onStateChanged: STATE_EXPANDED");
                         break;
                     case BottomSheetBehavior.STATE_DRAGGING:
@@ -172,9 +180,16 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     mediaSeekBarIndicator.setVisibility(View.INVISIBLE);
                 }
+
                 backgroundDimmer.setAlpha(v);
-                playPauseImageView.setAlpha(1 - v);
-                System.out.println("onSlide: " + v);
+
+                if (v > 0.5) {
+                    collapseImageView.setAlpha((v - 0.5f) * 2);
+                    playPauseImageView.setAlpha(0f);
+                } else {
+                    playPauseImageView.setAlpha(1 - 2 * v);
+                    collapseImageView.setAlpha(0f);
+                }
             }
         });
 
@@ -221,6 +236,9 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.background_dimmer:
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                     break;
+                case R.id.collapse_button:
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                    break;
             }
         }
     }
@@ -233,6 +251,7 @@ public class MainActivity extends AppCompatActivity {
     public void playSong(Song song) {
         sharedPref.setSong(song);
         handleBottomSheetBehaviour();
+        songTitleTextView.setSelected(true);
         mediaController.getTransportControls().sendCustomAction("play", null);
     }
 
@@ -243,20 +262,24 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("XXX1");
         } else {
             bottomSheetBehavior.setHideable(false);
-            ((ViewGroup.MarginLayoutParams) navHostFragment.getLayoutParams()).bottomMargin = Utils.densityPixelToPixel(60);
+            ((ViewGroup.MarginLayoutParams) navHostFragment.getLayoutParams()).bottomMargin = Utils.densityPixelToPixel(56);
             if (sharedPref.getBottomSheetState() == BottomSheetBehavior.STATE_EXPANDED) {
                 playPauseImageView.setAlpha(0f);
+                collapseImageView.setAlpha(1f);
                 backgroundDimmer.setVisibility(View.VISIBLE);
                 playPauseButton.setEnabled(false);
+                collapseButton.setEnabled(true);
                 mediaSeekBarIndicator.setVisibility(View.INVISIBLE);
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 System.out.println("XXX2");
             } else if (sharedPref.getBottomSheetState() == BottomSheetBehavior.STATE_COLLAPSED) {
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 playPauseImageView.setAlpha(1f);
+                collapseImageView.setAlpha(0f);
                 backgroundDimmer.setVisibility(View.INVISIBLE);
-                mediaSeekBarIndicator.setVisibility(View.VISIBLE);
                 playPauseButton.setEnabled(true);
+                collapseButton.setEnabled(false);
+                mediaSeekBarIndicator.setVisibility(View.VISIBLE);
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 System.out.println("XXX3");
             }
         }

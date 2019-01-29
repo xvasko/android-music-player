@@ -1,11 +1,9 @@
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
-    android:layout_height="250dp"
-    app:behavior_peekHeight="60dp"
+    android:layout_height="280dp"
+    app:behavior_peekHeight="58dp"
     app:layout_behavior="@string/bottom_sheet_behavior">
 
     <View
@@ -21,17 +19,17 @@
 
         <View
             android:id="@+id/bottom_sheet_on_click"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="56dp"
-            android:layout_marginEnd="56dp" />
+            app:layout_constraintEnd_toStartOf="@+id/play_pause_button" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/card"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="3dp"
-            app:cardCornerRadius="24dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="10dp"
+            app:cardCornerRadius="22dp"
+            app:layout_constraintBottom_toBottomOf="@+id/bottom_sheet_on_click"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -44,38 +42,71 @@
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.cardview.widget.CardView>
 
-
-        <TextView
-            android:id="@+id/song_title_text_view"
+        <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="@+id/bottom_sheet_on_click"
-            app:layout_constraintEnd_toStartOf="@+id/play_pause_button"
-            app:layout_constraintStart_toEndOf="@+id/card"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/song_title_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="70dp"
+                android:layout_marginEnd="70dp"
+                android:ellipsize="marquee"
+                android:focusable="true"
+                android:focusableInTouchMode="false"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
+                android:gravity="center" />
+
+        </RelativeLayout>
+
+        <ImageView
+            android:id="@+id/collapse_image_view"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/ic_expand_more_black_24dp"
+            app:layout_constraintBottom_toBottomOf="@+id/play_pause_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/play_pause_button"
+            app:layout_constraintTop_toTopOf="@+id/play_pause_button" />
+
+        <Button
+            android:id="@+id/collapse_button"
+            android:layout_width="65dp"
+            android:layout_height="56dp"
+            android:background="@android:color/transparent"
+            app:layout_constraintBottom_toBottomOf="@+id/bottom_sheet_on_click"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/play_pause_image_view"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            app:layout_constraintBottom_toBottomOf="@+id/play_pause_button"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toStartOf="@+id/play_pause_button"
+            app:layout_constraintTop_toTopOf="@+id/play_pause_button" />
 
         <Button
             android:id="@+id/play_pause_button"
-            android:layout_width="56dp"
+            android:layout_width="65dp"
             android:layout_height="56dp"
             android:background="@android:color/transparent"
+            app:layout_constraintBottom_toBottomOf="@+id/bottom_sheet_on_click"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.matejvasko.player.MediaSeekBar
             android:id="@+id/media_seek_bar_indicator"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            app:layout_constraintBottom_toTopOf="@+id/media_seek_bar"
             app:layout_constraintTop_toBottomOf="@+id/bottom_sheet_on_click"
             app:layout_constraintVertical_chainStyle="packed" />
 
@@ -90,12 +121,12 @@
             android:id="@+id/media_seek_bar"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="20dp"
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/media_seek_bar_indicator" />
+            app:layout_constraintTop_toBottomOf="@+id/bottom_sheet_on_click" />
 
         <TextView
             android:id="@+id/duration_current"
@@ -137,10 +168,8 @@
             android:id="@+id/play_pause_image_view_big"
             android:layout_width="56dp"
             android:layout_height="56dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginEnd="8dp"
             android:src="@drawable/ic_play_arrow_black_24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/media_seek_bar" />
@@ -149,10 +178,8 @@
             android:id="@+id/play_pause_button_big"
             android:layout_width="56dp"
             android:layout_height="56dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginEnd="8dp"
             android:background="@android:color/transparent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/media_seek_bar" />
@@ -184,7 +211,7 @@
             android:src="@drawable/ic_shuffle_black_24dp"
             app:layout_constraintBottom_toBottomOf="@+id/skip_next_button"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.7"
+            app:layout_constraintHorizontal_bias="0.6"
             app:layout_constraintStart_toEndOf="@+id/skip_next_button"
             app:layout_constraintTop_toTopOf="@+id/skip_next_button" />
 
@@ -195,7 +222,7 @@
             android:background="@android:color/transparent"
             app:layout_constraintBottom_toBottomOf="@+id/skip_next_button"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.8"
+            app:layout_constraintHorizontal_bias="0.7"
             app:layout_constraintStart_toEndOf="@+id/skip_next_button"
             app:layout_constraintTop_toTopOf="@+id/skip_next_button" />
 
