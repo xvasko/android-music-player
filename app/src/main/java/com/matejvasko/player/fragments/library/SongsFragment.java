@@ -61,6 +61,7 @@ public class SongsFragment extends Fragment implements SongsFragmentI {
 
         recyclerView = view.findViewById(R.id.songs_recycler_view);
         recyclerView.setAdapter(songListAdapter);
+        recyclerView.setHasFixedSize(true);
         recyclerView.setItemAnimator(null);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
