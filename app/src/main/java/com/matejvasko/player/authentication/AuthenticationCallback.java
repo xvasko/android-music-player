@@ -1,4 +1,4 @@
-package com.matejvasko.player.utils;
+package com.matejvasko.player.authentication;
 
 import com.google.firebase.auth.FirebaseUser;
 
