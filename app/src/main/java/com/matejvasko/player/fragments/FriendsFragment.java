@@ -11,11 +11,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.matejvasko.player.AccountActivity;
 import com.matejvasko.player.App;
 import com.matejvasko.player.R;
@@ -39,7 +45,7 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     TextView signUpLink;
     TextView logInLink;
     TextView signOutLink;
-    TextView userEmail;
+
     EditText logInEmailEditText;
     EditText logInPasswordEditText;
     EditText registerDisplayName;
@@ -49,6 +55,12 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     Button registerButton;
 
     ProgressDialog progressDialog;
+
+    private ImageView userImage;
+    private TextView userName, userEmail;
+
+    private EditText addFriendEditText;
+    private Button addFriendButton;
 
     public FriendsFragment() {
         // Required empty public constructor
@@ -60,11 +72,16 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
         progressDialog = new ProgressDialog(getActivity());
 
+        addFriendEditText = view.findViewById(R.id.add_friend_edit_text);
+        addFriendButton = view.findViewById(R.id.add_friend_button);
+
         logInLayout = view.findViewById(R.id.log_in_layout);
         signUpLayout = view.findViewById(R.id.sign_up_layout);
         loggedInLayout = view.findViewById(R.id.friends_tab_logged_in_layout);
 
-        userEmail = view.findViewById(R.id.user_email_text_view);
+        userImage = view.findViewById(R.id.friends_user_image_image_view);
+        userName = view.findViewById(R.id.friends_user_name_text_view);
+        userEmail = view.findViewById(R.id.friends_user_email_text_view);
 
         signUpLink = view.findViewById(R.id.sign_up_link);
         signUpLink.setOnClickListener(new View.OnClickListener() {
@@ -158,6 +175,36 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 popupMenu.show();
             }
         });
+
+
+
+        addFriendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+                System.out.println("LOL?!");
+                ref.child("users").orderByChild("name").equalTo(addFriendEditText.getText().toString()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
+                                Toast.makeText(getActivity(), "FOUND " + userSnapshot.child("name").getValue(String.class), Toast.LENGTH_LONG).show();
+                                System.out.println(userSnapshot.getKey());
+                                System.out.println(userSnapshot.child("name").getValue(String.class));
+                            }
+                        } else {
+                            Toast.makeText(getActivity(), "NOT FOUND", Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        });
+
 
         Log.d(TAG, "onCreateView: ");
         return view;

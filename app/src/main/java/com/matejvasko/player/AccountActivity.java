@@ -2,6 +2,7 @@ package com.matejvasko.player;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,9 +29,14 @@ import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import id.zelory.compressor.Compressor;
 
 public class AccountActivity extends AppCompatActivity {
 
@@ -73,7 +79,11 @@ public class AccountActivity extends AppCompatActivity {
                 String name = dataSnapshot.child("name").getValue().toString();
                 String thumb_image = dataSnapshot.child("thumb_image").getValue().toString();
 
-                Glide.with(AccountActivity.this).load(image).into(accountImage);
+
+                if (!image.equals("default")) {
+                    Glide.with(AccountActivity.this).load(image).placeholder(R.drawable.matej_vasko).into(accountImage);
+                }
+
                 accountName.setText(name);
                 accountEmail.setText(email);
             }
@@ -107,21 +117,23 @@ public class AccountActivity extends AppCompatActivity {
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
-                Uri resultUri = result.getUri();
+                final Uri  profileFileUri   = result.getUri();
+                final File profileImageFile = new File(profileFileUri.getPath());
 
                 progressDialog.setTitle("Uploading image...");
                 progressDialog.setMessage("Please wait for server to respond.");
                 progressDialog.setCanceledOnTouchOutside(false);
                 progressDialog.show();
 
-                final StorageReference filePath = imageStorage.child("profile_images").child(user.getUid() + ".jpg");
-                filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                final StorageReference profileImageFirebasePath = imageStorage.child("profile_images").child(user.getUid() + ".jpg");
+                final StorageReference thumbImageFirebasePath = imageStorage.child("profile_images").child("thumbs").child(user.getUid() + ".jpg");
+
+                profileImageFirebasePath.putFile(profileFileUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                         if (task.isSuccessful()) {
-
                             // have to get the downloadUrl of a file this way - API has changed
-                            filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            profileImageFirebasePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                 @Override
                                  public void onSuccess(Uri uri) {
                                     String downloadUrl = uri.toString();
@@ -144,6 +156,49 @@ public class AccountActivity extends AppCompatActivity {
                         }
                     }
                 });
+
+                Bitmap thumbBitmap = null;
+                try {
+                    thumbBitmap = new Compressor(AccountActivity.this)
+                            .setMaxWidth(200)
+                            .setMaxHeight(200)
+                            .setQuality(75)
+                            .compressToBitmap(profileImageFile);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                thumbBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                final byte[] thumbByteArray = baos.toByteArray();
+
+                // upload compressed thumb
+                UploadTask uploadTask = thumbImageFirebasePath.putBytes(thumbByteArray);
+                uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            thumbImageFirebasePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    String downloadUrl = uri.toString();
+
+                                    userDatabase.child("thumb_image").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                Log.d(TAG, "upload task: success");
+                                                progressDialog.dismiss();
+                                                Toast.makeText(AccountActivity.this, "Image url saved to DB.", Toast.LENGTH_LONG).show();
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                });
+
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
                 Log.w(TAG, "onActivityResult: ERROR ", error);
