@@ -20,9 +20,7 @@
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
+
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -30,14 +28,14 @@
 
             <androidx.cardview.widget.CardView
                 app:cardCornerRadius="30dp"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="8dp">
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:layout_marginEnd="16dp">
                 <ImageView
-                    android:id="@+id/friends_user_image_image_view"
+                    android:id="@+id/friends_user_image"
                     android:src="@drawable/ic_perm_identity_black_24dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
@@ -50,49 +48,34 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/friends_user_name_text_view"
+                    android:id="@+id/friends_user_name"
                     android:gravity="bottom"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:textColor="#000000"
                     android:textSize="18sp"
-                    android:text="Name"/>
+                    android:text="John Dirt"/>
 
                 <TextView
-                    android:id="@+id/friends_user_email_text_view"
+                    android:id="@+id/friends_user_email"
                     android:gravity="top"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:text="motty@mail.com"/>
+                    android:text="john.dirt@gmail.com"/>
             </LinearLayout>
 
-            <Button
+            <ImageButton
                 android:id="@+id/popup_menu"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_width="60dp"
+                android:layout_height="102dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_more_vert_black_32dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/sign_out_link"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="8dp"
-            android:text="Sign Out"
-            android:textColor="#07C"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-
 
         <LinearLayout
             android:orientation="horizontal"
@@ -102,7 +85,7 @@
             android:layout_height="wrap_content">
 
             <EditText
-                android:id="@+id/add_friend_edit_text"
+                android:id="@+id/search_friend_edit_text"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:layout_width="0dp"
@@ -111,10 +94,11 @@
                 android:layout_height="wrap_content" />
 
             <Button
-                android:id="@+id/add_friend_button"
+                android:id="@+id/search_friend_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add"/>
+                android:paddingEnd="8dp"
+                android:text="Search"/>
 
         </LinearLayout>
 

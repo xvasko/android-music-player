@@ -11,11 +11,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -23,11 +26,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.matejvasko.player.AccountActivity;
-import com.matejvasko.player.App;
+import com.matejvasko.player.ProfileActivity;
 import com.matejvasko.player.R;
 import com.matejvasko.player.authentication.Authentication;
 import com.matejvasko.player.authentication.AuthenticationCallback;
 
+import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
@@ -35,32 +39,20 @@ import androidx.fragment.app.Fragment;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener {
+public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, View.OnClickListener {
 
     private static final String TAG = "FriendsFragment";
 
-    ConstraintLayout logInLayout;
-    ConstraintLayout signUpLayout;
-    ConstraintLayout loggedInLayout;
-    TextView signUpLink;
-    TextView logInLink;
-    TextView signOutLink;
-
-    EditText logInEmailEditText;
-    EditText logInPasswordEditText;
-    EditText registerDisplayName;
-    EditText registerEmailEditText;
-    EditText registerPasswordEditText;
-    Button logInButton;
-    Button registerButton;
-
-    ProgressDialog progressDialog;
-
+    private ConstraintLayout logInLayout, signUpLayout, loggedInLayout;
+    private TextView signUpLink, logInLink, userName, userEmail;
+    private EditText logInEmailEditText, logInPasswordEditText, signUpDisplayName, signUpEmailEditText, signUpPasswordEditText, searchFriendEditText;
+    private Button logInButton, signUpButton, searchFriendButton;
+    private ProgressDialog progressDialog;
     private ImageView userImage;
-    private TextView userName, userEmail;
+    private ImageButton popupMenuButton;
 
-    private EditText addFriendEditText;
-    private Button addFriendButton;
+    private DatabaseReference userDatabase;
+    private FirebaseUser currentUser;
 
     public FriendsFragment() {
         // Required empty public constructor
@@ -70,51 +62,30 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view =  inflater.inflate(R.layout.fragment_friends, container, false);
 
-        progressDialog = new ProgressDialog(getActivity());
+        prepareUI(view);
 
-        addFriendEditText = view.findViewById(R.id.add_friend_edit_text);
-        addFriendButton = view.findViewById(R.id.add_friend_button);
+        Log.d(TAG, "onCreateView: ");
+        return view;
+    }
 
-        logInLayout = view.findViewById(R.id.log_in_layout);
-        signUpLayout = view.findViewById(R.id.sign_up_layout);
-        loggedInLayout = view.findViewById(R.id.friends_tab_logged_in_layout);
-
-        userImage = view.findViewById(R.id.friends_user_image_image_view);
-        userName = view.findViewById(R.id.friends_user_name_text_view);
-        userEmail = view.findViewById(R.id.friends_user_email_text_view);
-
-        signUpLink = view.findViewById(R.id.sign_up_link);
-        signUpLink.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.sign_up_link:
                 logInLayout.setVisibility(View.INVISIBLE);
                 signUpLayout.setVisibility(View.VISIBLE);
-            }
-        });
-        logInLink = view.findViewById(R.id.log_in_link);
-        logInLink.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+                break;
+            case R.id.log_in_link:
                 logInLayout.setVisibility(View.VISIBLE);
                 signUpLayout.setVisibility(View.INVISIBLE);
-            }
-        });
-        signOutLink = view.findViewById(R.id.sign_out_link);
-        signOutLink.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Authentication.signOut();
-                logInLayout.setVisibility(View.VISIBLE);
-                loggedInLayout.setVisibility(View.INVISIBLE);
-            }
-        });
-
-        logInEmailEditText = view.findViewById(R.id.log_in_email);
-        logInPasswordEditText = view.findViewById(R.id.log_in_password);
-        logInButton = view.findViewById(R.id.log_in_button);
-        logInButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+                break;
+            case R.id.popup_menu:
+                PopupMenu popupMenu = new PopupMenu(getActivity(), v);
+                popupMenu.setOnMenuItemClickListener(FriendsFragment.this);
+                popupMenu.inflate(R.menu.account_options_items);
+                popupMenu.show();
+                break;
+            case R.id.log_in_button: {
                 String email = logInEmailEditText.getText().toString();
                 String password = logInPasswordEditText.getText().toString();
 
@@ -130,24 +101,18 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         if (user != null) {
                             loggedInLayout.setVisibility(View.VISIBLE);
                             logInLayout.setVisibility(View.INVISIBLE);
+                            retrieveUserData(user);
                         }
                     }
                 });
+                break;
             }
-        });
+            case R.id.sign_up_button: {
+                String name = signUpDisplayName.getText().toString();
+                String email = signUpEmailEditText.getText().toString();
+                String password = signUpPasswordEditText.getText().toString();
 
-        registerDisplayName = view.findViewById(R.id.register_display_name);
-        registerEmailEditText = view.findViewById(R.id.register_email);
-        registerPasswordEditText = view.findViewById(R.id.register_password);
-        registerButton = view.findViewById(R.id.register_button);
-        registerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String name = registerDisplayName.getText().toString();
-                String email = registerEmailEditText.getText().toString();
-                String password = registerPasswordEditText.getText().toString();
-
-                progressDialog.setTitle("Signing in!");
+                progressDialog.setTitle("Signing up!");
                 progressDialog.setMessage("Please wait for server to respond.");
                 progressDialog.setCanceledOnTouchOutside(false);
                 progressDialog.show();
@@ -159,41 +124,33 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                         if (user != null) {
                             loggedInLayout.setVisibility(View.VISIBLE);
                             signUpLayout.setVisibility(View.INVISIBLE);
+                            retrieveUserData(user);
                         }
                     }
                 });
+                break;
             }
-        });
-
-        Button popupMenuButton = view.findViewById(R.id.popup_menu);
-        popupMenuButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                PopupMenu popupMenu = new PopupMenu(getActivity(), view);
-                popupMenu.setOnMenuItemClickListener(FriendsFragment.this);
-                popupMenu.inflate(R.menu.account_options_items);
-                popupMenu.show();
-            }
-        });
-
-
-
-        addFriendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            case R.id.search_friend_button:
                 DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
-                System.out.println("LOL?!");
-                ref.child("users").orderByChild("name").equalTo(addFriendEditText.getText().toString()).addListenerForSingleValueEvent(new ValueEventListener() {
+                final String email = searchFriendEditText.getText().toString();
+                ref.child("users").orderByChild("email").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
-                            for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
-                                Toast.makeText(getActivity(), "FOUND " + userSnapshot.child("name").getValue(String.class), Toast.LENGTH_LONG).show();
-                                System.out.println(userSnapshot.getKey());
-                                System.out.println(userSnapshot.child("name").getValue(String.class));
+
+                            String userId = "";
+
+                            for (final DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
+                                userId = userSnapshot.getKey();
+                            }
+
+                            if (!userId.equals("")) {
+                                Intent intent = new Intent(getActivity(), ProfileActivity.class);
+                                intent.putExtra("user_id", userId);
+                                startActivity(intent);
                             }
                         } else {
-                            Toast.makeText(getActivity(), "NOT FOUND", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getActivity(), "USER NOT FOUND", Toast.LENGTH_LONG).show();
                         }
                     }
 
@@ -202,12 +159,40 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
                     }
                 });
-            }
-        });
+                break;
+            default:
+                break;
+        }
+    }
 
+    private void prepareUI(View view) {
+        progressDialog = new ProgressDialog(getActivity());
+        searchFriendEditText = view.findViewById(R.id.search_friend_edit_text);
+        searchFriendButton = view.findViewById(R.id.search_friend_button);
+        searchFriendButton.setOnClickListener(this);
+        logInLayout = view.findViewById(R.id.log_in_layout);
+        signUpLayout = view.findViewById(R.id.sign_up_layout);
+        loggedInLayout = view.findViewById(R.id.friends_tab_logged_in_layout);
+        userImage = view.findViewById(R.id.friends_user_image);
+        userName = view.findViewById(R.id.friends_user_name);
+        userEmail = view.findViewById(R.id.friends_user_email);
 
-        Log.d(TAG, "onCreateView: ");
-        return view;
+        signUpLink = view.findViewById(R.id.sign_up_link);
+        signUpLink.setOnClickListener(this);
+        logInLink = view.findViewById(R.id.log_in_link);
+        logInLink.setOnClickListener(this);
+
+        logInEmailEditText = view.findViewById(R.id.log_in_email);
+        logInPasswordEditText = view.findViewById(R.id.log_in_password);
+        logInButton = view.findViewById(R.id.log_in_button);
+        logInButton.setOnClickListener(this);
+        signUpDisplayName = view.findViewById(R.id.sign_up_display_name);
+        signUpEmailEditText = view.findViewById(R.id.sign_up_email);
+        signUpPasswordEditText = view.findViewById(R.id.sign_up_password);
+        signUpButton = view.findViewById(R.id.sign_up_button);
+        signUpButton.setOnClickListener(this);
+        popupMenuButton = view.findViewById(R.id.popup_menu);
+        popupMenuButton.setOnClickListener(this);
     }
 
     @Override
@@ -218,6 +203,9 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 startActivity(intent);
                 return true;
             case R.id.account_log_out:
+                Authentication.signOut();
+                logInLayout.setVisibility(View.VISIBLE);
+                loggedInLayout.setVisibility(View.INVISIBLE);
                 return true;
             default:
                 return false;
@@ -229,8 +217,8 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = Authentication.getCurrentUser();
-
         if (currentUser != null) {
+            retrieveUserData(currentUser);
             loggedInLayout.setVisibility(View.VISIBLE);
             signUpLayout.setVisibility(View.INVISIBLE);
             logInLayout.setVisibility(View.INVISIBLE);
@@ -243,4 +231,30 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         Log.d(TAG, "onStart: ");
     }
 
+    private void retrieveUserData(FirebaseUser currentUser) {
+
+        userDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(currentUser.getUid());
+        userDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String name = dataSnapshot.child("name").getValue().toString();
+                String email = dataSnapshot.child("email").getValue().toString();
+                String image = dataSnapshot.child("thumb_image").getValue().toString();
+
+                userName.setText(name);
+                userEmail.setText(email);
+
+                if (!image.equals("default")) {
+                    Glide.with(getActivity()).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
+                } else {
+                    Glide.with(getActivity()).load(R.drawable.ic_perm_identity_black_24dp).into(userImage);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
 }

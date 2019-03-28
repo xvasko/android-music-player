@@ -71,6 +71,7 @@ public class AccountActivity extends AppCompatActivity {
         user = FirebaseAuth.getInstance().getCurrentUser();
         imageStorage = FirebaseStorage.getInstance().getReference();
         userDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(user.getUid());
+        userDatabase.keepSynced(true);
         userDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -81,7 +82,7 @@ public class AccountActivity extends AppCompatActivity {
 
 
                 if (!image.equals("default")) {
-                    Glide.with(AccountActivity.this).load(image).placeholder(R.drawable.matej_vasko).into(accountImage);
+                    Glide.with(AccountActivity.this).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(accountImage);
                 }
 
                 accountName.setText(name);
