@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.matejvasko.player.MainActivity;
+import com.matejvasko.player.activities.MainActivity;
 import com.matejvasko.player.R;
 import com.matejvasko.player.models.Song;
 import com.matejvasko.player.utils.Utils;

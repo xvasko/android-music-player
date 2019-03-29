@@ -7,7 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.matejvasko.player.MainActivity;
+import com.matejvasko.player.activities.MainActivity;
 import com.matejvasko.player.R;
 import com.matejvasko.player.adapters.SongListAdapter;
 import com.matejvasko.player.models.Song;

@@ -2,21 +2,18 @@ package com.matejvasko.player.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.matejvasko.player.MainActivity;
+import com.matejvasko.player.activities.MainActivity;
 import com.matejvasko.player.R;
 import com.matejvasko.player.models.Album;
 import com.matejvasko.player.models.Song;
 import com.matejvasko.player.utils.SharedPref;
 import com.matejvasko.player.utils.Utils;
-
-import org.w3c.dom.Text;
 
 import java.util.List;
 

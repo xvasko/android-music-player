@@ -1,4 +1,4 @@
-package com.matejvasko.player;
+package com.matejvasko.player.activities;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -26,6 +26,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.matejvasko.player.R;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 

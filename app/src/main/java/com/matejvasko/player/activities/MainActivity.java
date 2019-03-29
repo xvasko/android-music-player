@@ -1,9 +1,8 @@
-package com.matejvasko.player;
+package com.matejvasko.player.activities;
 
 import android.Manifest;
 import android.content.ComponentName;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -16,23 +15,23 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.matejvasko.player.App;
+import com.matejvasko.player.MediaPlaybackService;
+import com.matejvasko.player.MediaSeekBar;
+import com.matejvasko.player.R;
 import com.matejvasko.player.fragments.library.AlbumsFragmentI;
 import com.matejvasko.player.fragments.library.SongsFragmentI;
 import com.matejvasko.player.models.Song;
 import com.matejvasko.player.utils.SharedPref;
 import com.matejvasko.player.utils.Utils;
 import com.matejvasko.player.viewmodels.MainActivityViewModel;
-
-import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
