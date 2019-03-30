@@ -22,6 +22,7 @@ public class Authentication {
     private static final String TAG = "Authentication";
 
 
+
     public static FirebaseUser getCurrentUser() {
         return FirebaseAuth.getInstance().getCurrentUser();
     }

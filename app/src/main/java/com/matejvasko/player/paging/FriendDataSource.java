@@ -38,6 +38,7 @@ public class FriendDataSource extends ItemKeyedDataSource<String, Friend> {
         Log.d(TAG, "loadBefore: ");
         Log.d(TAG, "loadBefore: requested load size: " + params.requestedLoadSize);
         Log.d(TAG, "loadBefore: key: " + params.key);
+        firebaseRepository.getFriendsBefore(params.requestedLoadSize, params.key, callback);
     }
 
     @NonNull

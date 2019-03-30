@@ -26,6 +26,7 @@ import com.matejvasko.player.R;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashMap;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -38,6 +39,7 @@ public class ProfileActivity extends AppCompatActivity {
     private DatabaseReference userDatabase;
     private DatabaseReference friendReqDatabase;
     private DatabaseReference friendDatabase;
+    private DatabaseReference notificationDatabase;
     private FirebaseUser currentUser;
 
     private String currentState;
@@ -52,6 +54,7 @@ public class ProfileActivity extends AppCompatActivity {
         userDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(userId);
         friendReqDatabase = FirebaseDatabase.getInstance().getReference().child("friend_requests");
         friendDatabase = FirebaseDatabase.getInstance().getReference().child("friends");
+        notificationDatabase = FirebaseDatabase.getInstance().getReference().child("notifications");
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         prepareUI();
@@ -134,9 +137,22 @@ public class ProfileActivity extends AppCompatActivity {
                                         .setValue("received").addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
-                                        currentState = "request_sent";
-                                        profileFriendRequestAction.setText("Cancel Friend Request");
-                                        Toast.makeText(ProfileActivity.this, "Friend request sent successfully", Toast.LENGTH_LONG).show();
+                                        HashMap<String, String> notificationData = new HashMap<>();
+                                        notificationData.put("from", currentUser.getUid());
+                                        notificationData.put("type", "request");
+                                        notificationDatabase.child(userId).push().setValue(notificationData).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
+                                                    currentState = "request_sent";
+                                                    profileFriendRequestAction.setText("Cancel Friend Request");
+                                                    Toast.makeText(ProfileActivity.this, "Friend request sent successfully", Toast.LENGTH_LONG).show();
+                                                } else {
+
+                                                }
+                                            }
+                                        });
+
                                     }
                                 });
                             } else {

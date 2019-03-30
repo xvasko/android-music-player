@@ -19,12 +19,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.matejvasko.player.activities.AccountActivity;
 import com.matejvasko.player.activities.ProfileActivity;
 import com.matejvasko.player.R;
@@ -136,6 +138,7 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                             loggedInLayout.setVisibility(View.VISIBLE);
                             logInLayout.setVisibility(View.INVISIBLE);
                             retrieveUserData(user);
+                            saveDeviceTokenToDatabase(user);
                         }
                     }
                 });
@@ -290,5 +293,16 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
             }
         });
+    }
+
+    private void saveDeviceTokenToDatabase(FirebaseUser currentUser) {
+        String deviceToken = FirebaseInstanceId.getInstance().getToken();
+        FirebaseDatabase.getInstance().getReference().child("users").child(currentUser.getUid()).child("device_token").setValue(deviceToken)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "onSuccess: device token saved");
+                    }
+                });
     }
 }
