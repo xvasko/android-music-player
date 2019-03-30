@@ -13,7 +13,7 @@ public class FriendViewModel extends ViewModel {
     public LiveData<PagedList<Friend>> getFriends() {
         PagedList.Config config = new PagedList.Config.Builder()
                 .setEnablePlaceholders(false)
-                .setPageSize(20)
+                .setPageSize(2)
                 .build();
         return new LivePagedListBuilder<>(new FriendDataSourceFactory(), config).build();
     }

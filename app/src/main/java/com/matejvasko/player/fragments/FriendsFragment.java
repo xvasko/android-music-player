@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,7 +55,8 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     private static final String TAG = "FriendsFragment";
 
-    private ConstraintLayout logInLayout, signUpLayout, loggedInLayout;
+    private ConstraintLayout logInLayout, signUpLayout;
+    private LinearLayout  loggedInLayout;
     private TextView signUpLink, logInLink, userName, userEmail;
     private EditText logInEmailEditText, logInPasswordEditText, signUpDisplayName, signUpEmailEditText, signUpPasswordEditText, searchFriendEditText;
     private Button logInButton, signUpButton, searchFriendButton;
@@ -83,13 +85,15 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         recyclerView = view.findViewById(R.id.friends_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(friendListAdapter);
-        friendViewModel.getFriends().observe(this, new Observer<PagedList<Friend>>() {
-            @Override
-            public void onChanged(PagedList<Friend> friends) {
-                System.out.println("observed list size: " + friends.size());
-                friendListAdapter.submitList(friends);
-            }
-        });
+        if (Authentication.getCurrentUser() != null) {
+            friendViewModel.getFriends().observe(this, new Observer<PagedList<Friend>>() {
+                @Override
+                public void onChanged(PagedList<Friend> friends) {
+                    System.out.println("observed list size: " + friends.size());
+                    friendListAdapter.submitList(friends);
+                }
+            });
+        }
 
 
         prepareUI(view);

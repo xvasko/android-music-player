@@ -1,5 +1,7 @@
 package com.matejvasko.player.utils;
 
+import android.util.Log;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -13,27 +15,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.paging.ItemKeyedDataSource;
 
 public class FirebaseRepository {
 
+    private static final String TAG = "FirebaseRepository";
+
     private DatabaseReference friendDatabase;
     private FirebaseUser currentUser;
-
-    public interface MyCallback {
-        void onResult(List<Friend> friends);
-    }
 
     public FirebaseRepository() {
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         friendDatabase = FirebaseDatabase.getInstance().getReference().child("friends").child(currentUser.getUid());
     }
 
-    public void getFriends(int count, final MyCallback callback) {
-        System.out.println("getFriends()");
+    public void getFriends(int count, final ItemKeyedDataSource.LoadInitialCallback<Friend> callback) {
+        Log.d(TAG, "getFriends: ");
         friendDatabase.orderByKey().limitToFirst(count).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                System.out.println("onDataChange()");
+                Log.d(TAG, "getFriends() - onDataChange: ");
                 List<Friend> friends = new ArrayList<>();
 
                 for (DataSnapshot friendSnapshot : dataSnapshot.getChildren()) {
@@ -41,7 +42,6 @@ public class FirebaseRepository {
                     friend.setName(friendSnapshot.getKey());
                     friends.add(friend);
                 }
-                System.out.println("friends.size(): " + friends.size());
                 callback.onResult(friends);
             }
 
@@ -50,6 +50,33 @@ public class FirebaseRepository {
 
             }
         });
+    }
 
+    public void getFriendsAfter(int count, String afterKey, final ItemKeyedDataSource.LoadCallback<Friend> callback) {
+        Log.d(TAG, "getFriendsAfter: ");
+        friendDatabase.orderByKey().startAt(afterKey).limitToFirst(3).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Log.d(TAG, "getFriendsAfter() - onDataChange: ");
+                List<Friend> friends = new ArrayList<>();
+
+                for (DataSnapshot friendSnapshot : dataSnapshot.getChildren()) {
+                    Friend friend = new Friend();
+                    friend.setName(friendSnapshot.getKey());
+                    friends.add(friend);
+                }
+
+                System.out.println("friends after size: " + friends.size());
+                System.out.println("name: " + friends.get(0).getName());
+                friends.remove(0);
+                System.out.println("friends after cut size: " + friends.size());
+                callback.onResult(friends);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 }

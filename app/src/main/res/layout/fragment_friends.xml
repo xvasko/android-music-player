@@ -9,9 +9,10 @@
 
     <include layout="@layout/authentication_form" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         android:id="@+id/friends_tab_logged_in_layout"
         android:visibility="visible">
 
@@ -19,11 +20,7 @@
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:orientation="horizontal">
 
             <androidx.cardview.widget.CardView
                 app:cardCornerRadius="30dp"
@@ -70,16 +67,13 @@
                 android:layout_width="60dp"
                 android:layout_height="102dp"
                 android:background="@android:color/transparent"
-                android:src="@drawable/ic_more_vert_black_32dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                android:src="@drawable/ic_more_vert_black_32dp"/>
 
         </LinearLayout>
 
         <LinearLayout
             android:orientation="horizontal"
             android:id="@+id/add_friend_layout"
-            app:layout_constraintTop_toBottomOf="@id/linearLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -104,18 +98,8 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/friends_recycler_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/add_friend_layout">
+            android:layout_height="match_parent"/>
 
-        </androidx.recyclerview.widget.RecyclerView>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 
 </FrameLayout>
