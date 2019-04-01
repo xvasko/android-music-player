@@ -34,17 +34,13 @@ import com.matejvasko.player.adapters.FriendListAdapter;
 import com.matejvasko.player.authentication.Authentication;
 import com.matejvasko.player.authentication.AuthenticationCallback;
 import com.matejvasko.player.models.Friend;
-import com.matejvasko.player.utils.FirebaseRepository;
 import com.matejvasko.player.viewmodels.FriendViewModel;
-
-import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.paging.ItemKeyedDataSource;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -282,6 +278,7 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 userEmail.setText(email);
 
                 if (!image.equals("default")) {
+                    // TODO You cannot start a load on a not yet attached View or a Fragment where getActivity()
                     Glide.with(getActivity()).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
                 } else {
                     Glide.with(getActivity()).load(R.drawable.ic_perm_identity_black_24dp).into(userImage);

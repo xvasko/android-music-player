@@ -1,4 +1,4 @@
-package com.matejvasko.player.utils;
+package com.matejvasko.player.firebase;
 
 import android.util.Log;
 
