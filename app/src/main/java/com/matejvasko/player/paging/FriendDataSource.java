@@ -44,7 +44,7 @@ public class FriendDataSource extends ItemKeyedDataSource<String, Friend> {
     @NonNull
     @Override
     public String getKey(@NonNull Friend item) {
-        return item.getName();
+        return item.getUid();
     }
 
 }

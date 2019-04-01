@@ -39,7 +39,7 @@ public class FirebaseRepository {
 
                 for (DataSnapshot friendSnapshot : dataSnapshot.getChildren()) {
                     Friend friend = new Friend();
-                    friend.setName(friendSnapshot.getKey());
+                    friend.setUid(friendSnapshot.getKey());
                     friends.add(friend);
                 }
                 callback.onResult(friends);
@@ -62,12 +62,12 @@ public class FirebaseRepository {
 
                 for (DataSnapshot friendSnapshot : dataSnapshot.getChildren()) {
                     Friend friend = new Friend();
-                    friend.setName(friendSnapshot.getKey());
+                    friend.setUid(friendSnapshot.getKey());
                     friends.add(friend);
                 }
 
                 System.out.println("friends after size: " + friends.size());
-                System.out.println("name: " + friends.get(0).getName());
+                System.out.println("uid: " + friends.get(0).getUid());
                 friends.remove(0);
                 System.out.println("friends after cut size: " + friends.size());
                 callback.onResult(friends);
@@ -80,9 +80,9 @@ public class FirebaseRepository {
         });
     }
 
-    public void getFriendsBefore(int count, String afterKey, final ItemKeyedDataSource.LoadCallback<Friend> callback) {
+    public void getFriendsBefore(int count, String beforeKey, final ItemKeyedDataSource.LoadCallback<Friend> callback) {
         Log.d(TAG, "getFriendsBefore: ");
-        friendDatabase.orderByKey().endAt(afterKey).limitToFirst(count).addListenerForSingleValueEvent(new ValueEventListener() {
+        friendDatabase.orderByKey().endAt(beforeKey).limitToFirst(count).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Log.d(TAG, "getFriendsBefore() - onDataChange: ");
@@ -90,12 +90,12 @@ public class FirebaseRepository {
 
                 for (DataSnapshot friendSnapshot : dataSnapshot.getChildren()) {
                     Friend friend = new Friend();
-                    friend.setName(friendSnapshot.getKey());
+                    friend.setUid(friendSnapshot.getKey());
                     friends.add(friend);
                 }
 
                 System.out.println("friends before size: " + friends.size());
-                System.out.println("name: " + friends.get(0).getName());
+                System.out.println("uid: " + friends.get(0).getUid());
                 friends.remove(friends.size() - 1);
                 System.out.println("friends before cut size: " + friends.size());
                 callback.onResult(friends);

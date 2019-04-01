@@ -5,11 +5,19 @@ import androidx.recyclerview.widget.DiffUtil;
 
 public class Friend {
 
-    private String name, email, thumb_image;
-
     public Friend() {
 
     }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    private String uid, name, email, thumb_image;
 
     public String getName() {
         return name;

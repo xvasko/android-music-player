@@ -76,7 +76,7 @@ public class ProfileActivity extends AppCompatActivity {
                 profileEmail.setText(email);
 
                 if (!image.equals("default")) {
-                    Glide.with(ProfileActivity.this).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(profileImage);
+                    Glide.with(getApplicationContext()).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(profileImage);
                 }
 
                 friendReqDatabase.child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
