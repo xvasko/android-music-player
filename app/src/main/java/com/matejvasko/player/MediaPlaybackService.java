@@ -13,16 +13,21 @@ import android.util.Log;
 
 import com.matejvasko.player.models.Song;
 import com.matejvasko.player.utils.SharedPref;
+import com.matejvasko.player.workmanager.UploadWorker;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.media.MediaBrowserServiceCompat;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
@@ -176,7 +181,24 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             mediaPlayer.start();
             setNewState(PlaybackStateCompat.STATE_PLAYING);
 
+            // delay upload of current song to DB
+            uploadCurrentSong();
+
+
             Log.d(TAG, "onPlay: MediaSessionCallback");
+        }
+
+        private void uploadCurrentSong() {
+            WorkManager.getInstance().cancelAllWorkByTag("upload");
+            Data songData = new Data.Builder()
+                    .putString("song_name", song.title + " " + song.artist)
+                    .build();
+            OneTimeWorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(UploadWorker.class)
+                    .setInitialDelay(5, TimeUnit.SECONDS)
+                    .setInputData(songData)
+                    .addTag("upload")
+                    .build();
+            WorkManager.getInstance().enqueue(uploadWorkRequest);
         }
 
         @Override

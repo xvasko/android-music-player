@@ -57,13 +57,13 @@ public class FriendListAdapter
     class FriendViewHolder extends RecyclerView.ViewHolder {
 
         private ImageView userThumbImage, userOnline;
-        private TextView userName, userEmail;
+        private TextView userName, userSong;
 
         FriendViewHolder(@NonNull View itemView) {
             super(itemView);
             userThumbImage = itemView.findViewById(R.id.item_online_friend_user_image);
             userName = itemView.findViewById(R.id.item_online_friend_user_name);
-            userEmail = itemView.findViewById(R.id.item_online_friend_user_email);
+            userSong = itemView.findViewById(R.id.item_online_friend_user_song);
             userOnline = itemView.findViewById(R.id.item_online_friend_online_circle);
         }
 
@@ -73,7 +73,6 @@ public class FriendListAdapter
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     String thumbImage = dataSnapshot.child("thumb_image").getValue().toString();
                     String name = dataSnapshot.child("name").getValue().toString();
-                    String email = dataSnapshot.child("email").getValue().toString();
 
                     if (dataSnapshot.hasChild("online")) {
                         Boolean isOnline = (boolean) dataSnapshot.child("online").getValue();
@@ -85,8 +84,13 @@ public class FriendListAdapter
 
                     }
 
+                    if (dataSnapshot.hasChild("current_song")) {
+                        String song =  dataSnapshot.child("current_song").getValue().toString();
+                        userSong.setText(song);
+                    }
+
                     userName.setText(name);
-                    userEmail.setText(email);
+
                     if (!thumbImage.equals("default")) {
                         // TODO You cannot start a load on a not yet attached View or a Fragment where getActivity()
                         Glide.with(App.getAppContext()).load(thumbImage).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userThumbImage);

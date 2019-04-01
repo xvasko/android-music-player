@@ -27,6 +27,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.matejvasko.player.App;
 import com.matejvasko.player.activities.AccountActivity;
 import com.matejvasko.player.activities.ProfileActivity;
 import com.matejvasko.player.R;
@@ -279,9 +280,9 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
                 if (!image.equals("default")) {
                     // TODO You cannot start a load on a not yet attached View or a Fragment where getActivity()
-                    Glide.with(getActivity()).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
+                    Glide.with(App.getAppContext()).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
                 } else {
-                    Glide.with(getActivity()).load(R.drawable.ic_perm_identity_black_24dp).into(userImage);
+                    Glide.with(App.getAppContext()).load(R.drawable.ic_perm_identity_black_24dp).into(userImage);
                 }
             }
 
