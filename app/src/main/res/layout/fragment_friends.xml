@@ -5,9 +5,41 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".fragments.FriendsFragment">
 
-    <include layout="@layout/authentication_form" />
+    <LinearLayout
+        android:id="@+id/friends_tab_not_logged_in_layout"
+        android:visibility="invisible"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity=""
+            android:text="Please Log In or create new account!"/>
+
+        <Button
+            android:id="@+id/friends_tab_log_in_button"
+            android:layout_marginTop="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Log in"/>
+
+        <TextView
+            android:id="@+id/friends_tab_sign_up_link"
+            android:layout_marginTop="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="create new account"
+            android:textColor="#07C"/>
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -78,6 +110,7 @@
             android:layout_height="wrap_content">
 
             <EditText
+                android:inputType="textEmailAddress"
                 android:id="@+id/search_friend_edit_text"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"

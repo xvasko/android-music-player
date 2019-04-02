@@ -11,6 +11,8 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.matejvasko.player.authentication.Authentication;
+import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 import com.matejvasko.player.models.Song;
 import com.matejvasko.player.utils.SharedPref;
 import com.matejvasko.player.workmanager.UploadWorker;
@@ -183,7 +185,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             // delay upload of current song to DB
             uploadCurrentSong();
-
+            if (Authentication.getCurrentUser() != null) {
+                FirebaseDatabaseManager.currentUserDatabase.child("online").setValue(true);
+            }
 
             Log.d(TAG, "onPlay: MediaSessionCallback");
         }
@@ -210,6 +214,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 sharedPref.setSong(song1);
                 song = sharedPref.getSong();
                 setNewState(PlaybackStateCompat.STATE_PAUSED);
+            }
+
+            if (Authentication.getCurrentUser() != null) {
+                FirebaseDatabaseManager.currentUserDatabase.child("online").setValue(false);
             }
 
             Log.d(TAG, "onPause: MediaSessionCallback");

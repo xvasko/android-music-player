@@ -1,6 +1,7 @@
 package com.matejvasko.player.fragments;
 
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,26 +20,25 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.matejvasko.player.App;
-import com.matejvasko.player.activities.AccountActivity;
-import com.matejvasko.player.activities.ProfileActivity;
 import com.matejvasko.player.R;
+import com.matejvasko.player.activities.AccountActivity;
+import com.matejvasko.player.activities.LogInActivity;
+import com.matejvasko.player.activities.ProfileActivity;
 import com.matejvasko.player.adapters.FriendListAdapter;
 import com.matejvasko.player.authentication.Authentication;
-import com.matejvasko.player.authentication.AuthenticationCallback;
+import com.matejvasko.player.firebase.FirebaseDatabaseManager;
+import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
 import com.matejvasko.player.models.Friend;
 import com.matejvasko.player.viewmodels.FriendViewModel;
 
 import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -54,10 +54,9 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     private static final String TAG = "FriendsFragment";
 
-    private ConstraintLayout logInLayout, signUpLayout;
-    private LinearLayout  loggedInLayout;
+    private LinearLayout loggedInLayout, notLoggedInLayout;
     private TextView signUpLink, logInLink, userName, userEmail;
-    private EditText logInEmailEditText, logInPasswordEditText, signUpDisplayName, signUpEmailEditText, signUpPasswordEditText, searchFriendEditText;
+    private EditText searchFriendEditText;
     private Button logInButton, signUpButton, searchFriendButton;
     private ProgressDialog progressDialog;
     private ImageView userImage;
@@ -76,7 +75,7 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        final View view =  inflater.inflate(R.layout.fragment_friends, container, false);
+        final View view = inflater.inflate(R.layout.fragment_friends, container, false);
 
         friendViewModel = ViewModelProviders.of(this).get(FriendViewModel.class);
         friendListAdapter = new FriendListAdapter(getActivity());
@@ -104,66 +103,22 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.sign_up_link:
-                logInLayout.setVisibility(View.INVISIBLE);
-                signUpLayout.setVisibility(View.VISIBLE);
-                break;
-            case R.id.log_in_link:
-                logInLayout.setVisibility(View.VISIBLE);
-                signUpLayout.setVisibility(View.INVISIBLE);
-                break;
             case R.id.popup_menu:
                 PopupMenu popupMenu = new PopupMenu(getActivity(), v);
                 popupMenu.setOnMenuItemClickListener(FriendsFragment.this);
                 popupMenu.inflate(R.menu.account_options_items);
                 popupMenu.show();
                 break;
-            case R.id.log_in_button: {
-                String email = logInEmailEditText.getText().toString();
-                String password = logInPasswordEditText.getText().toString();
-
-                progressDialog.setTitle("Logging in!");
-                progressDialog.setMessage("Please wait for server to respond.");
-                progressDialog.setCanceledOnTouchOutside(false);
-                progressDialog.show();
-
-                Authentication.logIn(email, password, new AuthenticationCallback() {
-                    @Override
-                    public void onUserRetrieved(FirebaseUser user) {
-                        progressDialog.dismiss();
-                        if (user != null) {
-                            loggedInLayout.setVisibility(View.VISIBLE);
-                            logInLayout.setVisibility(View.INVISIBLE);
-                            retrieveUserData(user);
-                            saveDeviceTokenToDatabase(user);
-                        }
-                    }
-                });
+            case R.id.friends_tab_sign_up_link:
+                Intent signUpIntent = new Intent(getActivity(), LogInActivity.class);
+                signUpIntent.putExtra("signing_up", true);
+                startActivityForResult(signUpIntent, 1);
                 break;
-            }
-            case R.id.sign_up_button: {
-                String name = signUpDisplayName.getText().toString();
-                String email = signUpEmailEditText.getText().toString();
-                String password = signUpPasswordEditText.getText().toString();
-
-                progressDialog.setTitle("Signing up!");
-                progressDialog.setMessage("Please wait for server to respond.");
-                progressDialog.setCanceledOnTouchOutside(false);
-                progressDialog.show();
-
-                Authentication.signUp(name, email, password, new AuthenticationCallback() {
-                    @Override
-                    public void onUserRetrieved(FirebaseUser user) {
-                        progressDialog.dismiss();
-                        if (user != null) {
-                            loggedInLayout.setVisibility(View.VISIBLE);
-                            signUpLayout.setVisibility(View.INVISIBLE);
-                            retrieveUserData(user);
-                        }
-                    }
-                });
+            case R.id.friends_tab_log_in_button:
+                Intent logInIntent = new Intent(getActivity(), LogInActivity.class);
+                logInIntent.putExtra("signing_up", false);
+                startActivityForResult(logInIntent, 1);
                 break;
-            }
             case R.id.search_friend_button:
                 DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
                 final String email = searchFriendEditText.getText().toString();
@@ -174,7 +129,7 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
                             String userId = "";
 
-                            for (final DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
+                            for (final DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
                                 userId = userSnapshot.getKey();
                             }
 
@@ -195,10 +150,27 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 });
                 break;
             case R.id.friends_user_image:
-                Intent intent = new Intent(getActivity(), AccountActivity.class);
-                startActivity(intent);
+                Intent profileIntent = new Intent(getActivity(), AccountActivity.class);
+                startActivity(profileIntent);
             default:
                 break;
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            if (resultCode == Activity.RESULT_OK) {
+                Bundle userDataBundle= data.getBundleExtra("user_data_bundle");
+                userName.setText(userDataBundle.getString("name"));
+                userEmail.setText(userDataBundle.getString("email"));
+                if (!userDataBundle.getString("thumb_image").equals("default")) {
+                    Glide.with(App.getAppContext()).load(userDataBundle.getString("thumb_image")).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
+                }
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                //Write your code if there's no result
+            }
         }
     }
 
@@ -207,28 +179,19 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         searchFriendEditText = view.findViewById(R.id.search_friend_edit_text);
         searchFriendButton = view.findViewById(R.id.search_friend_button);
         searchFriendButton.setOnClickListener(this);
-        logInLayout = view.findViewById(R.id.log_in_layout);
-        signUpLayout = view.findViewById(R.id.sign_up_layout);
         loggedInLayout = view.findViewById(R.id.friends_tab_logged_in_layout);
+        notLoggedInLayout = view.findViewById(R.id.friends_tab_not_logged_in_layout);
         userImage = view.findViewById(R.id.friends_user_image);
         userImage.setOnClickListener(this);
         userName = view.findViewById(R.id.friends_user_name);
         userEmail = view.findViewById(R.id.friends_user_email);
 
-        signUpLink = view.findViewById(R.id.sign_up_link);
+        signUpLink = view.findViewById(R.id.friends_tab_sign_up_link);
         signUpLink.setOnClickListener(this);
-        logInLink = view.findViewById(R.id.log_in_link);
-        logInLink.setOnClickListener(this);
-
-        logInEmailEditText = view.findViewById(R.id.log_in_email);
-        logInPasswordEditText = view.findViewById(R.id.log_in_password);
-        logInButton = view.findViewById(R.id.log_in_button);
+        logInButton = view.findViewById(R.id.friends_tab_log_in_button);
         logInButton.setOnClickListener(this);
-        signUpDisplayName = view.findViewById(R.id.sign_up_display_name);
-        signUpEmailEditText = view.findViewById(R.id.sign_up_email);
-        signUpPasswordEditText = view.findViewById(R.id.sign_up_password);
-        signUpButton = view.findViewById(R.id.sign_up_button);
-        signUpButton.setOnClickListener(this);
+
+
         popupMenuButton = view.findViewById(R.id.popup_menu);
         popupMenuButton.setOnClickListener(this);
     }
@@ -242,7 +205,7 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 return true;
             case R.id.account_log_out:
                 Authentication.signOut();
-                logInLayout.setVisibility(View.VISIBLE);
+                notLoggedInLayout.setVisibility(View.VISIBLE);
                 loggedInLayout.setVisibility(View.INVISIBLE);
                 return true;
             default:
@@ -256,55 +219,30 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = Authentication.getCurrentUser();
         if (currentUser != null) {
-            retrieveUserData(currentUser);
+            FirebaseDatabaseManager.retrieveCurrentUserData(new FirebaseDatabaseManagerCallback() {
+                @Override
+                public void onResult(Bundle userDataBundle) {
+                    userName.setText(userDataBundle.getString("name"));
+                    userEmail.setText(userDataBundle.getString("email"));
+                    if (!userDataBundle.getString("thumb_image").equals("default")) {
+                        Glide.with(App.getAppContext()).load(userDataBundle.getString("thumb_image")).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
+                    }
+                }
+            });
             loggedInLayout.setVisibility(View.VISIBLE);
-            signUpLayout.setVisibility(View.INVISIBLE);
-            logInLayout.setVisibility(View.INVISIBLE);
+            notLoggedInLayout.setVisibility(View.INVISIBLE);
         } else {
             loggedInLayout.setVisibility(View.INVISIBLE);
-            signUpLayout.setVisibility(View.INVISIBLE);
-            logInLayout.setVisibility(View.VISIBLE);
+            notLoggedInLayout.setVisibility(View.VISIBLE);
         }
 
         Log.d(TAG, "onStart: ");
     }
 
-    private void retrieveUserData(FirebaseUser currentUser) {
-
-        userDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(currentUser.getUid());
-        userDatabase.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String name = dataSnapshot.child("name").getValue().toString();
-                String email = dataSnapshot.child("email").getValue().toString();
-                String image = dataSnapshot.child("thumb_image").getValue().toString();
-
-                userName.setText(name);
-                userEmail.setText(email);
-
-                if (!image.equals("default")) {
-                    // TODO You cannot start a load on a not yet attached View or a Fragment where getActivity()
-                    Glide.with(App.getAppContext()).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
-                } else {
-                    Glide.with(App.getAppContext()).load(R.drawable.ic_perm_identity_black_24dp).into(userImage);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause: ");
     }
 
-    private void saveDeviceTokenToDatabase(FirebaseUser currentUser) {
-        String deviceToken = FirebaseInstanceId.getInstance().getToken();
-        FirebaseDatabase.getInstance().getReference().child("users").child(currentUser.getUid()).child("device_token").setValue(deviceToken)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "onSuccess: device token saved");
-                    }
-                });
-    }
 }

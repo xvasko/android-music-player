@@ -201,34 +201,6 @@ public class ProfileActivity extends AppCompatActivity {
                         }
                     });
 
-//                    rootDatabase.child(currentUser.getUid()).child(userId).setValue(currentDate)
-//                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                                @Override
-//                                public void onSuccess(Void aVoid) {
-//                                    friendDatabase.child(userId).child(currentUser.getUid()).setValue(currentDate)
-//                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                                                @Override
-//                                                public void onSuccess(Void aVoid) {
-//                                                    friendReqDatabase.child(currentUser.getUid()).child(userId).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-//                                                        @Override
-//                                                        public void onComplete(@NonNull Task<Void> task) {
-//                                                            if (task.isSuccessful()) {
-//                                                                friendReqDatabase.child(userId).child(currentUser.getUid()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-//                                                                    @Override
-//                                                                    public void onSuccess(Void aVoid) {
-//                                                                        currentState = "friends";
-//                                                                        profileFriendRequestAction.setText("Unfriend");
-//                                                                    }
-//                                                                });
-//                                                            } else {
-//                                                                Toast.makeText(ProfileActivity.this, "Failed cancelling friend request", Toast.LENGTH_LONG).show();
-//                                                            }
-//                                                        }
-//                                                    });
-//                                                }
-//                                            });
-//                                }
-//                            });
                 }
 
                 if (currentState.equals("friends")) {
