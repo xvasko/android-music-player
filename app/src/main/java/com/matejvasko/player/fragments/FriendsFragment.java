@@ -79,7 +79,7 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         final View view =  inflater.inflate(R.layout.fragment_friends, container, false);
 
         friendViewModel = ViewModelProviders.of(this).get(FriendViewModel.class);
-        friendListAdapter = new FriendListAdapter();
+        friendListAdapter = new FriendListAdapter(getActivity());
 
         recyclerView = view.findViewById(R.id.friends_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -194,6 +194,9 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                     }
                 });
                 break;
+            case R.id.friends_user_image:
+                Intent intent = new Intent(getActivity(), AccountActivity.class);
+                startActivity(intent);
             default:
                 break;
         }
@@ -208,6 +211,7 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         signUpLayout = view.findViewById(R.id.sign_up_layout);
         loggedInLayout = view.findViewById(R.id.friends_tab_logged_in_layout);
         userImage = view.findViewById(R.id.friends_user_image);
+        userImage.setOnClickListener(this);
         userName = view.findViewById(R.id.friends_user_name);
         userEmail = view.findViewById(R.id.friends_user_email);
 

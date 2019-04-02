@@ -10,11 +10,11 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
-public class PagerAdapter extends FragmentPagerAdapter {
+public class LibraryPagerAdapter extends FragmentPagerAdapter {
 
     List<Fragment> fragmentList = new ArrayList<>();
 
-    public PagerAdapter(FragmentManager fm) {
+    public LibraryPagerAdapter(FragmentManager fm) {
         super(fm);
         fragmentList.add(new SongsFragment());
         fragmentList.add(new AlbumsFragment());

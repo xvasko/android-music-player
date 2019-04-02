@@ -1,11 +1,14 @@
 package com.matejvasko.player.adapters;
 
+import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.database.DataSnapshot;
@@ -15,6 +18,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.matejvasko.player.App;
 import com.matejvasko.player.R;
+import com.matejvasko.player.activities.ProfileActivity;
 import com.matejvasko.player.models.Friend;
 
 import androidx.annotation.NonNull;
@@ -27,9 +31,11 @@ public class FriendListAdapter
     private static final String TAG = "FriendListAdapter";
 
     private DatabaseReference userDatabase;
+    private Context context;
 
-    public FriendListAdapter() {
+    public FriendListAdapter(Context context) {
         super(Friend.DIFF_CALLBACK);
+        this.context = context;
         userDatabase = FirebaseDatabase.getInstance().getReference().child("users");
         // userDatabase.keepSynced(true); TODO https://firebase.google.com/docs/database/android/offline-capabilities
         Log.d(TAG, "FriendListAdapter:");
@@ -54,20 +60,25 @@ public class FriendListAdapter
         }
     }
 
-    class FriendViewHolder extends RecyclerView.ViewHolder {
+    class FriendViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private ImageView userThumbImage, userOnline;
+        private String userId = "";
+
+        private ImageView userThumbImage, userOnline, userLike;
         private TextView userName, userSong;
 
         FriendViewHolder(@NonNull View itemView) {
             super(itemView);
+            itemView.setOnClickListener(this);
             userThumbImage = itemView.findViewById(R.id.item_online_friend_user_image);
             userName = itemView.findViewById(R.id.item_online_friend_user_name);
             userSong = itemView.findViewById(R.id.item_online_friend_user_song);
             userOnline = itemView.findViewById(R.id.item_online_friend_online_circle);
+//            userLike = itemView.findViewById(R.id.item_online_friend_like);
         }
 
         void bindTo(final String userId) {
+            this.userId = userId;
             userDatabase.child(userId).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -97,6 +108,13 @@ public class FriendListAdapter
                     } else {
                         Glide.with(App.getAppContext()).load(R.drawable.ic_perm_identity_black_24dp).into(userThumbImage);
                     }
+
+//                    userLike.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View v) {
+//                            Toast.makeText(App.getAppContext(), "Clicked on LIKE! " + userId, Toast.LENGTH_LONG).show();
+//                        }
+//                    });
                 }
 
                 @Override
@@ -110,6 +128,14 @@ public class FriendListAdapter
             userName.setText("...");
         }
 
+        @Override
+        public void onClick(View v) {
+            if (!userId.equals("")) {
+                Intent intent = new Intent(context, ProfileActivity.class);
+                intent.putExtra("user_id", userId);
+                context.startActivity(intent);
+            }
+        }
     }
 
 }

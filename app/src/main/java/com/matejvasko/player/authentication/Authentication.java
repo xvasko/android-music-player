@@ -22,9 +22,17 @@ public class Authentication {
     private static final String TAG = "Authentication";
 
 
-
     public static FirebaseUser getCurrentUser() {
         return FirebaseAuth.getInstance().getCurrentUser();
+    }
+
+    public static String getCurrentUserUid() {
+        FirebaseUser currentUser = getCurrentUser();
+        if (currentUser == null) {
+            return null;
+        } else {
+            return currentUser.getUid();
+        }
     }
 
     public static void logIn(@NonNull String email, @NonNull String password, final AuthenticationCallback callback) {

@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 
 import com.google.android.material.tabs.TabLayout;
 import com.matejvasko.player.R;
-import com.matejvasko.player.adapters.PagerAdapter;
+import com.matejvasko.player.adapters.LibraryPagerAdapter;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -51,8 +51,8 @@ public class LibraryFragment extends Fragment {
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         final ViewPager viewPager = view.findViewById(R.id.library_pager);
-        final PagerAdapter pagerAdapter = new PagerAdapter(getChildFragmentManager());
-        viewPager.setAdapter(pagerAdapter);
+        final LibraryPagerAdapter libraryPagerAdapter = new LibraryPagerAdapter(getChildFragmentManager());
+        viewPager.setAdapter(libraryPagerAdapter);
 
         // Setting a listener for clicks.
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));

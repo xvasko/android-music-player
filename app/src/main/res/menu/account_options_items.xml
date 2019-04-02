@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/account_settings"
-        android:title="Account Settings" />
+        android:title="Account" />
     <item
         android:id="@+id/account_log_out"
         android:title="Log Out" />

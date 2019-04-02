@@ -20,7 +20,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.google.android.gms.common.internal.Constants;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.matejvasko.player.App;
@@ -33,9 +32,6 @@ import com.matejvasko.player.models.Song;
 import com.matejvasko.player.utils.SharedPref;
 import com.matejvasko.player.utils.Utils;
 import com.matejvasko.player.viewmodels.MainActivityViewModel;
-import com.matejvasko.player.workmanager.UploadWorker;
-
-import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -45,9 +41,6 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
-import androidx.work.Data;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -95,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
         // setup bottom navigation
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+//        BottomNavViewHelper.removeShiftMode(bottomNav);
         navHostFragment = findViewById(R.id.nav_host_fragment);
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupWithNavController(bottomNav, navController);

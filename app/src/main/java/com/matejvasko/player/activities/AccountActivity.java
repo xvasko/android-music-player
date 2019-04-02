@@ -16,6 +16,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -27,6 +28,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.matejvasko.player.R;
+import com.matejvasko.player.adapters.AccountPagerAdapter;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -37,6 +39,7 @@ import java.io.IOException;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.ViewPager;
 import id.zelory.compressor.Compressor;
 
 public class AccountActivity extends AppCompatActivity {
@@ -79,11 +82,10 @@ public class AccountActivity extends AppCompatActivity {
                 String email = dataSnapshot.child("email").getValue().toString();
                 String image = dataSnapshot.child("image").getValue().toString();
                 String name = dataSnapshot.child("name").getValue().toString();
-                String thumb_image = dataSnapshot.child("thumb_image").getValue().toString();
 
 
                 if (!image.equals("default")) {
-                    Glide.with(AccountActivity.this).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(accountImage);
+                    Glide.with(getApplicationContext()).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(accountImage);
                 }
 
                 accountName.setText(name);
@@ -104,12 +106,31 @@ public class AccountActivity extends AppCompatActivity {
                         .setAspectRatio(1, 1)
                         .setGuidelines(CropImageView.Guidelines.ON)
                         .start(AccountActivity.this);
+            }
+        });
 
-//                Intent galleryIntent = new Intent();
-//                galleryIntent.setType("image/*");
-//                galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
-//
-//                startActivityForResult(Intent.createChooser(galleryIntent, "SELECT IMAGE"), GALLERY_PICK);
+
+        TabLayout tabLayout = findViewById(R.id.tab_layout);
+        tabLayout.addTab(tabLayout.newTab().setText("Friend Requests"));
+        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+
+        final ViewPager viewPager = findViewById(R.id.account_pager);
+        final AccountPagerAdapter pagerAdapter = new AccountPagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(pagerAdapter);
+
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                viewPager.setCurrentItem(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
             }
         });
     }
