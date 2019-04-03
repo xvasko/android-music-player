@@ -21,7 +21,7 @@ import androidx.annotation.Nullable;
 
 public class FirebaseDatabaseManager {
 
-    public static DatabaseReference rootDatabase =  FirebaseDatabase.getInstance().getReference();
+    public static DatabaseReference rootDatabase = FirebaseDatabase.getInstance().getReference();
 
     public static DatabaseReference getCurrentUserDatabase() {
         return FirebaseDatabase.getInstance().getReference().child("users").child(Authentication.getCurrentUserUid());
@@ -52,43 +52,56 @@ public class FirebaseDatabaseManager {
         });
     }
 
+    public static void setUserData(String userUid, HashMap<String, String> userMap, final FirebaseDatabaseManagerCallback callback) {
+        rootDatabase.child("users").child(userUid).setValue(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    callback.onSuccess();
+                } else {
+                    callback.onFailure();
+                }
+            }
+        });
+    }
+
     public static void getFriendshipState(final String ofUser, final FirebaseDatabaseManagerCallback callback) {
         rootDatabase.child("friend_requests").child(Authentication.getCurrentUserUid())
                 .addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChild(ofUser)) {
-                    String request_type = dataSnapshot.child(ofUser).child("request_type").getValue().toString();
-                    if (request_type.equals("received")) {
-                        callback.onResult("request_received");
-                    } else if (request_type.equals("sent")) {
-                        callback.onResult("request_sent");
-                    }
-                } else {
-                    rootDatabase.child("friends").child(Authentication.getCurrentUserUid())
-                            .addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.hasChild(ofUser)) {
-                                callback.onResult("friends");
-                            } else {
-                                callback.onResult("not_friends");
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.hasChild(ofUser)) {
+                            String request_type = dataSnapshot.child(ofUser).child("request_type").getValue().toString();
+                            if (request_type.equals("received")) {
+                                callback.onResult("request_received");
+                            } else if (request_type.equals("sent")) {
+                                callback.onResult("request_sent");
                             }
-                        }
+                        } else {
+                            rootDatabase.child("friends").child(Authentication.getCurrentUserUid())
+                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            if (dataSnapshot.hasChild(ofUser)) {
+                                                callback.onResult("friends");
+                                            } else {
+                                                callback.onResult("not_friends");
+                                            }
+                                        }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-                            callback.onFailure();
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                                            callback.onFailure();
+                                        }
+                                    });
                         }
-                    });
-                }
-            }
+                    }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                callback.onFailure();
-            }
-        });
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        callback.onFailure();
+                    }
+                });
     }
 
     public static void sendFriendRequest(String toUser, final FirebaseDatabaseManagerCallback callback) {
@@ -145,11 +158,11 @@ public class FirebaseDatabaseManager {
                     rootDatabase.child("friend_requests").child(toUser).child(Authentication.getCurrentUserUid()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(Task<Void> task1) {
-                           if (task1.isSuccessful()) {
-                               callback.onSuccess();
-                           } else {
-                               callback.onFailure();
-                           }
+                            if (task1.isSuccessful()) {
+                                callback.onSuccess();
+                            } else {
+                                callback.onFailure();
+                            }
                         }
                     });
                 } else {
@@ -182,5 +195,18 @@ public class FirebaseDatabaseManager {
             FirebaseDatabaseManager.getCurrentUserDatabase().child("online").setValue(isOnline);
         }
     }
-    
+
+    public static void setUserThumbImageUrl(String downloadUrl, final FirebaseFirestoreManagerCallback callback) {
+        getCurrentUserDatabase().child("thumb_image").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    callback.onSuccess();
+                } else {
+                    callback.onFailure();
+                }
+            }
+        });
+    }
+
 }

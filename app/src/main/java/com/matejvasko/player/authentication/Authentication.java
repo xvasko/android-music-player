@@ -20,6 +20,8 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.matejvasko.player.App;
 import com.matejvasko.player.R;
 import com.matejvasko.player.firebase.FirebaseDatabaseManager;
+import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
+import com.matejvasko.player.firebase.FirebaseFirestoreManagerCallback;
 
 import java.util.HashMap;
 
@@ -80,7 +82,6 @@ public class Authentication {
                         if (task.isSuccessful()) {
                             final FirebaseUser currentUser = task.getResult().getUser();
                             String uid = currentUser.getUid();
-                            DatabaseReference database = FirebaseDatabase.getInstance().getReference();
 
                             HashMap<String, String> userMap = new HashMap<>();
                             userMap.put("name", name);
@@ -88,18 +89,20 @@ public class Authentication {
                             userMap.put("image", "default");
                             userMap.put("thumb_image", "default");
 
-                            database.child("users").child(uid).setValue(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            FirebaseDatabaseManager.setUserData(uid, userMap, new FirebaseDatabaseManagerCallback() {
                                 @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()) {
-                                        Log.d(TAG, "createUserWithEmail: success");
-                                        Toast.makeText(App.getAppContext(), "DB save succeed.", Toast.LENGTH_SHORT).show();
-                                        saveDeviceTokenToDatabase();
-                                        callback.onUserRetrieved(currentUser);
-                                    } else {
-                                        Log.w(TAG, "createUserWithEmail: failure - " + task.getException().toString());
-                                        Toast.makeText(App.getAppContext(), "DB save did not succeed.", Toast.LENGTH_SHORT).show();
-                                    }
+                                public void onSuccess() {
+                                    Log.d(TAG, "createUserWithEmail: success");
+                                    Toast.makeText(App.getAppContext(), "DB save succeed.", Toast.LENGTH_SHORT).show();
+                                    saveDeviceTokenToDatabase();
+                                    callback.onUserRetrieved(currentUser);
+                                }
+
+                                @Override
+                                public void onFailure() {
+                                    Log.w(TAG, "createUserWithEmail: failure");
+                                    Toast.makeText(App.getAppContext(), "DB save failed.", Toast.LENGTH_SHORT).show();
+                                    callback.onUserRetrieved(null);
                                 }
                             });
                         } else {

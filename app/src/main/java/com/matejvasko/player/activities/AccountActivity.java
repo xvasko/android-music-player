@@ -32,6 +32,8 @@ import com.matejvasko.player.adapters.AccountPagerAdapter;
 import com.matejvasko.player.authentication.Authentication;
 import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
+import com.matejvasko.player.firebase.FirebaseFirestoreManager;
+import com.matejvasko.player.firebase.FirebaseFirestoreManagerCallback;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -127,88 +129,23 @@ public class AccountActivity extends AppCompatActivity {
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
-                final Uri  profileFileUri   = result.getUri();
-                final File profileImageFile = new File(profileFileUri.getPath());
-
                 progressDialog.setTitle("Uploading image...");
                 progressDialog.setMessage("Please wait for server to respond.");
                 progressDialog.setCanceledOnTouchOutside(false);
                 progressDialog.show();
-
-                final StorageReference profileImageFirebasePath = imageStorage.child("profile_images").child(user.getUid() + ".jpg");
-                final StorageReference thumbImageFirebasePath = imageStorage.child("profile_images").child("thumbs").child(user.getUid() + ".jpg");
-
-                profileImageFirebasePath.putFile(profileFileUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                FirebaseFirestoreManager.saveImageToFirestore(result, new FirebaseFirestoreManagerCallback() {
                     @Override
-                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            // have to get the downloadUrl of a file this way - API has changed
-                            profileImageFirebasePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                 public void onSuccess(Uri uri) {
-                                    String downloadUrl = uri.toString();
+                    public void onSuccess() {
+                        System.out.println("CCCCC saved success");
+                        progressDialog.dismiss();
+                    }
 
-                                    userDatabase.child("image").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if (task.isSuccessful()) {
-                                                Log.d(TAG, "putFile: success");
-                                                progressDialog.dismiss();
-                                                Toast.makeText(AccountActivity.this, "Image url saved to DB.", Toast.LENGTH_LONG).show();
-                                            }
-                                        }
-                                    });
-                                }
-                            });
-                        } else {
-                            Log.w(TAG, "putFile: failure - " + task.getException().toString());
-                            progressDialog.dismiss();
-                        }
+                    @Override
+                    public void onFailure() {
+                        System.out.println("CCCCC saved failure");
+                        progressDialog.dismiss();
                     }
                 });
-
-                Bitmap thumbBitmap = null;
-                try {
-                    thumbBitmap = new Compressor(AccountActivity.this)
-                            .setMaxWidth(200)
-                            .setMaxHeight(200)
-                            .setQuality(75)
-                            .compressToBitmap(profileImageFile);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                thumbBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                final byte[] thumbByteArray = baos.toByteArray();
-
-                // upload compressed thumb
-                UploadTask uploadTask = thumbImageFirebasePath.putBytes(thumbByteArray);
-                uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            thumbImageFirebasePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                public void onSuccess(Uri uri) {
-                                    String downloadUrl = uri.toString();
-
-                                    userDatabase.child("thumb_image").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if (task.isSuccessful()) {
-                                                Log.d(TAG, "upload task: success");
-                                                progressDialog.dismiss();
-                                                Toast.makeText(AccountActivity.this, "Image url saved to DB.", Toast.LENGTH_LONG).show();
-                                            }
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                    }
-                });
-
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
                 Log.w(TAG, "onActivityResult: ERROR ", error);
