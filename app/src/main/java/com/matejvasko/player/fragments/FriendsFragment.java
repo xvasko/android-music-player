@@ -69,6 +69,8 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private FriendViewModel friendViewModel;
     private FriendListAdapter friendListAdapter;
 
+    private Observer<PagedList<Friend>> observer;
+
     public FriendsFragment() {
         // Required empty public constructor
     }
@@ -83,16 +85,16 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         recyclerView = view.findViewById(R.id.friends_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(friendListAdapter);
+        observer = new Observer<PagedList<Friend>>() {
+            @Override
+            public void onChanged(PagedList<Friend> friends) {
+                System.out.println("observed list size: " + friends.size());
+                friendListAdapter.submitList(friends);
+            }
+        };
         if (Authentication.getCurrentUser() != null) {
-            friendViewModel.getFriends().observe(this, new Observer<PagedList<Friend>>() {
-                @Override
-                public void onChanged(PagedList<Friend> friends) {
-                    System.out.println("observed list size: " + friends.size());
-                    friendListAdapter.submitList(friends);
-                }
-            });
+            friendViewModel.getFriends().observe(this, observer);
         }
-
 
         prepareUI(view);
 
@@ -167,6 +169,7 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 if (!userDataBundle.getString("thumb_image").equals("default")) {
                     Glide.with(App.getAppContext()).load(userDataBundle.getString("thumb_image")).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
                 }
+                friendViewModel.getFriends().observe(this, observer);
             }
             if (resultCode == Activity.RESULT_CANCELED) {
                 //Write your code if there's no result
@@ -204,6 +207,7 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 startActivity(intent);
                 return true;
             case R.id.account_log_out:
+                friendViewModel.getFriends().removeObserver(observer);
                 Authentication.signOut();
                 notLoggedInLayout.setVisibility(View.VISIBLE);
                 loggedInLayout.setVisibility(View.INVISIBLE);
@@ -219,7 +223,7 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = Authentication.getCurrentUser();
         if (currentUser != null) {
-            FirebaseDatabaseManager.retrieveCurrentUserData(new FirebaseDatabaseManagerCallback() {
+            FirebaseDatabaseManager.getUserData(Authentication.getCurrentUserUid(), new FirebaseDatabaseManagerCallback() {
                 @Override
                 public void onResult(Bundle userDataBundle) {
                     userName.setText(userDataBundle.getString("name"));

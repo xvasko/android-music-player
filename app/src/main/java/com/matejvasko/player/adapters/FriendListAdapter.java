@@ -64,7 +64,7 @@ public class FriendListAdapter
 
         private String userId = "";
 
-        private ImageView userThumbImage, userOnline, userLike;
+        private ImageView userThumbImage, userOnline;
         private TextView userName, userSong;
 
         FriendViewHolder(@NonNull View itemView) {
@@ -74,7 +74,6 @@ public class FriendListAdapter
             userName = itemView.findViewById(R.id.item_online_friend_user_name);
             userSong = itemView.findViewById(R.id.item_online_friend_user_song);
             userOnline = itemView.findViewById(R.id.item_online_friend_online_circle);
-//            userLike = itemView.findViewById(R.id.item_online_friend_like);
         }
 
         void bindTo(final String userId) {
@@ -108,13 +107,6 @@ public class FriendListAdapter
                     } else {
                         Glide.with(App.getAppContext()).load(R.drawable.ic_perm_identity_black_24dp).into(userThumbImage);
                     }
-
-//                    userLike.setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View v) {
-//                            Toast.makeText(App.getAppContext(), "Clicked on LIKE! " + userId, Toast.LENGTH_LONG).show();
-//                        }
-//                    });
                 }
 
                 @Override

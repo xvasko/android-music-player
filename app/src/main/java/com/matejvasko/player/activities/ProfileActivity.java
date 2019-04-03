@@ -2,6 +2,7 @@ package com.matejvasko.player.activities;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -9,9 +10,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -20,17 +18,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.matejvasko.player.R;
-
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import com.matejvasko.player.authentication.Authentication;
+import com.matejvasko.player.firebase.FirebaseDatabaseManager;
+import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class ProfileActivity extends AppCompatActivity {
+
+    private static final String TAG = "ProfileActivity";
 
     private ImageView profileImage;
     private TextView profileName, profileEmail;
@@ -38,14 +35,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private ProgressDialog progressDialog;
 
-    private DatabaseReference userDatabase;
-    private DatabaseReference friendReqDatabase;
-    private DatabaseReference friendDatabase;
-    private DatabaseReference notificationDatabase;
-    private DatabaseReference rootDatabase;
-    private FirebaseUser currentUser;
-
-    private String currentState;
+    private String friendshipState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,76 +44,51 @@ public class ProfileActivity extends AppCompatActivity {
 
         final String userId = getIntent().getStringExtra("user_id");
 
-        userDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(userId);
-        friendReqDatabase = FirebaseDatabase.getInstance().getReference().child("friend_requests");
-        friendDatabase = FirebaseDatabase.getInstance().getReference().child("friends");
-        notificationDatabase = FirebaseDatabase.getInstance().getReference().child("notifications");
-        rootDatabase = FirebaseDatabase.getInstance().getReference();
-        currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
         prepareUI();
 
-        currentState = "not_friends";
+        friendshipState = "not_friends";
 
-        userDatabase.addValueEventListener(new ValueEventListener() {
+        FirebaseDatabaseManager.getUserData(userId, new FirebaseDatabaseManagerCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String name = dataSnapshot.child("name").getValue().toString();
-                String email = dataSnapshot.child("email").getValue().toString();
-                String image = dataSnapshot.child("image").getValue().toString();
-
-                profileName.setText(name);
-                profileEmail.setText(email);
-
+            public void onResult(Bundle userDataBundle) {
+                profileName.setText(userDataBundle.getString("name"));
+                profileEmail.setText(userDataBundle.getString("email"));
+                String image = userDataBundle.getString("image");
                 if (!image.equals("default")) {
                     Glide.with(getApplicationContext()).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(profileImage);
                 }
-
-                friendReqDatabase.child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                FirebaseDatabaseManager.getFriendshipState(userId, new FirebaseDatabaseManagerCallback() {
                     @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                        if (dataSnapshot.hasChild(userId)) {
-                            String request_type = dataSnapshot.child(userId).child("request_type").getValue().toString();
-
-                            if (request_type.equals("received")) {
-                                currentState = "request_received";
+                    public void onResult(String friendshipState) {
+                        switch (friendshipState) {
+                            case "not_friends":
+                                ProfileActivity.this.friendshipState = friendshipState;
+                                profileFriendRequestAction.setText("Send Friend Request");
+                                break;
+                            case "friends":
+                                ProfileActivity.this.friendshipState = friendshipState;
+                                profileFriendRequestAction.setText("Unfriend");
+                                break;
+                            case "request_received":
+                                ProfileActivity.this.friendshipState = friendshipState;
                                 profileFriendRequestAction.setText("Accept Friend Request");
-                            } else if (request_type.equals("sent")) {
-                                currentState = "request_sent";
+                                break;
+                            case "request_sent":
+                                ProfileActivity.this.friendshipState = friendshipState;
                                 profileFriendRequestAction.setText("Cancel Friend Request");
-                            }
-
-                        } else {
-                            friendDatabase.child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    if (dataSnapshot.hasChild(userId)) {
-                                        currentState = "friends";
-                                        profileFriendRequestAction.setText("Unfriend");
-                                    }
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                }
-                            });
+                                break;
+                            default:
+                                Log.e(TAG, "onResult: unknown friendship state");
                         }
-
                         progressDialog.dismiss();
                     }
 
                     @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                    public void onFailure() {
+                        Log.d(TAG, "onFailure: database error");
+                        progressDialog.dismiss();
                     }
                 });
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
             }
         });
 
@@ -131,94 +96,66 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if (currentState.equals("not_friends")) {
-
-                    String newNotificationId = rootDatabase.child("notifications").child(userId).push().getKey();
-
-                    HashMap<String, String> notificationData = new HashMap<>();
-                    notificationData.put("from", currentUser.getUid());
-                    notificationData.put("type", "request");
-
-                    Map pushMap = new HashMap<>();
-                    pushMap.put("friend_requests/" + currentUser.getUid() + "/" + userId + "/request_type", "sent");
-                    pushMap.put("friend_requests/" + userId + "/" + currentUser.getUid() + "/request_type", "received");
-                    pushMap.put("notifications/" + userId + "/" + newNotificationId, notificationData);
-
-                    rootDatabase.updateChildren(pushMap, new DatabaseReference.CompletionListener() {
+                if (friendshipState.equals("not_friends")) {
+                    FirebaseDatabaseManager.sendFriendRequest(userId, new FirebaseDatabaseManagerCallback() {
                         @Override
-                        public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
-                            if (databaseError == null) {
-                                currentState = "request_sent";
-                                profileFriendRequestAction.setText("Cancel Friend Request");
-                                Toast.makeText(ProfileActivity.this, "Friend request sent successfully", Toast.LENGTH_LONG).show();
-                            } else {
-                                Toast.makeText(ProfileActivity.this, "Failed sending friend request", Toast.LENGTH_LONG).show();
-                            }
+                        public void onSuccess() {
+                            friendshipState = "request_sent";
+                            profileFriendRequestAction.setText("Cancel Friend Request");
+                            Toast.makeText(ProfileActivity.this, "Friend request sent successfully", Toast.LENGTH_LONG).show();
                         }
-                    });
 
-                }
-
-                if (currentState.equals("request_sent")) {
-                    friendReqDatabase.child(currentUser.getUid()).child(userId).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                friendReqDatabase.child(userId).child(currentUser.getUid()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        currentState = "not_friends";
-                                        profileFriendRequestAction.setText("Send Friend Request");
-                                    }
-                                });
-                            } else {
-                                Toast.makeText(ProfileActivity.this, "Failed cancelling friend request", Toast.LENGTH_LONG).show();
-                            }
+                        public void onFailure() {
+                            Toast.makeText(ProfileActivity.this, "Failed sending friend request", Toast.LENGTH_LONG).show();
                         }
                     });
                 }
 
-                if (currentState.equals("request_received")) {
-
-                    final String currentDate = DateFormat.getDateTimeInstance().format(new Date());
-
-                    Map pushMap = new HashMap();
-                    pushMap.put("friends/" + currentUser.getUid() + "/" + userId, currentDate);
-                    pushMap.put("friends/" + userId + "/" + currentUser.getUid(), currentDate);
-                    pushMap.put("friend_requests/" + currentUser.getUid() + "/" + userId, null);
-                    pushMap.put("friend_requests/" + userId + "/" + currentUser.getUid(), null);
-
-                    rootDatabase.updateChildren(pushMap, new DatabaseReference.CompletionListener() {
+                if (friendshipState.equals("request_sent")) {
+                    FirebaseDatabaseManager.cancelFriendRequest(userId, new FirebaseDatabaseManagerCallback() {
                         @Override
-                        public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
-                            if (databaseError == null) {
-                                currentState = "friends";
-                                profileFriendRequestAction.setText("Unfriend");
-                                Toast.makeText(ProfileActivity.this, "Friend request accepted successfully", Toast.LENGTH_LONG).show();
-                            } else {
-                                Toast.makeText(ProfileActivity.this, "Failed accepting friend request", Toast.LENGTH_LONG).show();
-                            }
+                        public void onSuccess() {
+                            friendshipState = "not_friends";
+                            profileFriendRequestAction.setText("Send Friend Request");
+                            Toast.makeText(ProfileActivity.this, "Friend request cancelled successfully", Toast.LENGTH_LONG).show();
+                        }
+
+                        @Override
+                        public void onFailure() {
+                            Toast.makeText(ProfileActivity.this, "Failed cancelling friend request", Toast.LENGTH_LONG).show();
                         }
                     });
-
                 }
 
-                if (currentState.equals("friends")) {
-
-                    Map pushMap = new HashMap();
-                    pushMap.put("friends/" + currentUser.getUid() + "/" + userId, null);
-                    pushMap.put("friends/" + userId + "/" + currentUser.getUid(), null);
-
-                    rootDatabase.updateChildren(pushMap, new DatabaseReference.CompletionListener() {
+                if (friendshipState.equals("request_received")) {
+                    FirebaseDatabaseManager.acceptFriendRequest(userId, new FirebaseDatabaseManagerCallback() {
                         @Override
-                        public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
-                            if (databaseError == null) {
-                                currentState = "not_friends";
-                                profileFriendRequestAction.setText("Send Friend Request");
-                                Toast.makeText(ProfileActivity.this, "Friend removed successfully", Toast.LENGTH_LONG).show();
-                            } else {
-                                Toast.makeText(ProfileActivity.this, "Failed removing friend", Toast.LENGTH_LONG).show();
-                            }
+                        public void onSuccess() {
+                            friendshipState = "friends";
+                            profileFriendRequestAction.setText("Unfriend");
+                            Toast.makeText(ProfileActivity.this, "Friend request accepted successfully", Toast.LENGTH_LONG).show();
+                        }
+
+                        @Override
+                        public void onFailure() {
+                            Toast.makeText(ProfileActivity.this, "Failed accepting friend request", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+
+                if (friendshipState.equals("friends")) {
+                    FirebaseDatabaseManager.unfriend(userId, new FirebaseDatabaseManagerCallback() {
+                        @Override
+                        public void onSuccess() {
+                            friendshipState = "not_friends";
+                            profileFriendRequestAction.setText("Send Friend Request");
+                            Toast.makeText(ProfileActivity.this, "Friend removed successfully", Toast.LENGTH_LONG).show();
+                        }
+
+                        @Override
+                        public void onFailure() {
+                            Toast.makeText(ProfileActivity.this, "Failed removing friend", Toast.LENGTH_LONG).show();
                         }
                     });
                 }

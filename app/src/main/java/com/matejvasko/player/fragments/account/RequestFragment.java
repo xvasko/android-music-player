@@ -47,12 +47,14 @@ public class RequestFragment extends Fragment {
         String userId = Authentication.getCurrentUserUid();
         rootRef = FirebaseDatabase.getInstance().getReference();
         if (userId != null) {
-            rootRef.child("notifications").child(userId).addValueEventListener(new ValueEventListener() {
+            rootRef.child("friend_requests").child(userId).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     List<String> requests = new ArrayList<>();
                     for (DataSnapshot request : dataSnapshot.getChildren()) {
-                        requests.add(request.getKey());
+                        if (request.child("request_type").getValue().equals("received")) {
+                            requests.add(request.getKey());
+                        }
                     }
                     requestListAdapter = new RequestListAdapter(getActivity(), requests);
 
@@ -68,7 +70,6 @@ public class RequestFragment extends Fragment {
             });
 
         }
-
 
         return view;
     }

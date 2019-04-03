@@ -29,6 +29,9 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.matejvasko.player.R;
 import com.matejvasko.player.adapters.AccountPagerAdapter;
+import com.matejvasko.player.authentication.Authentication;
+import com.matejvasko.player.firebase.FirebaseDatabaseManager;
+import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -50,8 +53,6 @@ public class AccountActivity extends AppCompatActivity {
     StorageReference imageStorage;
     FirebaseUser user;
 
-    private static final int GALLERY_PICK = 1;
-
     // Layout
     ImageView accountImage;
     TextView accountName;
@@ -71,37 +72,9 @@ public class AccountActivity extends AppCompatActivity {
         accountName = findViewById(R.id.account_name);
         accountEmail = findViewById(R.id.account_email);
         accountChangeImage = findViewById(R.id.account_change_image_button);
-
-        user = FirebaseAuth.getInstance().getCurrentUser();
-        imageStorage = FirebaseStorage.getInstance().getReference();
-        userDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(user.getUid());
-        userDatabase.keepSynced(true);
-        userDatabase.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String email = dataSnapshot.child("email").getValue().toString();
-                String image = dataSnapshot.child("image").getValue().toString();
-                String name = dataSnapshot.child("name").getValue().toString();
-
-
-                if (!image.equals("default")) {
-                    Glide.with(getApplicationContext()).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(accountImage);
-                }
-
-                accountName.setText(name);
-                accountEmail.setText(email);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
         accountChangeImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 CropImage.activity()
                         .setAspectRatio(1, 1)
                         .setGuidelines(CropImageView.Guidelines.ON)
@@ -109,6 +82,20 @@ public class AccountActivity extends AppCompatActivity {
             }
         });
 
+        FirebaseDatabaseManager.getUserData(Authentication.getCurrentUserUid(), new FirebaseDatabaseManagerCallback() {
+            @Override
+            public void onResult(Bundle userDataBundle) {
+                accountName.setText(userDataBundle.getString("name"));
+                accountEmail.setText(userDataBundle.getString("email"));
+                String image = userDataBundle.getString("image");
+                if (!image.equals("default")) {
+                    Glide.with(getApplicationContext()).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(accountImage);
+                }
+            }
+        });
+
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        imageStorage = FirebaseStorage.getInstance().getReference();
 
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("Friend Requests"));

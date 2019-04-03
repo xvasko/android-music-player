@@ -117,17 +117,13 @@ public class Authentication {
 
     private static void saveDeviceTokenToDatabase() {
         String deviceToken = FirebaseInstanceId.getInstance().getToken();
-        FirebaseDatabaseManager.currentUserDatabase.child("device_token").setValue(deviceToken)
+        FirebaseDatabaseManager.getCurrentUserDatabase().child("device_token").setValue(deviceToken)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG, "onSuccess: device token saved");
                     }
                 });
-    }
-
-    private static void setUserOnline() {
-        FirebaseDatabaseManager.currentUserDatabase.child("online").setValue(true);
     }
 
 }

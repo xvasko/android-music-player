@@ -185,9 +185,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             // delay upload of current song to DB
             uploadCurrentSong();
-            if (Authentication.getCurrentUser() != null) {
-                FirebaseDatabaseManager.currentUserDatabase.child("online").setValue(true);
-            }
+            FirebaseDatabaseManager.setUserOnline(true);
 
             Log.d(TAG, "onPlay: MediaSessionCallback");
         }
@@ -216,9 +214,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 setNewState(PlaybackStateCompat.STATE_PAUSED);
             }
 
-            if (Authentication.getCurrentUser() != null) {
-                FirebaseDatabaseManager.currentUserDatabase.child("online").setValue(false);
-            }
+            FirebaseDatabaseManager.setUserOnline(false);
 
             Log.d(TAG, "onPause: MediaSessionCallback");
         }

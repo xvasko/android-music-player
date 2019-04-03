@@ -1,16 +1,30 @@
 package com.matejvasko.player.adapters;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.matejvasko.player.R;
+import com.matejvasko.player.activities.ProfileActivity;
+import com.matejvasko.player.authentication.Authentication;
+import com.matejvasko.player.firebase.FirebaseDatabaseManager;
+import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
 
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class RequestListAdapter extends RecyclerView.Adapter<RequestListAdapter.RequestViewHolder> {
@@ -45,16 +59,35 @@ public class RequestListAdapter extends RecyclerView.Adapter<RequestListAdapter.
 
     class RequestViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView requestId;
+        private TextView requestFrom;
+        private Button acceptButton, ignoreButton;
 
         RequestViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            requestId = itemView.findViewById(R.id.request_id);
+            requestFrom = itemView.findViewById(R.id.request_from);
+            acceptButton = itemView.findViewById(R.id.request_accept_button);
+            ignoreButton = itemView.findViewById(R.id.request_ignore_button);
         }
 
-        void bindTo(String reqId) {
-            requestId.setText(reqId);
+        void bindTo(final String userId) {
+            requestFrom.setText(userId);
+            acceptButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    FirebaseDatabaseManager.acceptFriendRequest(userId, new FirebaseDatabaseManagerCallback() {
+                        @Override
+                        public void onSuccess() {
+                            Toast.makeText(context, "Friend request accepted successfully", Toast.LENGTH_LONG).show();
+                        }
+
+                        @Override
+                        public void onFailure() {
+                            Toast.makeText(context, "Failed accepting friend request", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            });
         }
 
     }

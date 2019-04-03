@@ -94,7 +94,7 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
                     public void onUserRetrieved(FirebaseUser user) {
                         progressDialog.dismiss();
                         if (user != null) {
-                            FirebaseDatabaseManager.retrieveCurrentUserData(new FirebaseDatabaseManagerCallback() {
+                            FirebaseDatabaseManager.getUserData(Authentication.getCurrentUserUid(), new FirebaseDatabaseManagerCallback() {
                                 @Override
                                 public void onResult(Bundle userDataBundle) {
                                     Intent returnIntent = new Intent();
@@ -122,7 +122,7 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
                     public void onUserRetrieved(FirebaseUser user) {
                         progressDialog.dismiss();
                         if (user != null) {
-                            FirebaseDatabaseManager.retrieveCurrentUserData(new FirebaseDatabaseManagerCallback() {
+                            FirebaseDatabaseManager.getUserData(Authentication.getCurrentUserUid(), new FirebaseDatabaseManagerCallback() {
                                 @Override
                                 public void onResult(Bundle userDataBundle) {
                                     Intent returnIntent = new Intent();
