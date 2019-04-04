@@ -4,49 +4,49 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:card_view="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    app:cardUseCompatPadding="true"
+    android:layout_height="80dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginBottom="8dp"
     app:cardBackgroundColor="@color/colorWhite"
-    app:cardCornerRadius="16dp"
+    app:cardCornerRadius="40dp"
     app:cardMaxElevation="1dp"
     app:cardElevation="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="horizontal"
+        android:padding="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <RelativeLayout
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp">
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="12dp">
 
             <androidx.cardview.widget.CardView
                 app:cardBackgroundColor="#e9e9e9"
                 app:cardMaxElevation="0dp"
                 app:cardElevation="0dp"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                app:cardCornerRadius="20dp">
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:cardCornerRadius="28dp">
 
                 <ImageView
                     android:id="@+id/item_online_friend_user_image"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/ic_perm_identity_black_24dp" />
+                    android:layout_height="match_parent"/>
 
             </androidx.cardview.widget.CardView>
 
             <ImageView
                 android:id="@+id/item_online_friend_online_circle"
-                android:layout_width="12dp"
-                android:layout_height="12dp"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
                 android:visibility="invisible"
                 android:src="@drawable/online_circle"
                 android:layout_alignParentBottom="true"
@@ -63,21 +63,32 @@
 
             <TextView
                 android:id="@+id/item_online_friend_user_name"
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:gravity="bottom"
-                android:text="John Dirt"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ZOGROF"
                 android:textColor="#000000"
-                android:textSize="18sp" />
-
+                android:gravity="center_vertical"
+                android:textSize="16sp" />
             <TextView
                 android:id="@+id/item_online_friend_user_song"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:gravity="center_vertical"
+                android:text="asdasdasd" />
+            <TextView
+                android:id="@+id/item_online_friend_user_artist"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:layout_width="match_parent"
+                android:textSize="10sp"
+                android:layout_height="match_parent"
                 android:gravity="top"
-                android:text="" />
+                android:text="by Moderat" />
         </LinearLayout>
 
         <!--<LinearLayout-->

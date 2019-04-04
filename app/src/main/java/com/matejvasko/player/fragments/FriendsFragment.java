@@ -45,6 +45,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 
 /**
@@ -57,7 +58,8 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private LinearLayout loggedInLayout, notLoggedInLayout;
     private TextView signUpLink, logInLink, userName, userEmail;
     private EditText searchFriendEditText;
-    private Button logInButton, signUpButton, searchFriendButton;
+    private Button logInButton, signUpButton;
+    private ImageButton searchFriendButton;
     private ProgressDialog progressDialog;
     private ImageView userImage;
     private ImageButton popupMenuButton;
@@ -224,13 +226,20 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = Authentication.getCurrentUser();
         if (currentUser != null) {
+            final CircularProgressDrawable circularProgressDrawable = new CircularProgressDrawable(App.getAppContext());
+            circularProgressDrawable.setStrokeWidth(10f);
+            circularProgressDrawable.setCenterRadius(30f);
+            circularProgressDrawable.setStartEndTrim(0.5f, 1f);
+            circularProgressDrawable.start();
+            Glide.with(App.getAppContext()).load(circularProgressDrawable).into(userImage);
             FirebaseDatabaseManager.getUserData(Authentication.getCurrentUserUid(), new FirebaseDatabaseManagerCallback() {
                 @Override
                 public void onResult(User user) {
                     userName.setText(user.getName());
                     userEmail.setText(user.getEmail());
+
                     if (!user.getThumbImage().equals("default")) {
-                        Glide.with(App.getAppContext()).load(user.getThumbImage()).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
+                        Glide.with(App.getAppContext()).load(user.getThumbImage()).placeholder(circularProgressDrawable).into(userImage);
                     }
                 }
             });

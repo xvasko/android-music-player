@@ -101,7 +101,7 @@ public class AccountActivity extends AppCompatActivity {
         imageStorage = FirebaseStorage.getInstance().getReference();
 
         TabLayout tabLayout = findViewById(R.id.tab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText("User Requests"));
+        tabLayout.addTab(tabLayout.newTab().setText("Friend Requests"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         final ViewPager viewPager = findViewById(R.id.account_pager);

@@ -76,23 +76,25 @@ public class FriendListAdapter
             FirebaseDatabaseManager.getUserData(user.getUid(), new FirebaseDatabaseManagerCallback() {
                 @Override
                 public void onResult(User user) {
-                    userName.setText(user.getName());
-                    String thumbImage = user.getThumbImage();
-                    if (!thumbImage.equals("default")) {
-                        // TODO You cannot start a load on a not yet attached View or a Fragment where getActivity()
-                        Glide.with(App.getAppContext()).load(thumbImage).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userThumbImage);
-                    } else {
-                        Glide.with(App.getAppContext()).load(R.drawable.ic_perm_identity_black_24dp).into(userThumbImage);
-                    }
-                    if (user.getOnline() != null) {
-                        if (user.getOnline()) {
-                            userOnline.setVisibility(View.VISIBLE);
+                    if (user != null) {
+                        userId = user.getUid();
+                        userName.setText(user.getName());
+                        String thumbImage = user.getThumbImage();
+                        if (!thumbImage.equals("default")) {
+                            Glide.with(App.getAppContext()).load(thumbImage).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userThumbImage);
                         } else {
-                            userOnline.setVisibility(View.INVISIBLE);
+                            Glide.with(App.getAppContext()).load(R.drawable.ic_perm_identity_black_24dp).into(userThumbImage);
                         }
-                    }
-                    if (user.getCurrentSong() != null) {
-                        userSong.setText(user.getCurrentSong());
+                        if (user.getOnline() != null) {
+                            if (user.getOnline()) {
+                                userOnline.setVisibility(View.VISIBLE);
+                            } else {
+                                userOnline.setVisibility(View.INVISIBLE);
+                            }
+                        }
+                        if (user.getCurrentSong() != null) {
+                            userSong.setText(user.getCurrentSong());
+                        }
                     }
                 }
             });

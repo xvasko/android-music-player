@@ -28,11 +28,12 @@ public class FirebaseDatabaseManager {
         return FirebaseDatabase.getInstance().getReference().child("users").child(Authentication.getCurrentUserUid());
     }
 
-    public static void getUserData(String userUid, final FirebaseDatabaseManagerCallback callback) {
+    public static void getUserData(final String userUid, final FirebaseDatabaseManagerCallback callback) {
         rootDatabase.child("users").child(userUid).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 User user = dataSnapshot.getValue(User.class);
+                if (user != null) user.setUid(dataSnapshot.getKey());
                 callback.onResult(user);
             }
 

@@ -64,7 +64,7 @@ public class ProfileActivity extends AppCompatActivity {
                         switch (friendshipState) {
                             case "not_friends":
                                 ProfileActivity.this.friendshipState = friendshipState;
-                                profileFriendRequestAction.setText("Send User Request");
+                                profileFriendRequestAction.setText("Send Friend Request");
                                 break;
                             case "friends":
                                 ProfileActivity.this.friendshipState = friendshipState;
@@ -72,11 +72,11 @@ public class ProfileActivity extends AppCompatActivity {
                                 break;
                             case "request_received":
                                 ProfileActivity.this.friendshipState = friendshipState;
-                                profileFriendRequestAction.setText("Accept User Request");
+                                profileFriendRequestAction.setText("Accept Friend Request");
                                 break;
                             case "request_sent":
                                 ProfileActivity.this.friendshipState = friendshipState;
-                                profileFriendRequestAction.setText("Cancel User Request");
+                                profileFriendRequestAction.setText("Cancel Friend Request");
                                 break;
                             default:
                                 Log.e(TAG, "onResult: unknown friendship state");
@@ -102,8 +102,8 @@ public class ProfileActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess() {
                             friendshipState = "request_sent";
-                            profileFriendRequestAction.setText("Cancel User Request");
-                            Toast.makeText(ProfileActivity.this, "User request sent successfully", Toast.LENGTH_LONG).show();
+                            profileFriendRequestAction.setText("Cancel Friend Request");
+                            Toast.makeText(ProfileActivity.this, "Friend request sent successfully", Toast.LENGTH_LONG).show();
                         }
 
                         @Override
@@ -118,8 +118,8 @@ public class ProfileActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess() {
                             friendshipState = "not_friends";
-                            profileFriendRequestAction.setText("Send User Request");
-                            Toast.makeText(ProfileActivity.this, "User request cancelled successfully", Toast.LENGTH_LONG).show();
+                            profileFriendRequestAction.setText("Send Friend Request");
+                            Toast.makeText(ProfileActivity.this, "Friend request cancelled successfully", Toast.LENGTH_LONG).show();
                         }
 
                         @Override
@@ -135,7 +135,7 @@ public class ProfileActivity extends AppCompatActivity {
                         public void onSuccess() {
                             friendshipState = "friends";
                             profileFriendRequestAction.setText("Unfriend");
-                            Toast.makeText(ProfileActivity.this, "User request accepted successfully", Toast.LENGTH_LONG).show();
+                            Toast.makeText(ProfileActivity.this, "Friend request accepted successfully", Toast.LENGTH_LONG).show();
                         }
 
                         @Override
@@ -150,8 +150,8 @@ public class ProfileActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess() {
                             friendshipState = "not_friends";
-                            profileFriendRequestAction.setText("Send User Request");
-                            Toast.makeText(ProfileActivity.this, "User removed successfully", Toast.LENGTH_LONG).show();
+                            profileFriendRequestAction.setText("Send Friend Request");
+                            Toast.makeText(ProfileActivity.this, "Friend removed successfully", Toast.LENGTH_LONG).show();
                         }
 
                         @Override

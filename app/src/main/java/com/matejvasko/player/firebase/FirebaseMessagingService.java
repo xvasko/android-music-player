@@ -30,7 +30,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "FirebaseMessagingService";
-            String description = "User requests and likes";
+            String description = "Friend requests";
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);

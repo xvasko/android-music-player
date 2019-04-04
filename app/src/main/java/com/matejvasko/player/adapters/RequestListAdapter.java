@@ -6,16 +6,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.matejvasko.player.App;
 import com.matejvasko.player.R;
 import com.matejvasko.player.activities.ProfileActivity;
 import com.matejvasko.player.authentication.Authentication;
 import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
+import com.matejvasko.player.models.User;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -59,26 +63,43 @@ public class RequestListAdapter extends RecyclerView.Adapter<RequestListAdapter.
 
     class RequestViewHolder extends RecyclerView.ViewHolder {
 
+        private ImageView requestImage;
         private TextView requestFrom;
         private Button acceptButton, ignoreButton;
 
         RequestViewHolder(@NonNull View itemView) {
             super(itemView);
 
+            requestImage = itemView.findViewById(R.id.request_image);
             requestFrom = itemView.findViewById(R.id.request_from);
             acceptButton = itemView.findViewById(R.id.request_accept_button);
             ignoreButton = itemView.findViewById(R.id.request_ignore_button);
         }
 
         void bindTo(final String userId) {
+            FirebaseDatabaseManager.getUserData(userId, new FirebaseDatabaseManagerCallback() {
+                @Override
+                public void onResult(User user) {
+                    requestFrom.setText(user.getName());
+                    String thumbImage = user.getThumbImage();
+                    if (!thumbImage.equals("default")) {
+                        Glide.with(App.getAppContext()).load(thumbImage).placeholder(R.drawable.ic_perm_identity_black_24dp).into(requestImage);
+                    } else {
+                        Glide.with(App.getAppContext()).load(R.drawable.ic_perm_identity_black_24dp).into(requestImage);
+                    }
+                }
+            });
             requestFrom.setText(userId);
+
+
+
             acceptButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     FirebaseDatabaseManager.acceptFriendRequest(userId, new FirebaseDatabaseManagerCallback() {
                         @Override
                         public void onSuccess() {
-                            Toast.makeText(context, "User request accepted successfully", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "Friend request accepted successfully", Toast.LENGTH_LONG).show();
                         }
 
                         @Override
