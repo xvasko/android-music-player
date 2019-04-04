@@ -26,6 +26,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
 import com.matejvasko.player.App;
 import com.matejvasko.player.R;
 import com.matejvasko.player.activities.AccountActivity;
@@ -35,10 +36,9 @@ import com.matejvasko.player.adapters.FriendListAdapter;
 import com.matejvasko.player.authentication.Authentication;
 import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
-import com.matejvasko.player.models.Friend;
+import com.matejvasko.player.models.User;
 import com.matejvasko.player.viewmodels.FriendViewModel;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -69,7 +69,7 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private FriendViewModel friendViewModel;
     private FriendListAdapter friendListAdapter;
 
-    private Observer<PagedList<Friend>> observer;
+    private Observer<PagedList<User>> observer;
 
     public FriendsFragment() {
         // Required empty public constructor
@@ -85,9 +85,9 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         recyclerView = view.findViewById(R.id.friends_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(friendListAdapter);
-        observer = new Observer<PagedList<Friend>>() {
+        observer = new Observer<PagedList<User>>() {
             @Override
-            public void onChanged(PagedList<Friend> friends) {
+            public void onChanged(PagedList<User> friends) {
                 System.out.println("observed list size: " + friends.size());
                 friendListAdapter.submitList(friends);
             }
@@ -163,11 +163,12 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 1) {
             if (resultCode == Activity.RESULT_OK) {
-                Bundle userDataBundle= data.getBundleExtra("user_data_bundle");
-                userName.setText(userDataBundle.getString("name"));
-                userEmail.setText(userDataBundle.getString("email"));
-                if (!userDataBundle.getString("thumb_image").equals("default")) {
-                    Glide.with(App.getAppContext()).load(userDataBundle.getString("thumb_image")).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
+                Gson gson = new Gson();
+                User user = gson.fromJson(data.getExtras().getString("user"), User.class);
+                userName.setText(user.getName());
+                userEmail.setText(user.getEmail());
+                if (!user.getThumbImage().equals("default")) {
+                    Glide.with(App.getAppContext()).load(user.getThumbImage()).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
                 }
                 friendViewModel.getFriends().observe(this, observer);
             }
@@ -225,11 +226,11 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         if (currentUser != null) {
             FirebaseDatabaseManager.getUserData(Authentication.getCurrentUserUid(), new FirebaseDatabaseManagerCallback() {
                 @Override
-                public void onResult(Bundle userDataBundle) {
-                    userName.setText(userDataBundle.getString("name"));
-                    userEmail.setText(userDataBundle.getString("email"));
-                    if (!userDataBundle.getString("thumb_image").equals("default")) {
-                        Glide.with(App.getAppContext()).load(userDataBundle.getString("thumb_image")).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
+                public void onResult(User user) {
+                    userName.setText(user.getName());
+                    userEmail.setText(user.getEmail());
+                    if (!user.getThumbImage().equals("default")) {
+                        Glide.with(App.getAppContext()).load(user.getThumbImage()).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
                     }
                 }
             });

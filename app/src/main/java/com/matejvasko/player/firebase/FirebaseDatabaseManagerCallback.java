@@ -1,12 +1,10 @@
 package com.matejvasko.player.firebase;
 
-import android.os.Bundle;
-
-import com.google.firebase.database.DatabaseError;
+import com.matejvasko.player.models.User;
 
 public abstract class FirebaseDatabaseManagerCallback implements FirebaseDatabaseManagerCallbackI {
     @Override
-    public void onResult(Bundle userDataBundle) {
+    public void onResult(User user) {
 
     }
 

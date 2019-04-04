@@ -10,6 +10,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.matejvasko.player.authentication.Authentication;
+import com.matejvasko.player.models.User;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -31,36 +32,13 @@ public class FirebaseDatabaseManager {
         rootDatabase.child("users").child(userUid).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String name = dataSnapshot.child("name").getValue().toString();
-                String email = dataSnapshot.child("email").getValue().toString();
-                String image = dataSnapshot.child("image").getValue().toString();
-                String thumbImage = dataSnapshot.child("thumb_image").getValue().toString();
-
-                Bundle bundle = new Bundle();
-                bundle.putString("name", name);
-                bundle.putString("email", email);
-                bundle.putString("image", image);
-                bundle.putString("thumb_image", thumbImage);
-
-                callback.onResult(bundle);
+                User user = dataSnapshot.getValue(User.class);
+                callback.onResult(user);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
-    }
-
-    public static void setUserData(String userUid, HashMap<String, String> userMap, final FirebaseDatabaseManagerCallback callback) {
-        rootDatabase.child("users").child(userUid).setValue(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    callback.onSuccess();
-                } else {
-                    callback.onFailure();
-                }
             }
         });
     }
@@ -112,7 +90,7 @@ public class FirebaseDatabaseManager {
         notificationData.put("from", currentUser);
         notificationData.put("type", "request");
 
-        Map pushMap = new HashMap<>();
+        Map<String, Object> pushMap = new HashMap<>();
         pushMap.put("friend_requests/" + currentUser + "/" + toUser + "/request_type", "sent");
         pushMap.put("friend_requests/" + toUser + "/" + currentUser + "/request_type", "received");
         pushMap.put("notifications/" + toUser + "/" + newNotificationId, notificationData);
@@ -132,7 +110,7 @@ public class FirebaseDatabaseManager {
     public static void acceptFriendRequest(String fromUser, final FirebaseDatabaseManagerCallback callback) {
         final String currentDate = DateFormat.getDateTimeInstance().format(new Date());
 
-        Map pushMap = new HashMap();
+        Map<String, Object> pushMap = new HashMap<>();
         pushMap.put("friends/" + Authentication.getCurrentUserUid() + "/" + fromUser, currentDate);
         pushMap.put("friends/" + fromUser + "/" + Authentication.getCurrentUserUid(), currentDate);
         pushMap.put("friend_requests/" + Authentication.getCurrentUserUid() + "/" + fromUser, null);
@@ -173,7 +151,7 @@ public class FirebaseDatabaseManager {
     }
 
     public static void unfriend(String user, final FirebaseDatabaseManagerCallback callback) {
-        Map pushMap = new HashMap();
+        Map<String, Object> pushMap = new HashMap<>();
         pushMap.put("friends/" + Authentication.getCurrentUserUid() + "/" + user, null);
         pushMap.put("friends/" + user + "/" + Authentication.getCurrentUserUid(), null);
 
@@ -197,7 +175,7 @@ public class FirebaseDatabaseManager {
     }
 
     public static void setUserThumbImageUrl(String downloadUrl, final FirebaseFirestoreManagerCallback callback) {
-        getCurrentUserDatabase().child("thumb_image").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
+        getCurrentUserDatabase().child("thumbImage").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {

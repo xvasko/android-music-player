@@ -1,6 +1,6 @@
 package com.matejvasko.player.viewmodels;
 
-import com.matejvasko.player.models.Friend;
+import com.matejvasko.player.models.User;
 import com.matejvasko.player.paging.FriendDataSourceFactory;
 
 import androidx.lifecycle.LiveData;
@@ -10,7 +10,7 @@ import androidx.paging.PagedList;
 
 public class FriendViewModel extends ViewModel {
 
-    public LiveData<PagedList<Friend>> getFriends() {
+    public LiveData<PagedList<User>> getFriends() {
         PagedList.Config config = new PagedList.Config.Builder()
                 .setEnablePlaceholders(false)
                 .setPageSize(2) // TODO change page size, 2 is just for debugging

@@ -34,6 +34,7 @@ import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
 import com.matejvasko.player.firebase.FirebaseFirestoreManager;
 import com.matejvasko.player.firebase.FirebaseFirestoreManagerCallback;
+import com.matejvasko.player.models.User;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -86,10 +87,10 @@ public class AccountActivity extends AppCompatActivity {
 
         FirebaseDatabaseManager.getUserData(Authentication.getCurrentUserUid(), new FirebaseDatabaseManagerCallback() {
             @Override
-            public void onResult(Bundle userDataBundle) {
-                accountName.setText(userDataBundle.getString("name"));
-                accountEmail.setText(userDataBundle.getString("email"));
-                String image = userDataBundle.getString("image");
+            public void onResult(User user) {
+                accountName.setText(user.getName());
+                accountEmail.setText(user.getEmail());
+                String image = user.getImage();
                 if (!image.equals("default")) {
                     Glide.with(getApplicationContext()).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(accountImage);
                 }
@@ -100,7 +101,7 @@ public class AccountActivity extends AppCompatActivity {
         imageStorage = FirebaseStorage.getInstance().getReference();
 
         TabLayout tabLayout = findViewById(R.id.tab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText("Friend Requests"));
+        tabLayout.addTab(tabLayout.newTab().setText("User Requests"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         final ViewPager viewPager = findViewById(R.id.account_pager);

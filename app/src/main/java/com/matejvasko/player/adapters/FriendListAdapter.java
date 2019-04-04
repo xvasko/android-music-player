@@ -2,42 +2,38 @@ package com.matejvasko.player.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.matejvasko.player.App;
 import com.matejvasko.player.R;
 import com.matejvasko.player.activities.ProfileActivity;
-import com.matejvasko.player.models.Friend;
+import com.matejvasko.player.firebase.FirebaseDatabaseManager;
+import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
+import com.matejvasko.player.models.User;
 
 import androidx.annotation.NonNull;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class FriendListAdapter
-        extends PagedListAdapter<Friend, FriendListAdapter.FriendViewHolder> {
+        extends PagedListAdapter<User, FriendListAdapter.FriendViewHolder> {
 
     private static final String TAG = "FriendListAdapter";
 
-    private DatabaseReference userDatabase;
     private Context context;
 
     public FriendListAdapter(Context context) {
-        super(Friend.DIFF_CALLBACK);
+        super(User.DIFF_CALLBACK);
         this.context = context;
-        userDatabase = FirebaseDatabase.getInstance().getReference().child("users");
-        // userDatabase.keepSynced(true); TODO https://firebase.google.com/docs/database/android/offline-capabilities
         Log.d(TAG, "FriendListAdapter:");
     }
 
@@ -52,9 +48,9 @@ public class FriendListAdapter
     @Override
     public void onBindViewHolder(@NonNull FriendViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder: ");
-        Friend friend = getItem(position);
-        if (friend != null) {
-            holder.bindTo(friend.getUid());
+        User user = getItem(position);
+        if (user != null) {
+            holder.bindTo(user);
         } else {
             holder.clear();
         }
@@ -76,42 +72,28 @@ public class FriendListAdapter
             userOnline = itemView.findViewById(R.id.item_online_friend_online_circle);
         }
 
-        void bindTo(final String userId) {
-            this.userId = userId;
-            userDatabase.child(userId).addValueEventListener(new ValueEventListener() {
+        void bindTo(User user) {
+            FirebaseDatabaseManager.getUserData(user.getUid(), new FirebaseDatabaseManagerCallback() {
                 @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    String thumbImage = dataSnapshot.child("thumb_image").getValue().toString();
-                    String name = dataSnapshot.child("name").getValue().toString();
-
-                    if (dataSnapshot.hasChild("online")) {
-                        Boolean isOnline = (boolean) dataSnapshot.child("online").getValue();
-                        if (isOnline) {
-                            userOnline.setVisibility(View.VISIBLE);
-                        } else {
-                            userOnline.setVisibility(View.INVISIBLE);
-                        }
-
-                    }
-
-                    if (dataSnapshot.hasChild("current_song")) {
-                        String song =  dataSnapshot.child("current_song").getValue().toString();
-                        userSong.setText(song);
-                    }
-
-                    userName.setText(name);
-
+                public void onResult(User user) {
+                    userName.setText(user.getName());
+                    String thumbImage = user.getThumbImage();
                     if (!thumbImage.equals("default")) {
                         // TODO You cannot start a load on a not yet attached View or a Fragment where getActivity()
                         Glide.with(App.getAppContext()).load(thumbImage).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userThumbImage);
                     } else {
                         Glide.with(App.getAppContext()).load(R.drawable.ic_perm_identity_black_24dp).into(userThumbImage);
                     }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                    if (user.getOnline() != null) {
+                        if (user.getOnline()) {
+                            userOnline.setVisibility(View.VISIBLE);
+                        } else {
+                            userOnline.setVisibility(View.INVISIBLE);
+                        }
+                    }
+                    if (user.getCurrentSong() != null) {
+                        userSong.setText(user.getCurrentSong());
+                    }
                 }
             });
         }

@@ -78,7 +78,7 @@ public class RequestListAdapter extends RecyclerView.Adapter<RequestListAdapter.
                     FirebaseDatabaseManager.acceptFriendRequest(userId, new FirebaseDatabaseManagerCallback() {
                         @Override
                         public void onSuccess() {
-                            Toast.makeText(context, "Friend request accepted successfully", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "User request accepted successfully", Toast.LENGTH_LONG).show();
                         }
 
                         @Override

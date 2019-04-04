@@ -8,6 +8,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
@@ -22,7 +23,7 @@ public class UploadWorker extends Worker {
     public UploadWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        userDatabase = FirebaseDatabase.getInstance().getReference().child("users").child(currentUserId).child("current_song");
+        userDatabase = FirebaseDatabaseManager.rootDatabase.child("users").child(currentUserId).child("currentSong");
     }
 
     @NonNull

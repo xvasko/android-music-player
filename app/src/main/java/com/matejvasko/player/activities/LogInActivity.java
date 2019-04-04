@@ -1,10 +1,5 @@
 package com.matejvasko.player.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.navigation.Navigation;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -14,12 +9,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.firebase.auth.FirebaseUser;
+import com.google.gson.Gson;
 import com.matejvasko.player.R;
 import com.matejvasko.player.authentication.Authentication;
 import com.matejvasko.player.authentication.AuthenticationCallback;
 import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
+import com.matejvasko.player.models.User;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class LogInActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -90,20 +89,24 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
                 progressDialog.show();
 
                 Authentication.logIn(logInEmail, logInPassword, new AuthenticationCallback() {
+
                     @Override
-                    public void onUserRetrieved(FirebaseUser user) {
-                        progressDialog.dismiss();
-                        if (user != null) {
-                            FirebaseDatabaseManager.getUserData(Authentication.getCurrentUserUid(), new FirebaseDatabaseManagerCallback() {
-                                @Override
-                                public void onResult(Bundle userDataBundle) {
-                                    Intent returnIntent = new Intent();
-                                    returnIntent.putExtra("user_data_bundle", userDataBundle);
-                                    setResult(Activity.RESULT_OK, returnIntent);
-                                    finish();
-                                }
-                            });
-                        }
+                    public void onSuccess() {
+                        FirebaseDatabaseManager.getUserData(Authentication.getCurrentUserUid(), new FirebaseDatabaseManagerCallback() {
+                            @Override
+                            public void onResult(User user) {
+                                Intent returnIntent = new Intent();
+                                Gson gson = new Gson();
+                                returnIntent.putExtra("user", gson.toJson(user));
+                                setResult(Activity.RESULT_OK, returnIntent);
+                                finish();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure() {
+
                     }
                 });
                 break;
@@ -119,19 +122,22 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
 
                 Authentication.signUp(signUpName, signUpEmail, signUpPassword, new AuthenticationCallback() {
                     @Override
-                    public void onUserRetrieved(FirebaseUser user) {
-                        progressDialog.dismiss();
-                        if (user != null) {
-                            FirebaseDatabaseManager.getUserData(Authentication.getCurrentUserUid(), new FirebaseDatabaseManagerCallback() {
-                                @Override
-                                public void onResult(Bundle userDataBundle) {
-                                    Intent returnIntent = new Intent();
-                                    returnIntent.putExtra("user_data_bundle", userDataBundle);
-                                    setResult(Activity.RESULT_OK, returnIntent);
-                                    finish();
-                                }
-                            });
-                        }
+                    public void onSuccess() {
+                        FirebaseDatabaseManager.getUserData(Authentication.getCurrentUserUid(), new FirebaseDatabaseManagerCallback() {
+                            @Override
+                            public void onResult(User user) {
+                                Intent returnIntent = new Intent();
+                                Gson gson = new Gson();
+                                returnIntent.putExtra("user", gson.toJson(user));
+                                setResult(Activity.RESULT_OK, returnIntent);
+                                finish();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure() {
+
                     }
                 });
                 break;

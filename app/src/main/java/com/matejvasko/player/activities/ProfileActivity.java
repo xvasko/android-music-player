@@ -21,6 +21,7 @@ import com.matejvasko.player.R;
 import com.matejvasko.player.authentication.Authentication;
 import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
+import com.matejvasko.player.models.User;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -50,10 +51,10 @@ public class ProfileActivity extends AppCompatActivity {
 
         FirebaseDatabaseManager.getUserData(userId, new FirebaseDatabaseManagerCallback() {
             @Override
-            public void onResult(Bundle userDataBundle) {
-                profileName.setText(userDataBundle.getString("name"));
-                profileEmail.setText(userDataBundle.getString("email"));
-                String image = userDataBundle.getString("image");
+            public void onResult(User user) {
+                profileName.setText(user.getName());
+                profileEmail.setText(user.getEmail());
+                String image = user.getImage();
                 if (!image.equals("default")) {
                     Glide.with(getApplicationContext()).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(profileImage);
                 }
@@ -63,7 +64,7 @@ public class ProfileActivity extends AppCompatActivity {
                         switch (friendshipState) {
                             case "not_friends":
                                 ProfileActivity.this.friendshipState = friendshipState;
-                                profileFriendRequestAction.setText("Send Friend Request");
+                                profileFriendRequestAction.setText("Send User Request");
                                 break;
                             case "friends":
                                 ProfileActivity.this.friendshipState = friendshipState;
@@ -71,11 +72,11 @@ public class ProfileActivity extends AppCompatActivity {
                                 break;
                             case "request_received":
                                 ProfileActivity.this.friendshipState = friendshipState;
-                                profileFriendRequestAction.setText("Accept Friend Request");
+                                profileFriendRequestAction.setText("Accept User Request");
                                 break;
                             case "request_sent":
                                 ProfileActivity.this.friendshipState = friendshipState;
-                                profileFriendRequestAction.setText("Cancel Friend Request");
+                                profileFriendRequestAction.setText("Cancel User Request");
                                 break;
                             default:
                                 Log.e(TAG, "onResult: unknown friendship state");
@@ -101,8 +102,8 @@ public class ProfileActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess() {
                             friendshipState = "request_sent";
-                            profileFriendRequestAction.setText("Cancel Friend Request");
-                            Toast.makeText(ProfileActivity.this, "Friend request sent successfully", Toast.LENGTH_LONG).show();
+                            profileFriendRequestAction.setText("Cancel User Request");
+                            Toast.makeText(ProfileActivity.this, "User request sent successfully", Toast.LENGTH_LONG).show();
                         }
 
                         @Override
@@ -117,8 +118,8 @@ public class ProfileActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess() {
                             friendshipState = "not_friends";
-                            profileFriendRequestAction.setText("Send Friend Request");
-                            Toast.makeText(ProfileActivity.this, "Friend request cancelled successfully", Toast.LENGTH_LONG).show();
+                            profileFriendRequestAction.setText("Send User Request");
+                            Toast.makeText(ProfileActivity.this, "User request cancelled successfully", Toast.LENGTH_LONG).show();
                         }
 
                         @Override
@@ -134,7 +135,7 @@ public class ProfileActivity extends AppCompatActivity {
                         public void onSuccess() {
                             friendshipState = "friends";
                             profileFriendRequestAction.setText("Unfriend");
-                            Toast.makeText(ProfileActivity.this, "Friend request accepted successfully", Toast.LENGTH_LONG).show();
+                            Toast.makeText(ProfileActivity.this, "User request accepted successfully", Toast.LENGTH_LONG).show();
                         }
 
                         @Override
@@ -149,8 +150,8 @@ public class ProfileActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess() {
                             friendshipState = "not_friends";
-                            profileFriendRequestAction.setText("Send Friend Request");
-                            Toast.makeText(ProfileActivity.this, "Friend removed successfully", Toast.LENGTH_LONG).show();
+                            profileFriendRequestAction.setText("Send User Request");
+                            Toast.makeText(ProfileActivity.this, "User removed successfully", Toast.LENGTH_LONG).show();
                         }
 
                         @Override

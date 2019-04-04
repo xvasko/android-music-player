@@ -1,12 +1,10 @@
 package com.matejvasko.player.firebase;
 
-import android.os.Bundle;
-
-import com.google.firebase.database.DatabaseError;
+import com.matejvasko.player.models.User;
 
 public interface FirebaseDatabaseManagerCallbackI {
 
-    void onResult(Bundle userDataBundle);
+    void onResult(User user);
 
     void onResult(String friendshipState);
 

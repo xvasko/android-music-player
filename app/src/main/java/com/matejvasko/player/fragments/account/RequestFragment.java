@@ -20,6 +20,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.matejvasko.player.R;
 import com.matejvasko.player.adapters.RequestListAdapter;
 import com.matejvasko.player.authentication.Authentication;
+import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +33,6 @@ public class RequestFragment extends Fragment {
     private RecyclerView recyclerView;
     private RequestListAdapter requestListAdapter;
 
-    DatabaseReference rootRef;
-
     public RequestFragment() {
         // Required empty public constructor
     }
@@ -45,9 +44,8 @@ public class RequestFragment extends Fragment {
         final View view = inflater.inflate(R.layout.fragment_request, container, false);
 
         String userId = Authentication.getCurrentUserUid();
-        rootRef = FirebaseDatabase.getInstance().getReference();
         if (userId != null) {
-            rootRef.child("friend_requests").child(userId).addValueEventListener(new ValueEventListener() {
+            FirebaseDatabaseManager.rootDatabase.child("friend_requests").child(userId).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     List<String> requests = new ArrayList<>();
