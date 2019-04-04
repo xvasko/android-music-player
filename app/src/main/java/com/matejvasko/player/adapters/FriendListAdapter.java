@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -19,6 +20,7 @@ import com.matejvasko.player.activities.ProfileActivity;
 import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
 import com.matejvasko.player.models.User;
+import com.matejvasko.player.utils.Utils;
 
 import androidx.annotation.NonNull;
 import androidx.paging.PagedListAdapter;
@@ -61,7 +63,8 @@ public class FriendListAdapter
         private String userId = "";
 
         private ImageView userThumbImage, userOnline;
-        private TextView userName, userSong;
+        private TextView userName, userSong, userArtist, userLastSeen;
+        private LinearLayout userLastSeenEgg;
 
         FriendViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -69,7 +72,10 @@ public class FriendListAdapter
             userThumbImage = itemView.findViewById(R.id.item_online_friend_user_image);
             userName = itemView.findViewById(R.id.item_online_friend_user_name);
             userSong = itemView.findViewById(R.id.item_online_friend_user_song);
+            userArtist = itemView.findViewById(R.id.item_online_friend_user_artist);
             userOnline = itemView.findViewById(R.id.item_online_friend_online_circle);
+            userLastSeen = itemView.findViewById(R.id.item_online_friend_last_seen);
+            userLastSeenEgg = itemView.findViewById(R.id.item_online_friend_last_seen_egg);
         }
 
         void bindTo(User user) {
@@ -88,13 +94,25 @@ public class FriendListAdapter
                         if (user.getOnline() != null) {
                             if (user.getOnline()) {
                                 userOnline.setVisibility(View.VISIBLE);
+                                userLastSeenEgg.setVisibility(View.INVISIBLE);
                             } else {
                                 userOnline.setVisibility(View.INVISIBLE);
+                                if (user.getLastTimeOnline() != null) {
+                                    userLastSeen.setText(Utils.getLastSeen(user.getLastTimeOnline()));
+                                    userLastSeenEgg.setVisibility(View.VISIBLE);
+                                } else {
+                                    userLastSeenEgg.setVisibility(View.INVISIBLE);
+                                }
                             }
                         }
-                        if (user.getCurrentSong() != null) {
-                            userSong.setText(user.getCurrentSong());
+                        if (user.getCurrentSongName() != null) {
+                            userSong.setText(user.getCurrentSongName());
+
                         }
+                        if (user.getCurrentSongArtist() != null) {
+                            userArtist.setText(String.format("by %s", user.getCurrentSongArtist()));
+                        }
+
                     }
                 }
             });

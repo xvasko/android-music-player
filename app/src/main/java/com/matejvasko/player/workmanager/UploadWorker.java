@@ -10,6 +10,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
@@ -23,15 +26,19 @@ public class UploadWorker extends Worker {
     public UploadWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        userDatabase = FirebaseDatabaseManager.rootDatabase.child("users").child(currentUserId).child("currentSong");
+        userDatabase = FirebaseDatabaseManager.rootDatabase.child("users").child(currentUserId);
     }
 
     @NonNull
     @Override
     public Result doWork() {
-        String songData = getInputData().getString("song_name");
-        Log.d(TAG, "doWork: uploading " + songData);
-        userDatabase.setValue(songData).addOnCompleteListener(new OnCompleteListener<Void>() {
+        String name = getInputData().getString("name");
+        String artist = getInputData().getString("artist");
+        Map<String, Object> pushMap = new HashMap<>();
+        pushMap.put("currentSongName", name);
+        pushMap.put("currentSongArtist", artist);
+        Log.d(TAG, "doWork: uploading " + pushMap.get("name"));
+        userDatabase.updateChildren(pushMap).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {

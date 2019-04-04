@@ -3,6 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
@@ -57,9 +59,9 @@
             <androidx.cardview.widget.CardView
                 app:cardMaxElevation="0dp"
                 app:cardElevation="0dp"
-                app:cardCornerRadius="30dp"
-                android:layout_width="70dp"
-                android:layout_height="70dp"
+                app:cardCornerRadius="40dp"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
@@ -99,7 +101,7 @@
             <ImageButton
                 android:id="@+id/popup_menu"
                 android:layout_width="60dp"
-                android:layout_height="102dp"
+                android:layout_height="match_parent"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_more_vert_black_32dp"/>
 

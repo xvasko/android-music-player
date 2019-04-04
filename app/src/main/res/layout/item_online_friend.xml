@@ -52,8 +52,28 @@
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true"/>
 
-        </RelativeLayout>
+            <LinearLayout
+                android:id="@+id/item_online_friend_last_seen_egg"
+                android:orientation="vertical"
+                android:gravity="center_vertical|center"
+                android:background="@drawable/last_seen_egg"
+                android:layout_width="24dp"
+                android:layout_height="16dp"
+                android:visibility="invisible"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true">
+                <TextView
+                    android:id="@+id/item_online_friend_last_seen"
+                    android:textSize="8sp"
+                    android:text=""
+                    android:textColor="#000000"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
 
+
+
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -91,21 +111,6 @@
                 android:text="by Moderat" />
         </LinearLayout>
 
-        <!--<LinearLayout-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="match_parent">-->
-
-            <!--<ImageView-->
-                <!--android:id="@+id/item_online_friend_like"-->
-                <!--android:layout_marginBottom="26dp"-->
-                <!--android:layout_marginTop="26dp"-->
-                <!--android:layout_marginEnd="16dp"-->
-                <!--android:layout_marginStart="16dp"-->
-                <!--android:layout_width="20dp"-->
-                <!--android:layout_height="20dp"-->
-                <!--android:src="@drawable/ic_thumb_up_black_24dp"/>-->
-
-        <!--</LinearLayout>-->
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

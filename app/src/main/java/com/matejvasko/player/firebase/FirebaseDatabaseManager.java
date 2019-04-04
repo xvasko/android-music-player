@@ -8,6 +8,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.matejvasko.player.authentication.Authentication;
 import com.matejvasko.player.models.User;
@@ -172,6 +173,9 @@ public class FirebaseDatabaseManager {
     public static void setUserOnline(boolean isOnline) {
         if (Authentication.getCurrentUser() != null) {
             FirebaseDatabaseManager.getCurrentUserDatabase().child("online").setValue(isOnline);
+            if (!isOnline) {
+                FirebaseDatabaseManager.getCurrentUserDatabase().child("lastTimeOnline").setValue(ServerValue.TIMESTAMP);
+            }
         }
     }
 

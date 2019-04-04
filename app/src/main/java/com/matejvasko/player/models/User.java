@@ -6,10 +6,12 @@ import androidx.recyclerview.widget.DiffUtil;
 public class User {
 
     private String uid;
-    private String currentSong;
+    private String currentSongName;
+    private String currentSongArtist;
     private String deviceToken;
     private String email;
     private String image;
+    private Long lastTimeOnline;
     private String name;
     private Boolean online;
     private String thumbImage;
@@ -26,12 +28,20 @@ public class User {
         this.uid = uid;
     }
 
-    public String getCurrentSong() {
-        return currentSong;
+    public String getCurrentSongName() {
+        return currentSongName;
     }
 
-    public void setCurrentSong(String currentSong) {
-        this.currentSong = currentSong;
+    public void setCurrentSongName(String currentSongName) {
+        this.currentSongName = currentSongName;
+    }
+
+    public String getCurrentSongArtist() {
+        return currentSongArtist;
+    }
+
+    public void setCurrentSongArtist(String currentSongArtist) {
+        this.currentSongArtist = currentSongArtist;
     }
 
     public String getDeviceToken() {
@@ -56,6 +66,14 @@ public class User {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public Long getLastTimeOnline() {
+        return lastTimeOnline;
+    }
+
+    public void setLastTimeOnline(Long lastTimeOnline) {
+        this.lastTimeOnline = lastTimeOnline;
     }
 
     public String getName() {
@@ -98,7 +116,8 @@ public class User {
     public String toString() {
         return "User{" +
                 "uid='" + uid + '\'' +
-                ", currentSong='" + currentSong + '\'' +
+                ", currentSongName='" + currentSongName + '\'' +
+                ", currentSongArtist='" + currentSongArtist + '\'' +
                 ", deviceToken='" + deviceToken + '\'' +
                 ", email='" + email + '\'' +
                 ", image='" + image + '\'' +

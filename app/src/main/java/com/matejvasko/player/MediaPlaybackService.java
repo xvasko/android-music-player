@@ -193,7 +193,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         private void uploadCurrentSong() {
             WorkManager.getInstance().cancelAllWorkByTag("upload");
             Data songData = new Data.Builder()
-                    .putString("song_name", song.title + " " + song.artist)
+                    .putString("name", song.title)
+                    .putString("artist", song.artist)
                     .build();
             OneTimeWorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(UploadWorker.class)
                     .setInitialDelay(5, TimeUnit.SECONDS)

@@ -171,6 +171,8 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 userEmail.setText(user.getEmail());
                 if (!user.getThumbImage().equals("default")) {
                     Glide.with(App.getAppContext()).load(user.getThumbImage()).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
+                } else {
+                    Glide.with(App.getAppContext()).load(user.getThumbImage()).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
                 }
                 friendViewModel.getFriends().observe(this, observer);
             }
@@ -240,6 +242,8 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
                     if (!user.getThumbImage().equals("default")) {
                         Glide.with(App.getAppContext()).load(user.getThumbImage()).placeholder(circularProgressDrawable).into(userImage);
+                    } else {
+                        Glide.with(App.getAppContext()).load(user.getThumbImage()).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
                     }
                 }
             });
