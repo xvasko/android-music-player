@@ -1,4 +1,5 @@
 <resources>
+    <string name="google_map_api_key">AIzaSyC-wcGVEY1L-G9TspspckFCzLuufY3fGfo</string>
     <string name="app_name">player</string>
     <string name="bottom_nav_library">Library</string>
     <string name="bottom_nav_friends">Friends</string>

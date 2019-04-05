@@ -7,6 +7,12 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!--for rendering the map-->
+    <uses-feature
+        android:glEsVersion="0x00020000"
+        android:required="true"/>
 
     <application
         android:name=".App"
@@ -17,6 +23,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+
+        <!--ACTIVITIES-->
         <activity
             android:name=".activities.MainActivity"
             android:windowSoftInputMode="adjustPan">
@@ -26,7 +34,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".activities.AccountActivity" />
+        <activity
+            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat" />
+        <activity android:name=".activities.ProfileActivity">
+            <intent-filter>
+                <action android:name="com.matejvasko.player.TARGET_NOTIFICATION" />
 
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".activities.LogInActivity" />
+        <!--ACTIVITIES-->
+
+        <!--SERVICES-->
         <service android:name=".MediaPlaybackService">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService" />
@@ -37,7 +59,9 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+        <!--SERVICES-->
 
+        <!--RECEIVERS-->
         <!--
              MediaSession, prior to API 21, uses a broadcast receiver to communicate with a
              media session. It does not have to be this broadcast receiver, but it must
@@ -51,19 +75,16 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </receiver>
+        <!--RECEIVERS-->
 
-        <activity android:name=".activities.AccountActivity" />
-        <activity
-            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
-            android:theme="@style/Base.Theme.AppCompat" />
-        <activity android:name=".activities.ProfileActivity">
-            <intent-filter>
-                <action android:name="com.matejvasko.player.TARGET_NOTIFICATION" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_map_api_key"/>
 
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <activity android:name=".activities.LogInActivity"></activity>
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
     </application>
 
 </manifest>

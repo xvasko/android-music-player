@@ -13,7 +13,7 @@ import androidx.core.app.NotificationCompat;
 
 public class FirebaseMessagingService extends com.google.firebase.messaging.FirebaseMessagingService {
 
-    private static final String TAG = "FirebaseMessagingServic";
+    private static final String TAG = "FirebaseMessagingService";
 
     private static final String CHANNEL_ID = "com.matejvasko.player.channel";
     
@@ -25,6 +25,8 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
         String notificationBody = remoteMessage.getNotification().getBody();
         String notificationClickAction = remoteMessage.getNotification().getClickAction();
         String fromUserId = remoteMessage.getData().get("from_user_id");
+
+        System.out.println("fromuserid: " + fromUserId);
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
@@ -44,7 +46,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
                 PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle(notificationTitle)
                 .setContentText(notificationBody)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
