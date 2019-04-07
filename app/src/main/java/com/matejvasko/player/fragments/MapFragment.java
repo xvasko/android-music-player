@@ -38,6 +38,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -54,6 +55,7 @@ import com.matejvasko.player.App;
 import com.matejvasko.player.LocationService;
 import com.matejvasko.player.R;
 import com.matejvasko.player.activities.MainActivity;
+import com.matejvasko.player.activities.ProfileActivity;
 import com.matejvasko.player.authentication.Authentication;
 import com.matejvasko.player.utils.Utils;
 import com.matejvasko.player.utils.UtilsCallback;
@@ -89,21 +91,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private DatabaseReference userLocationDatabase = FirebaseDatabase.getInstance().getReference().child("user_locations").child(Authentication.getCurrentUserUid());
     private ValueEventListener userLocationListener;
 
-
     private MapView mapView;
     private GoogleMap googleMap;
+
+    private Marker userMarker;
+    private Circle userCircle;
 
     private GeoFire geoFire;
     private GeoQuery geoQuery;
 
-    public MapFragment() {
-        // Required empty public constructor
-    }
+    public MapFragment() {}
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-//        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context);
     }
 
     @Override
@@ -112,7 +113,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_map, container, false);
 
-
         Bundle mapViewBundle = null;
         if (savedInstanceState != null) {
             mapViewBundle = savedInstanceState.getBundle(MAPVIEW_BUNDLE_KEY);
@@ -120,9 +120,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         mapView = view.findViewById(R.id.map);
         mapView.onCreate(mapViewBundle);
         mapView.getMapAsync(this);
-
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("user_locations");
-        geoFire = new GeoFire(ref);
 
         return view;
     }
@@ -152,68 +149,103 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         mapView.onStop();
     }
 
+    @Override
+    public void onMapReady(final GoogleMap googleMap) {
+        this.googleMap = googleMap;
+        googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                if (marker.getTitle().equals("You") || marker.getTitle().isEmpty()) {
+                    // forbid click on yourself marker
+                    return false;
+                }
+                Intent intent = new Intent(getActivity(), ProfileActivity.class);
+                intent.putExtra("user_id", marker.getTitle());
+                getActivity().startActivity(intent);
+                return true;
+            }
+        });
+
+        startListeningToGeoFence();
+        startListeningToLocationChanges();
+    }
+
+    private void startListeningToGeoFence() {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("user_locations");
+        geoFire = new GeoFire(ref);
+        Utils.getCurrentLocationOnce(new UtilsCallback() {
+            @Override
+            public void onResult(Location location) {
+                geoQuery = geoFire.queryAtLocation(new GeoLocation(location.getLatitude(), location.getLongitude()), 0.5);
+                geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+
+                    Map<String, Marker> markers = new HashMap<>();
+
+                    @Override
+                    public void onKeyEntered(String key, GeoLocation location) {
+                        if (key.equals(Authentication.getCurrentUserUid())) return;
+                        Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(location.latitude, location.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).title(key));
+                        markers.put(key, marker);
+                        System.out.println("geoQuery: onKeyEntered: " + key);
+                        System.out.println("geoQuery: onKeyEntered: markers size: " + markers.size());
+                    }
+
+                    @Override
+                    public void onKeyExited(String key) {
+                        if (key.equals(Authentication.getCurrentUserUid())) return;
+                        Marker marker = markers.get(key);
+                        if (marker != null) {
+                            marker.remove();
+                            markers.remove(key);
+                        }
+                        System.out.println("geoQuery: onKeyExited: " + key);
+                        System.out.println("geoQuery: onKeyExited: markers size: " + markers.size());
+                    }
+
+                    @Override
+                    public void onKeyMoved(String key, GeoLocation location) {
+                        if (key.equals(Authentication.getCurrentUserUid())) return;
+                        Marker marker = markers.get(key);
+                        if (marker != null) {
+                            marker.setPosition(new LatLng(location.latitude, location.longitude));
+                        }
+                        System.out.println("geoQuery: onKeyMoved: " + key);
+                        System.out.println("geoQuery: onKeyMoved: markers size: " + markers.size());
+                    }
+
+                    @Override
+                    public void onGeoQueryReady() {
+
+                    }
+
+                    @Override
+                    public void onGeoQueryError(DatabaseError error) {
+
+                    }
+                });
+            }
+        });
+    }
+
     private void startListeningToLocationChanges() {
         userLocationListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Double latitude = (Double) dataSnapshot.child("l").child("0").getValue();
-                final Double longitude =  (Double) dataSnapshot.child("l").child("1").getValue();
+                Double longitude =  (Double) dataSnapshot.child("l").child("1").getValue();
                 System.out.println("on data change: latitude " + latitude);
                 System.out.println("on data change: longitude " + longitude);
 
                 if (latitude != null && longitude != null) {
                     LatLng position = new LatLng(latitude, longitude);
                     GeoLocation geoLocation = new GeoLocation(latitude, longitude);
-                    GeoQuery geoQuery = geoFire.queryAtLocation(geoLocation, 0.5);
-                    geoQuery.removeAllListeners();
-                    geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+                    if (geoQuery != null) geoQuery.setLocation(geoLocation, 0.5d);
 
-                        Map<String, Marker> markers = new HashMap<>();
-
-                        @Override
-                        public void onKeyEntered(String key, GeoLocation location) {
-                            if (key.equals(Authentication.getCurrentUserUid())) return;
-                            Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(location.latitude, location.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).title(key));
-                            markers.put(Authentication.getCurrentUserUid(), marker);
-                            System.out.println("goeQuery: onKeyEntered: " + key);
-                        }
-
-                        @Override
-                        public void onKeyExited(String key) {
-                            if (key.equals(Authentication.getCurrentUserUid())) return;
-                            Marker marker = markers.get(key);
-                            if (marker != null) {
-                                marker.remove();
-                                markers.remove(key);
-                            }
-                            System.out.println("goeQuery: onKeyExited: " + key);
-                        }
-
-                        @Override
-                        public void onKeyMoved(String key, GeoLocation location) {
-                            if (key.equals(Authentication.getCurrentUserUid())) return;
-                            Marker marker = markers.get(key);
-                            if (marker != null) {
-                                marker.setPosition(new LatLng(location.latitude, location.longitude));
-                            }
-                            System.out.println("goeQuery: onKeyMoved: " + key);
-//                            googleMap.addMarker(new MarkerOptions().position(new LatLng(location.latitude, location.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).title(key));
-                        }
-
-                        @Override
-                        public void onGeoQueryReady() {
-
-                        }
-
-                        @Override
-                        public void onGeoQueryError(DatabaseError error) {
-
-                        }
-                    });
-                    googleMap.clear();
                     googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15f));
-                    googleMap.addMarker(new MarkerOptions().position(position).title("You"));
-                    googleMap.addCircle(new CircleOptions().center(position).radius(500).strokeColor(Color.RED).strokeWidth(3f));
+                    if (userMarker != null) userMarker.remove();
+                    userMarker = googleMap.addMarker(new MarkerOptions().position(position).title("You"));
+                    if (userCircle != null) userCircle.remove();
+                    userCircle = googleMap.addCircle(new CircleOptions().center(position).radius(500).strokeColor(Color.RED).strokeWidth(3f));
                 }
 
             }
@@ -223,21 +255,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
             }
         };
+
         userLocationDatabase.addValueEventListener(userLocationListener);
     }
 
-    @Override
-    public void onMapReady(final GoogleMap googleMap) {
-        System.out.println("ON MAP READY");
-        this.googleMap = googleMap;
-        startListeningToLocationChanges();
-    }
 
     @Override
     public void onPause() {
         super.onPause();
         mapView.onPause();
         userLocationDatabase.removeEventListener(userLocationListener);
+        if (geoQuery != null) {
+            geoQuery.removeAllListeners();
+        }
     }
 
     @Override

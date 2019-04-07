@@ -21,12 +21,17 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.firebase.database.FirebaseDatabase;
 import com.matejvasko.player.App;
+import com.matejvasko.player.LocationService;
 import com.matejvasko.player.MediaPlaybackService;
 import com.matejvasko.player.MediaSeekBar;
 import com.matejvasko.player.R;
+import com.matejvasko.player.authentication.Authentication;
 import com.matejvasko.player.fragments.library.AlbumsFragmentI;
 import com.matejvasko.player.fragments.library.SongsFragmentI;
 import com.matejvasko.player.models.Song;
@@ -447,5 +452,13 @@ public class MainActivity extends AppCompatActivity {
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy: ");
+        stopService(new Intent(App.getAppContext(), LocationService.class));
+        super.onDestroy();
     }
 }

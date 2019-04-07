@@ -33,4 +33,10 @@ public class App extends Application {
     public static Context getAppContext() {
         return appContext;
     }
+
+    @Override
+    public void onTerminate() {
+        Log.d(TAG, "onTerminate: ");
+        super.onTerminate();
+    }
 }

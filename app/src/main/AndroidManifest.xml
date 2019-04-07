@@ -78,6 +78,10 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </receiver>
+        <receiver
+            android:name=".StopServiceReceiver"
+            android:enabled="true"
+            android:process=":remote" />
         <!--RECEIVERS-->
 
         <meta-data
