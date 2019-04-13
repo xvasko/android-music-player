@@ -2,7 +2,6 @@ package com.matejvasko.player.fragments;
 
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,18 +33,19 @@ import com.matejvasko.player.activities.LogInActivity;
 import com.matejvasko.player.activities.ProfileActivity;
 import com.matejvasko.player.adapters.FriendListAdapter;
 import com.matejvasko.player.authentication.Authentication;
+import com.matejvasko.player.databinding.FragmentFriendsBinding;
 import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
 import com.matejvasko.player.models.User;
 import com.matejvasko.player.viewmodels.FriendViewModel;
 
+import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 
 /**
@@ -56,22 +56,16 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     private static final String TAG = "FriendsFragment";
 
     private LinearLayout loggedInLayout, notLoggedInLayout;
-    private TextView signUpLink, logInLink, userName, userEmail;
+    private TextView userName, userEmail;
     private EditText searchFriendEditText;
-    private Button logInButton, signUpButton;
-    private ImageButton searchFriendButton;
-    private ProgressDialog progressDialog;
     private ImageView userImage;
-    private ImageButton popupMenuButton;
-
-    private RecyclerView recyclerView;
-
-    private DatabaseReference userDatabase;
 
     private FriendViewModel friendViewModel;
     private FriendListAdapter friendListAdapter;
 
     private Observer<PagedList<User>> observer;
+
+    private FragmentFriendsBinding binding;
 
     public FriendsFragment() {
         // Required empty public constructor
@@ -79,18 +73,18 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_friends, container, false);
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_friends, container, false);
+        View view = binding.getRoot();
 
         friendViewModel = ViewModelProviders.of(this).get(FriendViewModel.class);
         friendListAdapter = new FriendListAdapter(getActivity());
 
-        recyclerView = view.findViewById(R.id.friends_recycler_view);
+        RecyclerView recyclerView = view.findViewById(R.id.friends_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(friendListAdapter);
         observer = new Observer<PagedList<User>>() {
             @Override
             public void onChanged(PagedList<User> friends) {
-                System.out.println("observed list size: " + friends.size());
                 friendListAdapter.submitList(friends);
             }
         };
@@ -183,10 +177,7 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
     }
 
     private void prepareUI(View view) {
-        progressDialog = new ProgressDialog(getActivity());
         searchFriendEditText = view.findViewById(R.id.search_friend_edit_text);
-        searchFriendButton = view.findViewById(R.id.search_friend_button);
-        searchFriendButton.setOnClickListener(this);
         loggedInLayout = view.findViewById(R.id.friends_tab_logged_in_layout);
         notLoggedInLayout = view.findViewById(R.id.not_logged_in_layout);
         userImage = view.findViewById(R.id.friends_user_image);
@@ -194,13 +185,13 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         userName = view.findViewById(R.id.friends_user_name);
         userEmail = view.findViewById(R.id.friends_user_email);
 
-        signUpLink = view.findViewById(R.id.log_in_request_sign_up_link);
+        TextView signUpLink = view.findViewById(R.id.log_in_request_sign_up_link);
         signUpLink.setOnClickListener(this);
-        logInButton = view.findViewById(R.id.log_in_request_log_in_button);
+        Button logInButton = view.findViewById(R.id.log_in_request_log_in_button);
         logInButton.setOnClickListener(this);
-
-
-        popupMenuButton = view.findViewById(R.id.popup_menu);
+        ImageButton searchFriendButton = view.findViewById(R.id.search_friend_button);
+        searchFriendButton.setOnClickListener(this);
+        ImageButton popupMenuButton = view.findViewById(R.id.popup_menu);
         popupMenuButton.setOnClickListener(this);
     }
 
@@ -228,23 +219,10 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = Authentication.getCurrentUser();
         if (currentUser != null) {
-            final CircularProgressDrawable circularProgressDrawable = new CircularProgressDrawable(App.getAppContext());
-            circularProgressDrawable.setStrokeWidth(10f);
-            circularProgressDrawable.setCenterRadius(30f);
-            circularProgressDrawable.setStartEndTrim(0.5f, 1f);
-            circularProgressDrawable.start();
-            Glide.with(App.getAppContext()).load(circularProgressDrawable).into(userImage);
             FirebaseDatabaseManager.getUserData(Authentication.getCurrentUserUid(), new FirebaseDatabaseManagerCallback() {
                 @Override
                 public void onResult(User user) {
-                    userName.setText(user.getName());
-                    userEmail.setText(user.getEmail());
-
-                    if (!user.getThumbImage().equals("default")) {
-                        Glide.with(App.getAppContext()).load(user.getThumbImage()).placeholder(circularProgressDrawable).into(userImage);
-                    } else {
-                        Glide.with(App.getAppContext()).load(user.getThumbImage()).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userImage);
-                    }
+                    binding.setUser(user);
                 }
             });
             loggedInLayout.setVisibility(View.VISIBLE);

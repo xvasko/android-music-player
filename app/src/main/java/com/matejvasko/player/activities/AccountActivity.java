@@ -30,6 +30,7 @@ import com.google.firebase.storage.UploadTask;
 import com.matejvasko.player.R;
 import com.matejvasko.player.adapters.AccountPagerAdapter;
 import com.matejvasko.player.authentication.Authentication;
+import com.matejvasko.player.databinding.ActivityAccountBinding;
 import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
 import com.matejvasko.player.firebase.FirebaseFirestoreManager;
@@ -45,37 +46,25 @@ import java.io.IOException;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
 import androidx.viewpager.widget.ViewPager;
 import id.zelory.compressor.Compressor;
 
 public class AccountActivity extends AppCompatActivity {
 
     private static final String TAG = "AccountActivity";
-    
-    DatabaseReference userDatabase;
-    StorageReference imageStorage;
-    FirebaseUser user;
 
-    // Layout
-    ImageView accountImage;
-    TextView accountName;
-    TextView accountEmail;
-    Button accountChangeImage;
-
-    ProgressDialog progressDialog;
+    private ProgressDialog progressDialog;
+    private ActivityAccountBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_account);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_account);
 
         progressDialog = new ProgressDialog(this);
 
-        accountImage = findViewById(R.id.account_image);
-        accountName = findViewById(R.id.account_name);
-        accountEmail = findViewById(R.id.account_email);
-        accountChangeImage = findViewById(R.id.account_change_image_button);
-        accountChangeImage.setOnClickListener(new View.OnClickListener() {
+        binding.accountChangeImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 CropImage.activity()
@@ -88,17 +77,9 @@ public class AccountActivity extends AppCompatActivity {
         FirebaseDatabaseManager.getUserData(Authentication.getCurrentUserUid(), new FirebaseDatabaseManagerCallback() {
             @Override
             public void onResult(User user) {
-                accountName.setText(user.getName());
-                accountEmail.setText(user.getEmail());
-                String image = user.getImage();
-                if (!image.equals("default")) {
-                    Glide.with(getApplicationContext()).load(image).placeholder(R.drawable.ic_perm_identity_black_24dp).into(accountImage);
-                }
+                binding.setUser(user);
             }
         });
-
-        user = FirebaseAuth.getInstance().getCurrentUser();
-        imageStorage = FirebaseStorage.getInstance().getReference();
 
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("Friend Requests"));

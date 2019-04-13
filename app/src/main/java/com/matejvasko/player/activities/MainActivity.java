@@ -21,17 +21,13 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.firebase.database.FirebaseDatabase;
 import com.matejvasko.player.App;
 import com.matejvasko.player.LocationService;
 import com.matejvasko.player.MediaPlaybackService;
 import com.matejvasko.player.MediaSeekBar;
 import com.matejvasko.player.R;
-import com.matejvasko.player.authentication.Authentication;
 import com.matejvasko.player.fragments.library.AlbumsFragmentI;
 import com.matejvasko.player.fragments.library.SongsFragmentI;
 import com.matejvasko.player.models.Song;
@@ -129,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
         shuffleImageView.setImageResource(isShuffle ? R.drawable.ic_shuffle_primary_24dp : R.drawable.ic_shuffle_black_24dp);
         mediaSeekBarIndicator = findViewById(R.id.media_seek_bar_indicator);
         mediaSeekBarIndicator.setPadding(0, 0, 0, 0);
-        mediaSeekBarIndicator.setOnTouchListener(new View.OnTouchListener(){
+        mediaSeekBarIndicator.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 return true;
@@ -406,7 +402,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onPlaybackStateChanged(@Nullable final PlaybackStateCompat state) {
             isPlaying = state != null && state.getState() == PlaybackStateCompat.STATE_PLAYING;
-            playPauseImageView.setImageDrawable(isPlaying ? getResources().getDrawable(R.drawable.ic_pause_black_24dp) :  getResources().getDrawable(R.drawable.ic_play_arrow_black_24dp) );
+            playPauseImageView.setImageDrawable(isPlaying ? getResources().getDrawable(R.drawable.ic_pause_black_24dp) : getResources().getDrawable(R.drawable.ic_play_arrow_black_24dp));
             playPauseBigImageView.setImageResource(isPlaying ? R.drawable.ic_pause_black_24dp : R.drawable.ic_play_arrow_black_24dp);
             Log.d(TAG, "onPlaybackStateChanged: MediaControllerCallback + " + state);
         }

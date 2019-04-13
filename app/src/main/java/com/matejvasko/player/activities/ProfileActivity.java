@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.matejvasko.player.R;
@@ -20,8 +19,6 @@ public class ProfileActivity extends AppCompatActivity {
 
     private static final String TAG = "ProfileActivity";
 
-    private Button profileFriendRequestAction;
-
     private ProgressDialog progressDialog;
 
     private String friendshipState;
@@ -31,7 +28,6 @@ public class ProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_profile);
-
         final String userId = getIntent().getStringExtra("user_id");
 
         prepareUI();
@@ -48,19 +44,19 @@ public class ProfileActivity extends AppCompatActivity {
                         switch (friendshipState) {
                             case "not_friends":
                                 ProfileActivity.this.friendshipState = friendshipState;
-                                profileFriendRequestAction.setText("Send Friend Request");
+                                binding.profileFriendRequestActionButton.setText("Send Friend Request");
                                 break;
                             case "friends":
                                 ProfileActivity.this.friendshipState = friendshipState;
-                                profileFriendRequestAction.setText("Unfriend");
+                                binding.profileFriendRequestActionButton.setText("Unfriend");
                                 break;
                             case "request_received":
                                 ProfileActivity.this.friendshipState = friendshipState;
-                                profileFriendRequestAction.setText("Accept Friend Request");
+                                binding.profileFriendRequestActionButton.setText("Accept Friend Request");
                                 break;
                             case "request_sent":
                                 ProfileActivity.this.friendshipState = friendshipState;
-                                profileFriendRequestAction.setText("Cancel Friend Request");
+                                binding.profileFriendRequestActionButton.setText("Cancel Friend Request");
                                 break;
                             default:
                                 Log.e(TAG, "onResult: unknown friendship state");
@@ -86,7 +82,7 @@ public class ProfileActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess() {
                             friendshipState = "request_sent";
-                            profileFriendRequestAction.setText("Cancel Friend Request");
+                            binding.profileFriendRequestActionButton.setText("Cancel Friend Request");
                             Toast.makeText(ProfileActivity.this, "Friend request sent successfully", Toast.LENGTH_LONG).show();
                         }
 
@@ -102,7 +98,7 @@ public class ProfileActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess() {
                             friendshipState = "not_friends";
-                            profileFriendRequestAction.setText("Send Friend Request");
+                            binding.profileFriendRequestActionButton.setText("Send Friend Request");
                             Toast.makeText(ProfileActivity.this, "Friend request cancelled successfully", Toast.LENGTH_LONG).show();
                         }
 
@@ -118,7 +114,7 @@ public class ProfileActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess() {
                             friendshipState = "friends";
-                            profileFriendRequestAction.setText("Unfriend");
+                            binding.profileFriendRequestActionButton.setText("Unfriend");
                             Toast.makeText(ProfileActivity.this, "Friend request accepted successfully", Toast.LENGTH_LONG).show();
                         }
 
@@ -134,7 +130,7 @@ public class ProfileActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess() {
                             friendshipState = "not_friends";
-                            profileFriendRequestAction.setText("Send Friend Request");
+                            binding.profileFriendRequestActionButton.setText("Send Friend Request");
                             Toast.makeText(ProfileActivity.this, "Friend removed successfully", Toast.LENGTH_LONG).show();
                         }
 
@@ -149,8 +145,6 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void prepareUI() {
-        profileFriendRequestAction = findViewById(R.id.profile_friend_request_action_button);
-
         progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Loading user data");
         progressDialog.setMessage("Please wait...");

@@ -2,7 +2,6 @@ package com.matejvasko.player.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,11 +11,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.matejvasko.player.App;
 import com.matejvasko.player.R;
 import com.matejvasko.player.activities.ProfileActivity;
+import com.matejvasko.player.databinding.ItemFriendBinding;
 import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
 import com.matejvasko.player.models.User;
@@ -43,8 +41,10 @@ public class FriendListAdapter
     @Override
     public FriendViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Log.d(TAG, "onCreateViewHolder: ");
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_online_friend, parent, false);
-        return new FriendViewHolder(itemView);
+        LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+        ItemFriendBinding binding = ItemFriendBinding.inflate(layoutInflater, parent, false);
+
+        return new FriendViewHolder(binding);
     }
 
     @Override
@@ -53,8 +53,6 @@ public class FriendListAdapter
         User user = getItem(position);
         if (user != null) {
             holder.bindTo(user);
-        } else {
-            holder.clear();
         }
     }
 
@@ -62,20 +60,12 @@ public class FriendListAdapter
 
         private String userId = "";
 
-        private ImageView userThumbImage, userOnline;
-        private TextView userName, userSong, userArtist, userLastSeen;
-        private LinearLayout userLastSeenEgg;
+        private ItemFriendBinding binding;
 
-        FriendViewHolder(@NonNull View itemView) {
-            super(itemView);
+        FriendViewHolder(ItemFriendBinding binding) {
+            super(binding.getRoot());
             itemView.setOnClickListener(this);
-            userThumbImage = itemView.findViewById(R.id.item_online_friend_user_image);
-            userName = itemView.findViewById(R.id.item_online_friend_user_name);
-            userSong = itemView.findViewById(R.id.item_online_friend_user_song);
-            userArtist = itemView.findViewById(R.id.item_online_friend_user_artist);
-            userOnline = itemView.findViewById(R.id.item_online_friend_online_circle);
-            userLastSeen = itemView.findViewById(R.id.item_online_friend_last_seen);
-            userLastSeenEgg = itemView.findViewById(R.id.item_online_friend_last_seen_egg);
+            this.binding = binding;
         }
 
         void bindTo(User user) {
@@ -84,42 +74,11 @@ public class FriendListAdapter
                 public void onResult(User user) {
                     if (user != null) {
                         userId = user.getUid();
-                        userName.setText(user.getName());
-                        String thumbImage = user.getThumbImage();
-                        if (!thumbImage.equals("default")) {
-                            Glide.with(App.getAppContext()).load(thumbImage).placeholder(R.drawable.ic_perm_identity_black_24dp).into(userThumbImage);
-                        } else {
-                            Glide.with(App.getAppContext()).load(R.drawable.ic_perm_identity_black_24dp).into(userThumbImage);
-                        }
-                        if (user.getOnline() != null) {
-                            if (user.getOnline()) {
-                                userOnline.setVisibility(View.VISIBLE);
-                                userLastSeenEgg.setVisibility(View.INVISIBLE);
-                            } else {
-                                userOnline.setVisibility(View.INVISIBLE);
-                                if (user.getLastTimeOnline() != null) {
-                                    userLastSeen.setText(Utils.getLastSeen(user.getLastTimeOnline()));
-                                    userLastSeenEgg.setVisibility(View.VISIBLE);
-                                } else {
-                                    userLastSeenEgg.setVisibility(View.INVISIBLE);
-                                }
-                            }
-                        }
-                        if (user.getCurrentSongName() != null) {
-                            userSong.setText(user.getCurrentSongName());
-
-                        }
-                        if (user.getCurrentSongArtist() != null) {
-                            userArtist.setText(String.format("by %s", user.getCurrentSongArtist()));
-                        }
-
+                        binding.setUser(user);
+                        binding.executePendingBindings();
                     }
                 }
             });
-        }
-
-        void clear() {
-            userName.setText("...");
         }
 
         @Override
