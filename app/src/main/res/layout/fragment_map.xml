@@ -5,12 +5,19 @@
     android:layout_height="match_parent"
     tools:context=".fragments.MapFragment">
 
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/map"
+    <include layout="@layout/log_in_request" />
+
+    <LinearLayout
+        android:id="@+id/map_tab_logged_in_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <com.google.android.gms.maps.MapView
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
-    </com.google.android.gms.maps.MapView>
+    </LinearLayout>
+
 
 </FrameLayout>

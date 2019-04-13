@@ -18,6 +18,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
@@ -46,6 +50,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseError;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -54,6 +59,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.matejvasko.player.App;
 import com.matejvasko.player.LocationService;
 import com.matejvasko.player.R;
+import com.matejvasko.player.activities.LogInActivity;
 import com.matejvasko.player.activities.MainActivity;
 import com.matejvasko.player.activities.ProfileActivity;
 import com.matejvasko.player.authentication.Authentication;
@@ -77,7 +83,7 @@ import static androidx.core.content.ContextCompat.checkSelfPermission;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MapFragment extends Fragment implements OnMapReadyCallback {
+public class MapFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener {
 
     private static final String TAG = "MapFragment";
 
@@ -100,7 +106,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private GeoFire geoFire;
     private GeoQuery geoQuery;
 
-    public MapFragment() {}
+    private LinearLayout loggedInLayout, notLoggedInLayout;
+    private TextView signUpLink;
+    private Button logInButton;
+
+    public MapFragment() {
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -121,6 +132,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         mapView.onCreate(mapViewBundle);
         mapView.getMapAsync(this);
 
+        loggedInLayout = view.findViewById(R.id.map_tab_logged_in_layout);
+        notLoggedInLayout = view.findViewById(R.id.not_logged_in_layout);
+        signUpLink = view.findViewById(R.id.log_in_request_sign_up_link);
+        signUpLink.setOnClickListener(this);
+        logInButton = view.findViewById(R.id.log_in_request_log_in_button);
+        logInButton.setOnClickListener(this);
+
         return view;
     }
 
@@ -128,11 +146,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     public void onResume() {
         super.onResume();
         mapView.onResume();
-        if (checkMapRequirements()) {
-            if (locationPermissionGranted) {
-                startLocationService();
-            } else {
-                getLocationPermission();
+        if (Authentication.getCurrentUser() != null) {
+            if (checkMapRequirements()) {
+                if (locationPermissionGranted) {
+                    startLocationService();
+                } else {
+                    getLocationPermission();
+                }
             }
         }
     }
@@ -141,6 +161,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     public void onStart() {
         super.onStart();
         mapView.onStart();
+
+        FirebaseUser currentUser = Authentication.getCurrentUser();
+        if (currentUser != null) {
+            loggedInLayout.setVisibility(View.VISIBLE);
+            notLoggedInLayout.setVisibility(View.INVISIBLE);
+        } else {
+            loggedInLayout.setVisibility(View.INVISIBLE);
+            notLoggedInLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -232,7 +261,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Double latitude = (Double) dataSnapshot.child("l").child("0").getValue();
-                Double longitude =  (Double) dataSnapshot.child("l").child("1").getValue();
+                Double longitude = (Double) dataSnapshot.child("l").child("1").getValue();
                 System.out.println("on data change: latitude " + latitude);
                 System.out.println("on data change: longitude " + longitude);
 
@@ -382,6 +411,24 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         return false;
     }
 
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.log_in_request_sign_up_link:
+                Intent signUpIntent = new Intent(getActivity(), LogInActivity.class);
+                signUpIntent.putExtra("signing_up", true);
+                startActivityForResult(signUpIntent, 1);
+                break;
+            case R.id.log_in_request_log_in_button:
+                Intent logInIntent = new Intent(getActivity(), LogInActivity.class);
+                logInIntent.putExtra("signing_up", false);
+                startActivityForResult(logInIntent, 1);
+                break;
+            default:
+                break;
+        }
+    }
 
 }
 

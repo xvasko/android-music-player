@@ -9,38 +9,7 @@
     android:focusableInTouchMode="true"
     tools:context=".fragments.FriendsFragment">
 
-    <LinearLayout
-        android:id="@+id/friends_tab_not_logged_in_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="invisible">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity=""
-            android:text="Please Log In or create new account!" />
-
-        <Button
-            android:id="@+id/friends_tab_log_in_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Log in" />
-
-        <TextView
-            android:id="@+id/friends_tab_sign_up_link"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:padding="8dp"
-            android:text="create new account"
-            android:textColor="#07C" />
-
-    </LinearLayout>
+    <include layout="@layout/log_in_request" />
 
     <LinearLayout
         android:id="@+id/friends_tab_logged_in_layout"

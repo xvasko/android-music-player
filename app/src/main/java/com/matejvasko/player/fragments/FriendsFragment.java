@@ -113,12 +113,12 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
                 popupMenu.inflate(R.menu.account_options_items);
                 popupMenu.show();
                 break;
-            case R.id.friends_tab_sign_up_link:
+            case R.id.log_in_request_sign_up_link:
                 Intent signUpIntent = new Intent(getActivity(), LogInActivity.class);
                 signUpIntent.putExtra("signing_up", true);
                 startActivityForResult(signUpIntent, 1);
                 break;
-            case R.id.friends_tab_log_in_button:
+            case R.id.log_in_request_log_in_button:
                 Intent logInIntent = new Intent(getActivity(), LogInActivity.class);
                 logInIntent.putExtra("signing_up", false);
                 startActivityForResult(logInIntent, 1);
@@ -188,15 +188,15 @@ public class FriendsFragment extends Fragment implements PopupMenu.OnMenuItemCli
         searchFriendButton = view.findViewById(R.id.search_friend_button);
         searchFriendButton.setOnClickListener(this);
         loggedInLayout = view.findViewById(R.id.friends_tab_logged_in_layout);
-        notLoggedInLayout = view.findViewById(R.id.friends_tab_not_logged_in_layout);
+        notLoggedInLayout = view.findViewById(R.id.not_logged_in_layout);
         userImage = view.findViewById(R.id.friends_user_image);
         userImage.setOnClickListener(this);
         userName = view.findViewById(R.id.friends_user_name);
         userEmail = view.findViewById(R.id.friends_user_email);
 
-        signUpLink = view.findViewById(R.id.friends_tab_sign_up_link);
+        signUpLink = view.findViewById(R.id.log_in_request_sign_up_link);
         signUpLink.setOnClickListener(this);
-        logInButton = view.findViewById(R.id.friends_tab_log_in_button);
+        logInButton = view.findViewById(R.id.log_in_request_log_in_button);
         logInButton.setOnClickListener(this);
 
 
