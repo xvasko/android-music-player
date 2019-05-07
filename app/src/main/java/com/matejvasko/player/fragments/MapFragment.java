@@ -1,8 +1,6 @@
 package com.matejvasko.player.fragments;
 
 
-import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -20,36 +18,25 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
-import com.firebase.geofire.GeoQueryDataEventListener;
 import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.FirebaseError;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -60,7 +47,6 @@ import com.matejvasko.player.App;
 import com.matejvasko.player.LocationService;
 import com.matejvasko.player.R;
 import com.matejvasko.player.activities.LogInActivity;
-import com.matejvasko.player.activities.MainActivity;
 import com.matejvasko.player.activities.ProfileActivity;
 import com.matejvasko.player.authentication.Authentication;
 import com.matejvasko.player.utils.Utils;
@@ -70,10 +56,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import static android.content.Context.ACTIVITY_SERVICE;
@@ -215,8 +198,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                         if (key.equals(Authentication.getCurrentUserUid())) return;
                         Marker marker = googleMap.addMarker(new MarkerOptions().position(new LatLng(location.latitude, location.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).title(key));
                         markers.put(key, marker);
-                        System.out.println("geoQuery: onKeyEntered: " + key);
-                        System.out.println("geoQuery: onKeyEntered: markers size: " + markers.size());
+                        Log.d(TAG, "onKeyEntered: " + key);
+                        Log.d(TAG, "onKeyEntered: markers size:" + markers.size());
                     }
 
                     @Override
@@ -227,8 +210,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                             marker.remove();
                             markers.remove(key);
                         }
-                        System.out.println("geoQuery: onKeyExited: " + key);
-                        System.out.println("geoQuery: onKeyExited: markers size: " + markers.size());
+                        Log.d(TAG, "onKeyExited: " + key);
+                        Log.d(TAG, "onKeyExited: markers size: " + markers.size());
                     }
 
                     @Override
@@ -238,8 +221,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                         if (marker != null) {
                             marker.setPosition(new LatLng(location.latitude, location.longitude));
                         }
-                        System.out.println("geoQuery: onKeyMoved: " + key);
-                        System.out.println("geoQuery: onKeyMoved: markers size: " + markers.size());
+                        Log.d(TAG, "onKeyMoved: " + key);
+                        Log.d(TAG, "onKeyMoved: markers size: " + markers.size());
                     }
 
                     @Override
@@ -262,8 +245,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Double latitude = (Double) dataSnapshot.child("l").child("0").getValue();
                 Double longitude = (Double) dataSnapshot.child("l").child("1").getValue();
-                System.out.println("on data change: latitude " + latitude);
-                System.out.println("on data change: longitude " + longitude);
+                Log.d(TAG, "onDataChange: latitude " + latitude);
+                Log.d(TAG, "onDataChange: longitude " + longitude);
 
                 if (latitude != null && longitude != null) {
                     LatLng position = new LatLng(latitude, longitude);

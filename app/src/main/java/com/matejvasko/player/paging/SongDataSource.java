@@ -16,6 +16,7 @@ import androidx.paging.PositionalDataSource;
 public class SongDataSource extends PositionalDataSource<Song> {
 
     private static final String TAG = "SongDataSource";
+
     private static int pageSize;
     private MediaProvider mediaProvider = MediaProvider.getInstance();
     private Set<Integer> loadedPages = new HashSet<>();
@@ -53,7 +54,7 @@ public class SongDataSource extends PositionalDataSource<Song> {
         int startPosition = page * pageSize;
         if (startPosition + pageSize <= cursorSize) {
             return mediaProvider.getSongAtRange(startPosition, startPosition + pageSize);
-        }else {
+        } else {
             return mediaProvider.getSongAtRange(startPosition, cursorSize);
         }
     }

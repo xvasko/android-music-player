@@ -11,7 +11,6 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.matejvasko.player.authentication.Authentication;
 import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 import com.matejvasko.player.models.Song;
 import com.matejvasko.player.utils.SharedPref;
@@ -80,14 +79,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         setSessionToken(mediaSession.getSessionToken());
     }
-
-//    @Override
-//    public void onTaskRemoved(Intent rootIntent) {
-//        super.onTaskRemoved(rootIntent);
-//        // User has swiped the app in task manager
-//        System.out.println("onTaskRemoved, calling stop self");
-//        stopSelf();
-//    }
 
 //    AudioManager.OnAudioFocusChangeListener onAudioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
 //        @Override

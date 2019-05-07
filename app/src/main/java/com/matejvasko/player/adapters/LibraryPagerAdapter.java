@@ -12,7 +12,7 @@ import androidx.fragment.app.FragmentPagerAdapter;
 
 public class LibraryPagerAdapter extends FragmentPagerAdapter {
 
-    List<Fragment> fragmentList = new ArrayList<>();
+    private List<Fragment> fragmentList = new ArrayList<>();
 
     public LibraryPagerAdapter(FragmentManager fm) {
         super(fm);

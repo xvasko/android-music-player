@@ -126,14 +126,14 @@ public class MediaNotificationManager {
 
         // If skip to next action is enabled.
         //if ((state.getActions() & PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS) != 0) {
-            builder.addAction(prevAction);
+        builder.addAction(prevAction);
         //}
 
         builder.addAction(isPlaying ? pauseAction : playAction);
 
         // If skip to prev action is enabled.
         //if ((state.getActions() & PlaybackStateCompat.ACTION_SKIP_TO_NEXT) != 0) {
-            builder.addAction(nextAction);
+        builder.addAction(nextAction);
         //}
 
         return builder;

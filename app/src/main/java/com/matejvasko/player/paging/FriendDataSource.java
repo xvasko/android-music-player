@@ -2,8 +2,8 @@ package com.matejvasko.player.paging;
 
 import android.util.Log;
 
-import com.matejvasko.player.models.User;
 import com.matejvasko.player.firebase.FirebaseRepository;
+import com.matejvasko.player.models.User;
 
 import androidx.annotation.NonNull;
 import androidx.paging.ItemKeyedDataSource;

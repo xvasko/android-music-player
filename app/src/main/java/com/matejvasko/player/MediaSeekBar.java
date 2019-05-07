@@ -2,7 +2,6 @@ package com.matejvasko.player;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.os.Bundle;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -11,12 +10,9 @@ import android.util.Log;
 import android.view.animation.LinearInterpolator;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.matejvasko.player.utils.SharedPref;
 import com.matejvasko.player.utils.Utils;
-
-import org.w3c.dom.Text;
 
 import androidx.appcompat.widget.AppCompatSeekBar;
 
@@ -39,7 +35,6 @@ public class MediaSeekBar extends AppCompatSeekBar {
 
         @Override
         public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-            // TODO this method is called every time progress is made - overkill?
             if (durationCurrent != null) {
                 durationCurrent.setText(Utils.millisecondsToString(i));
             }
@@ -130,8 +125,6 @@ public class MediaSeekBar extends AppCompatSeekBar {
 
             if (state != null && state.getState() == PlaybackStateCompat.STATE_PLAYING) {
                 final int timeToEnd = max - progress;
-                System.out.println("max: " + max);
-                System.out.println("progress: " + progress);
                 valueAnimator = ValueAnimator.ofInt(progress, max).setDuration(timeToEnd);
                 valueAnimator.setInterpolator(new LinearInterpolator());
                 valueAnimator.addUpdateListener(this);

@@ -16,6 +16,7 @@ import androidx.paging.PositionalDataSource;
 public class AlbumDataSource extends PositionalDataSource<Album> {
 
     private static final String TAG = "SongDataSource";
+
     private static int pageSize;
     private MediaProvider mediaProvider = MediaProvider.getInstance();
     private Set<Integer> loadedPages = new HashSet<>();

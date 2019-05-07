@@ -16,7 +16,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
     private static final String TAG = "FirebaseMessagingService";
 
     private static final String CHANNEL_ID = "com.matejvasko.player.channel";
-    
+
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
@@ -25,8 +25,6 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
         String notificationBody = remoteMessage.getNotification().getBody();
         String notificationClickAction = remoteMessage.getNotification().getClickAction();
         String fromUserId = remoteMessage.getData().get("from_user_id");
-
-        System.out.println("fromuserid: " + fromUserId);
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 

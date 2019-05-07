@@ -12,14 +12,15 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity=""
-        android:text="Please Log In or create new account!" />
+        android:text="Please log in or create a new account!" />
 
     <Button
         android:id="@+id/log_in_request_log_in_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
+        android:background="@color/colorPrimary"
+        android:textColor="@color/colorWhite"
         android:text="Log in" />
 
     <TextView

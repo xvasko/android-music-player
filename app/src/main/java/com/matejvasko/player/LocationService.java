@@ -8,13 +8,11 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Looper;
@@ -27,19 +25,12 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.FirebaseError;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.matejvasko.player.authentication.Authentication;
 import com.matejvasko.player.utils.Utils;
 import com.matejvasko.player.utils.UtilsCallback;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -120,13 +111,10 @@ public class LocationService extends Service {
                     @Override
                     public void onComplete(String key, DatabaseError error) {
                         if (error != null) {
-                            System.err.println("There was an error saving the location to GeoFire: " + error);
+                            Log.d(TAG, "onComplete: There was an error saving the location to GeoFire: " + error);
                         } else {
-                            System.out.println("Location saved on server successfully!");
+                            Log.d(TAG, "onComplete: Location saved on server successfully!");
                             userLocationDatabase = userLocationServiceStart;
-
-
-
 
                             // start location pooling
                             locationCallback = new LocationCallback() {
@@ -134,9 +122,6 @@ public class LocationService extends Service {
                                 public void onLocationResult(LocationResult locationResult) {
                                     final Location newLocation = locationResult.getLastLocation();
                                     if (newLocation != null) {
-
-
-
                                         if (newLocation.distanceTo(userLocationDatabase) > 10f) {
                                             // save new location to DB
                                             geoFire.setLocation(Authentication.getCurrentUserUid(), new GeoLocation(newLocation.getLatitude(), newLocation.getLongitude()), new GeoFire.CompletionListener() {
@@ -157,26 +142,17 @@ public class LocationService extends Service {
                                             Log.d(TAG, "onLocationResult: longitude: " + newLocation.getLongitude());
                                             Log.d(TAG, "onLocationResult: NOT SAVING TO THE DATABASE");
                                         }
-
-
-
-
                                     }
                                 }
                             };
 
-                            fusedLocationClient.requestLocationUpdates(locationRequestHighAccuracy, locationCallback,  Looper.myLooper());
-                            // end location pooling
-
-
-
-
+                            fusedLocationClient.requestLocationUpdates(locationRequestHighAccuracy, locationCallback, Looper.myLooper());
+                            // end location polling
                         }
                     }
                 });
             }
         });
-
 
 
     }
@@ -185,7 +161,7 @@ public class LocationService extends Service {
     public void onTaskRemoved(Intent rootIntent) {
         Log.d(TAG, "onTaskRemoved: ");
         super.onTaskRemoved(rootIntent);
-        
+
     }
 
     @Override
@@ -226,6 +202,5 @@ public class LocationService extends Service {
         Log.d(TAG, "onRebind: ");
         super.onRebind(intent);
     }
-
 
 }

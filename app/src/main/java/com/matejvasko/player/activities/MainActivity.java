@@ -148,26 +148,26 @@ public class MainActivity extends AppCompatActivity {
                         sharedPref.setBottomSheetState(BottomSheetBehavior.STATE_COLLAPSED);
                         playPauseButton.setEnabled(true);
                         collapseButton.setEnabled(false);
-                        System.out.println("onStateChanged: STATE_COLLAPSED");
+                        Log.d(TAG, "onStateChanged: STATE_COLLAPSED");
                         break;
                     case BottomSheetBehavior.STATE_EXPANDED:
                         sharedPref.setBottomSheetState(BottomSheetBehavior.STATE_EXPANDED);
                         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                         playPauseButton.setEnabled(false);
                         collapseButton.setEnabled(true);
-                        System.out.println("onStateChanged: STATE_EXPANDED");
+                        Log.d(TAG, "onStateChanged: STATE_EXPANDED");
                         break;
                     case BottomSheetBehavior.STATE_DRAGGING:
-                        System.out.println("onStateChanged: STATE_DRAGGING");
+                        Log.d(TAG, "onStateChanged: STATE_DRAGGING");
                         break;
                     case BottomSheetBehavior.STATE_SETTLING:
-                        System.out.println("onStateChanged: STATE_SETTLING");
+                        Log.d(TAG, "onStateChanged: STATE_SETTLING");
                         break;
                     case BottomSheetBehavior.STATE_HIDDEN:
-                        System.out.println("onStateChanged: STATE_HIDDEN");
+                        Log.d(TAG, "onStateChanged: STATE_HIDDEN");
                         break;
                     case BottomSheetBehavior.STATE_HALF_EXPANDED:
-                        System.out.println("onStateChanged: STATE_HALF_EXPANDED");
+                        Log.d(TAG, "onStateChanged: STATE_HALF_EXPANDED");
                         break;
                 }
             }
@@ -261,7 +261,6 @@ public class MainActivity extends AppCompatActivity {
         if (sharedPref.getSong() == null) {
             bottomSheetBehavior.setHideable(true);
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-            System.out.println("XXX1");
         } else {
             bottomSheetBehavior.setHideable(false);
             ((ViewGroup.MarginLayoutParams) navHostFragment.getLayoutParams()).bottomMargin = Utils.densityPixelToPixel(56);
@@ -273,7 +272,6 @@ public class MainActivity extends AppCompatActivity {
                 collapseButton.setEnabled(true);
                 mediaSeekBarIndicator.setVisibility(View.INVISIBLE);
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                System.out.println("XXX2");
             } else if (sharedPref.getBottomSheetState() == BottomSheetBehavior.STATE_COLLAPSED) {
                 playPauseImageView.setAlpha(1f);
                 collapseImageView.setAlpha(0f);
@@ -282,7 +280,6 @@ public class MainActivity extends AppCompatActivity {
                 collapseButton.setEnabled(false);
                 mediaSeekBarIndicator.setVisibility(View.VISIBLE);
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                System.out.println("XXX3");
             }
         }
     }
@@ -358,7 +355,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 // media metadata is retrieved from shared preferences inside MediaPlaybackService.java
                 mediaControllerCallback.onPlaybackStateChanged(mediaController.getPlaybackState());
-                System.out.println("mediaController.getPlaybackState(): " + mediaController.getPlaybackState());
+                Log.d(TAG, "onConnected: mediaController.getPlaybackState(): mediaController.getPlaybackState()");
 
                 // enables handling of media buttons
                 MediaControllerCompat.setMediaController(MainActivity.this, mediaController);

@@ -3,11 +3,9 @@ package com.matejvasko.player;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.v4.media.MediaMetadataCompat;
 
 import com.matejvasko.player.models.Album;
 import com.matejvasko.player.models.Song;
-import com.matejvasko.player.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;

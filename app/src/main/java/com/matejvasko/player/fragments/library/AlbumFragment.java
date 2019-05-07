@@ -6,15 +6,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.matejvasko.player.MediaProvider;
 import com.matejvasko.player.R;
 import com.matejvasko.player.adapters.AlbumSongsListAdapter;
 import com.matejvasko.player.models.Album;
 import com.matejvasko.player.models.Song;
-import com.matejvasko.player.utils.Utils;
 
 import java.util.List;
 

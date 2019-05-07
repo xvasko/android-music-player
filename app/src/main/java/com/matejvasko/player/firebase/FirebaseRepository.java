@@ -1,6 +1,5 @@
 package com.matejvasko.player.firebase;
 
-import android.os.Bundle;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -67,10 +66,7 @@ public class FirebaseRepository {
                     friends.add(friend);
                 }
 
-                System.out.println("friends after size: " + friends.size());
-                System.out.println("uid: " + friends.get(0).getUid());
                 friends.remove(0);
-                System.out.println("friends after cut size: " + friends.size());
                 callback.onResult(friends);
             }
 
@@ -95,10 +91,7 @@ public class FirebaseRepository {
                     friends.add(friend);
                 }
 
-                System.out.println("friends before size: " + friends.size());
-                System.out.println("uid: " + friends.get(0).getUid());
                 friends.remove(friends.size() - 1);
-                System.out.println("friends before cut size: " + friends.size());
                 callback.onResult(friends);
             }
 

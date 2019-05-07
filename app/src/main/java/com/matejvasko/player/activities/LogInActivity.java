@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,6 +23,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class LogInActivity extends AppCompatActivity implements View.OnClickListener {
 
+    private static final String TAG = "LogInActivity";
+
     private ConstraintLayout logInLayout, signUpLayout;
     private TextView signUpLink, logInLink;
     private EditText logInEmailEditText, logInPasswordEditText, signUpDisplayName, signUpEmailEditText, signUpPasswordEditText;
@@ -33,13 +36,6 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
         prepareUI();
-//        Toolbar toolbar = findViewById(R.id.toolbar);
-//        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Navigation.findNavController().navigateUp();
-//            }
-//        });
     }
 
     void prepareUI() {
@@ -102,11 +98,12 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
                                 finish();
                             }
                         });
+                        Log.d(TAG, "onResult: log in successful");
                     }
 
                     @Override
                     public void onFailure() {
-
+                        Log.d(TAG, "onFailure: log in failed");
                     }
                 });
                 break;
@@ -133,11 +130,12 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
                                 finish();
                             }
                         });
+                        Log.d(TAG, "onSuccess: sign up successful");
                     }
 
                     @Override
                     public void onFailure() {
-
+                        Log.d(TAG, "onFailure: sign up failed");
                     }
                 });
                 break;

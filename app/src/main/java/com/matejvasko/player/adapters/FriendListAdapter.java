@@ -6,19 +6,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.matejvasko.player.App;
-import com.matejvasko.player.R;
 import com.matejvasko.player.activities.ProfileActivity;
 import com.matejvasko.player.databinding.ItemFriendBinding;
 import com.matejvasko.player.firebase.FirebaseDatabaseManager;
 import com.matejvasko.player.firebase.FirebaseDatabaseManagerCallback;
 import com.matejvasko.player.models.User;
-import com.matejvasko.player.utils.Utils;
 
 import androidx.annotation.NonNull;
 import androidx.paging.PagedListAdapter;

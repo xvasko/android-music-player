@@ -8,11 +8,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.matejvasko.player.activities.MainActivity;
 import com.matejvasko.player.R;
+import com.matejvasko.player.activities.MainActivity;
 import com.matejvasko.player.models.Album;
 import com.matejvasko.player.models.Song;
-import com.matejvasko.player.utils.SharedPref;
 import com.matejvasko.player.utils.Utils;
 
 import java.util.List;
@@ -25,8 +24,6 @@ public class AlbumSongsListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     private Context context;
     private Album album;
     private List<Song> songs;
-
-    private SharedPref sharedPref = SharedPref.getInstance();
 
     public AlbumSongsListAdapter(Context context, Album album, List<Song> songs) {
         this.context = context;
@@ -129,6 +126,7 @@ public class AlbumSongsListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             albumTitle.setText(album.title);
             albumBy.setText(String.format("Album by %s", album.artist));
         }
+
     }
 
 }

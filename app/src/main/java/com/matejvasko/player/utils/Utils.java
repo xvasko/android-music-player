@@ -14,7 +14,6 @@ import android.provider.MediaStore;
 
 import com.matejvasko.player.App;
 
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,9 +61,8 @@ public class Utils {
     }
 
     public static String millisecondsToString(long mills) {
-        int seconds = (int) (mills / 1000) % 60 ;
-        int minutes = (int) ((mills / (1000*60)) % 60);
-//        int hours   = (int) ((mills / (1000*60*60)) % 24); // TODO prepare for files longer than 59:59
+        int seconds = (int) (mills / 1000) % 60;
+        int minutes = (int) ((mills / (1000 * 60)) % 60);
 
         if (seconds < 10) {
             return minutes + ":0" + seconds;

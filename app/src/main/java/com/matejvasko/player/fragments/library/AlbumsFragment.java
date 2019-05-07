@@ -8,8 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.matejvasko.player.activities.MainActivity;
 import com.matejvasko.player.R;
+import com.matejvasko.player.activities.MainActivity;
 import com.matejvasko.player.adapters.AlbumListAdapter;
 import com.matejvasko.player.models.Album;
 import com.matejvasko.player.viewmodels.MainActivityViewModel;

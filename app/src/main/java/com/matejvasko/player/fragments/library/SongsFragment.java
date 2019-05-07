@@ -7,8 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.matejvasko.player.activities.MainActivity;
 import com.matejvasko.player.R;
+import com.matejvasko.player.activities.MainActivity;
 import com.matejvasko.player.adapters.SongListAdapter;
 import com.matejvasko.player.models.Song;
 import com.matejvasko.player.viewmodels.MainActivityViewModel;
@@ -41,7 +41,7 @@ public class SongsFragment extends Fragment implements SongsFragmentI {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        ((MainActivity)context).setListener1(this);
+        ((MainActivity) context).setListener1(this);
         Log.d(TAG, "onAttach");
     }
 
@@ -54,7 +54,7 @@ public class SongsFragment extends Fragment implements SongsFragmentI {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
-        View view =  inflater.inflate(R.layout.fragment_tab_1, container, false);
+        View view = inflater.inflate(R.layout.fragment_tab_1, container, false);
 
         mainActivityViewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
         songListAdapter = new SongListAdapter(getActivity());
