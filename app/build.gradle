@@ -9,6 +9,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -91,6 +92,9 @@ dependencies {
     // Google maps services
     implementation 'com.google.android.gms:play-services-location:16.0.0'
     implementation 'com.google.android.gms:play-services-maps:16.1.0'
+
+    // Multidex
+    implementation 'androidx.multidex:multidex:2.0.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
