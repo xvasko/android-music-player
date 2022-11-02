@@ -12,4 +12,4 @@ Architectural pattern: [MVVM](https://developer.android.com/jetpack/docs/guide#r
 
 Backend: [Firebase](https://firebase.google.com/)
 
-![alt](https://firebasestorage.googleapis.com/v0/b/uagoo-34302.appspot.com/o/player_app.png?alt=media&token=d3794179-8788-4c14-8f78-0f215f1b7f48)
+![alt](https://i.imgur.com/NEsAn5E.png)
